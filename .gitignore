@@ -7,8 +7,11 @@
 *.md
 !README.md
 *.pdf
-*.txt
 docs/
+
+# Specifically ignore data-related text files but KEEP build config
+Datasets.txt
+datasets/**/*.txt
 
 # Node / Frontend
 node_modules/
@@ -16,17 +19,27 @@ frontend/node_modules/
 dist/
 .env.local
 
-# Image Files — Remove from Git
+# Image Files — Exclude from tracking EXCEPT for frontend assets
 *.png
 *.jpg
 *.jpeg
 *.webp
 *.gif
-*.svg
+*.bmp
+*.tiff
 **/*.png
 **/*.jpg
 **/*.jpeg
 **/*.webp
+
+# Allow specific useful UI images if they exist in frontend
+!frontend/public/**/*.png
+!frontend/public/**/*.jpg
+!frontend/public/**/*.svg
+!frontend/public/**/*.ico
+!frontend/src/assets/**/*.png
+!frontend/src/assets/**/*.jpg
+!frontend/src/assets/**/*.svg
 
 # Environment / secrets — NEVER commit these
 .env
