@@ -1,0 +1,116 @@
+====================================================================
+OUTFITAI DEPLOYMENT TO HUGGING FACE SPACES - STEP BY STEP
+====================================================================
+
+TOTAL TIME: ~15 minutes (mostly waiting for Docker build)
+
+====================================================================
+STEP 1: Create Hugging Face Account & Space (2 min)
+====================================================================
+
+1. Go to https://huggingface.co/join (if you don't have an account)
+2. Create account, verify email
+3. Go to Settings → Access Tokens
+4. Create a new token with "write" access
+5. Copy the token
+
+====================================================================
+STEP 2: Install HF CLI & Login (2 min)
+====================================================================
+
+Open terminal (D:\FYP) and run:
+
+  py -3.11 -m pip install huggingface_hub
+  huggingface-cli login
+
+Paste your token when prompted.
+
+====================================================================
+STEP 3: Create Space on HF (1 min)
+====================================================================
+
+Run in terminal:
+
+  huggingface-cli repo create outfitai --type space --space-sdk docker
+
+You'll see:
+  "Your new space is ready at: https://huggingface.co/spaces/YOUR_USERNAME/outfitai"
+
+====================================================================
+STEP 4: Clone Space & Add Code (3 min)
+====================================================================
+
+Run these commands:
+
+  git clone https://huggingface.co/spaces/YOUR_USERNAME/outfitai hf-deploy
+  cd hf-deploy
+
+Now copy files from D:\FYP to hf-deploy folder. Run each:
+
+  xcopy /E /Y D:\FYP\app app\
+  xcopy /E /Y D:\FYP\engine engine\
+  xcopy /E /Y D:\FYP\migrations migrations\
+  xcopy /E /Y D:\FYP\frontend frontend\
+  xcopy /E /Y D:\FYP\models models\
+  copy D:\FYP\run.py .
+  copy D:\FYP\requirements.txt .
+  copy D:\FYP\Dockerfile .
+  copy D:\FYP\.dockerignore .
+  copy D:\FYP\entrypoint.sh .
+  copy D:\FYP\README_HF.md README.md
+
+====================================================================
+STEP 5: Push to HF (1 min)
+====================================================================
+
+In hf-deploy folder, run:
+
+  git add -A
+  git commit -m "Deploy OutfitAI"
+  git push
+
+Wait for the output "Everything up-to-date" or similar.
+
+====================================================================
+STEP 6: Set Environment Variables on HF (2 min)
+====================================================================
+
+1. Go to: https://huggingface.co/spaces/YOUR_USERNAME/outfitai/settings
+2. Scroll to "Repository secrets"
+3. Add these secrets (copy-paste exactly):
+
+  FLASK_CONFIG = production
+
+  DATABASE_URL = postgresql://postgres:ZABCwDg%26mB6b4Y-@db.knvrrcltyaitsunlnqna.supabase.co:5432/postgres
+
+  SECRET_KEY = outfit-fyp-uet-lahore-flask-secret-key-2026!!
+
+  JWT_SECRET_KEY = outfit-fyp-uet-lahore-jwt-secret-key-2026!!
+
+  WEATHERAPI_KEY = 4b0b78b0543447468c3111456262703
+
+  HF_TOKEN = [YOUR_HF_TOKEN]
+
+====================================================================
+STEP 7: Wait for Build & Test (5 min)
+====================================================================
+
+1. Go back to: https://huggingface.co/spaces/YOUR_USERNAME/outfitai
+2. You'll see "Building..." status
+3. Wait 5-10 minutes for build to complete
+4. Once done, you'll see "Running" status
+5. Click "View Logs" to see if everything started OK
+6. Your app is now live at: https://YOUR_USERNAME-outfitai.hf.space
+
+====================================================================
+DONE! Your app is deployed and running.
+====================================================================
+
+If something fails:
+- Check the build logs on the HF Space page
+- Common issues:
+  * Missing environment variable → add it to Settings
+  * Database can't connect → check DATABASE_URL is correct
+  * Frontend not loading → check logs for errors
+
+====================================================================

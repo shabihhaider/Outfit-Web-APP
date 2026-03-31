@@ -1,0 +1,42 @@
+# === Exclude from Docker build context ===
+
+# Large data not needed at runtime
+models/vto/
+models/**/*.keras
+models/**/*.png
+models/**/*.txt
+models/**/*.json
+datasets/
+scripts/
+tests/
+checkpoints/
+kaggle/
+docs/
+
+# Frontend source (rebuilt in Stage 1, dist copied in Stage 2)
+frontend/node_modules/
+frontend/dist/
+
+# Git / IDE / OS
+.git/
+.gitignore
+.claude/
+.vscode/
+.idea/
+*.md
+!README_HF.md
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Uploads (runtime only, not baked into image)
+uploads/*
+!uploads/.gitkeep
+
+# Screenshots and misc images at root
+*.png
+*.jpg
+*.jpeg

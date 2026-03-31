@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 const TABS = [
   { key: 'account',  label: 'Account Info' },

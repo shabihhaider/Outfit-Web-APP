@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { FiBriefcase, FiSun, FiHeart } from 'react-icons/fi'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || ''
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const OCCASION_ICON = {

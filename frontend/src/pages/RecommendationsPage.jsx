@@ -122,7 +122,7 @@ export default function RecommendationsPage() {
           <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-brand-800 border border-accent-200/60 dark:border-accent-700/40">
             {anchorItem.image_url && (
               <img
-                src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${anchorItem.image_url}`}
+                src={`${import.meta.env.VITE_API_URL || ''}${anchorItem.image_url}`}
                 alt={anchorItem.category}
                 className="w-full h-full object-cover"
               />

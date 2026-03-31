@@ -12,7 +12,7 @@ import RemixResultModal from '../components/social/RemixResultModal.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const BASE = import.meta.env.VITE_API_URL || ''
 
 export default function PublicProfilePage() {
   const { username }   = useParams()

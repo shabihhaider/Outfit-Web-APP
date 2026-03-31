@@ -6,7 +6,7 @@ import { FiX, FiArrowRight, FiRefreshCw, FiAlertCircle } from 'react-icons/fi'
 import { remixPost } from '../../api/social.js'
 import PublishModal from './PublishModal.jsx'
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const BASE = import.meta.env.VITE_API_URL || ''
 
 export default function RemixResultModal({ open, onClose, post }) {
   const navigate = useNavigate()

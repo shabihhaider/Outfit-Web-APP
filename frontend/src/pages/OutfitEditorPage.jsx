@@ -14,7 +14,7 @@ import ConfidenceBadge from '../components/ui/ConfidenceBadge.jsx'
 import CustomSelect from '../components/ui/CustomSelect.jsx'
 import { scoreToPercent } from '../utils/formatters.js'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 const CAT_EMOJI = { top: '👕', bottom: '👖', outwear: '🧥', shoes: '👟', dress: '👗', jumpsuit: '🧘' }
 const CATEGORIES = ['all', 'top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit']

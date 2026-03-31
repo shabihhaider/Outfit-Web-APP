@@ -9,7 +9,7 @@ export default function OutfitItems({ items }) {
     <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
       {items.map((item, i) => {
         const imageUrl = item.image_url
-          ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${item.image_url}`
+          ? `${import.meta.env.VITE_API_URL || ''}${item.image_url}`
           : null
 
         return (

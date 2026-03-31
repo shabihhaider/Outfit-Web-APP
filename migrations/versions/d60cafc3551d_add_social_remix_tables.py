@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.SmallInteger(), nullable=False),
     sa.Column('slug', sa.String(length=50), nullable=False),
     sa.Column('label', sa.String(length=80), nullable=False),
-    sa.Column('region', sa.Enum('global', 'south-asian'), nullable=False),
+    sa.Column('region', sa.Enum('global', 'south-asian', name='vibe_region_enum'), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('slug')
     )
@@ -45,7 +45,7 @@ def upgrade():
     sa.Column('saved_outfit_id', sa.Integer(), nullable=False),
     sa.Column('caption', sa.String(length=300), nullable=True),
     sa.Column('preview_image_filename', sa.String(length=256), nullable=True),
-    sa.Column('visibility', sa.Enum('public', 'followers', 'private'), nullable=False),
+    sa.Column('visibility', sa.Enum('public', 'followers', 'private', name='shared_outfit_visibility_enum'), nullable=False),
     sa.Column('like_count', sa.Integer(), nullable=False),
     sa.Column('remix_count', sa.Integer(), nullable=False),
     sa.Column('view_count', sa.Integer(), nullable=False),

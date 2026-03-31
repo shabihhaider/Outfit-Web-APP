@@ -12,6 +12,9 @@ export default defineConfig({
       '/outfits': 'http://localhost:5000',
       '/uploads': 'http://localhost:5000',
       '/health': 'http://localhost:5000',
+      '/calendar': 'http://localhost:5000',
+      '/vto': 'http://localhost:5000',
+      '/social': 'http://localhost:5000',
     }
   }
 })

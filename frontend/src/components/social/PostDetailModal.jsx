@@ -7,7 +7,7 @@ import { getPost, toggleLike, toggleBookmark, followUser, unfollowUser } from '.
 import { useAuth } from '../../context/AuthContext.jsx'
 import VibeTagPill from './VibeTagPill.jsx'
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const BASE = import.meta.env.VITE_API_URL || ''
 
 export default function PostDetailModal({ post, open, onClose, onRemixClick, onVibeClick }) {
   const { user } = useAuth()

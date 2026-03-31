@@ -18,4 +18,4 @@ export const getWardrobeStats = () =>
   api.get('/wardrobe/stats').then(r => r.data)
 
 export const getImageUrl = (filename) =>
-  `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/uploads/${filename}`
+  `${import.meta.env.VITE_API_URL || ''}/uploads/${filename}`

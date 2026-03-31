@@ -8,7 +8,7 @@ import { saveOutfit } from '../../api/outfits.js'
 import { scoreToPercent } from '../../utils/formatters.js'
 import ConfidenceBadge from '../ui/ConfidenceBadge.jsx'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 export default function OOTDWidget() {
   const [saved, setSaved] = useState(false)

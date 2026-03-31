@@ -8,7 +8,7 @@ import VibeTagPill from './VibeTagPill.jsx'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const BASE = import.meta.env.VITE_API_URL || ''
 
 export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick }) {
   const { user } = useAuth()

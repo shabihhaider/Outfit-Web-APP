@@ -5,7 +5,7 @@ import { FiX, FiUploadCloud, FiUser, FiRefreshCw, FiCheck, FiAlertTriangle } fro
 import { getPersonPhoto, uploadPersonPhoto, submitTryOn, getJobStatus } from '../../api/vto.js'
 import LoadingSpinner from '../ui/LoadingSpinner.jsx'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_BASE = import.meta.env.VITE_API_URL || ''
 const POLL_INTERVAL_MS = 3000
 
 export default function TryOnModal({ open, onClose, item }) {

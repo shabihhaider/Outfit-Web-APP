@@ -251,7 +251,7 @@ class VibeTag(db.Model):
     id     = db.Column(db.SmallInteger, primary_key=True)
     slug   = db.Column(db.String(50), unique=True, nullable=False)
     label  = db.Column(db.String(80), nullable=False)
-    region = db.Column(db.Enum("global", "south-asian"), nullable=False, default="global")
+    region = db.Column(db.Enum("global", "south-asian", name="vibe_region_enum"), nullable=False, default="global")
 
     def to_dict(self) -> dict:
         return {"id": self.id, "slug": self.slug, "label": self.label, "region": self.region}
@@ -266,7 +266,7 @@ class SharedOutfit(db.Model):
     saved_outfit_id        = db.Column(db.Integer, db.ForeignKey("saved_outfits.id", ondelete="CASCADE"), nullable=False)
     caption                = db.Column(db.String(300), nullable=True)
     preview_image_filename = db.Column(db.String(256), nullable=True)
-    visibility             = db.Column(db.Enum("public", "followers", "private"), nullable=False, default="public")
+    visibility             = db.Column(db.Enum("public", "followers", "private", name="shared_outfit_visibility_enum"), nullable=False, default="public")
     like_count             = db.Column(db.Integer, nullable=False, default=0)
     remix_count            = db.Column(db.Integer, nullable=False, default=0)
     view_count             = db.Column(db.Integer, nullable=False, default=0)

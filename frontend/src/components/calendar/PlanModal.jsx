@@ -8,7 +8,7 @@ import { getItems } from '../../api/wardrobe.js'
 import { createPlan, updatePlan, deletePlan } from '../../api/calendar.js'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 const OCCASIONS = [
   { val: 'casual', label: 'Casual', Icon: FiSun },
