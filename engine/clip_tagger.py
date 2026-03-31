@@ -168,6 +168,77 @@ class CLIPSubCategoryTagger:
         except Exception as exc:
             raise RuntimeError(f"Failed to load CLIP model: {exc}") from exc
 
+    def is_clothing_image(self, image_path: str) -> tuple[bool, str]:
+        """
+        Zero-shot OOD detection to determine if the image actually contains clothing.
+        
+        Evaluates the image against positive (clothing) and negative (non-clothing)
+        prompts. Rejects the image if a negative prompt wins or if the overall
+        clothing confidence is too low.
+
+        Args:
+            image_path: Path to the image file.
+
+        Returns:
+            (is_clothing, rejection_reason) where is_clothing is True if the image is valid.
+        """
+        self._load()
+
+        from PIL import Image
+        import torch
+
+        positive_prompts = [
+            "a photo of a clothing item",
+            "a fashion garment",
+            "a picture of clothes"
+        ]
+        negative_prompts = [
+            "a photo of a person's face",
+            "a photo of an animal",
+            "a photograph of furniture",
+            "a screenshot or text",
+            "scenery or a landscape",
+            "a random object that is not clothing",
+            "a vehicle or car"
+        ]
+
+        all_prompts = positive_prompts + negative_prompts
+        num_positive = len(positive_prompts)
+
+        try:
+            image = Image.open(image_path).convert("RGB")
+            inputs = self._processor(
+                text=all_prompts,
+                images=image,
+                return_tensors="pt",
+                padding=True,
+            )
+
+            with torch.no_grad():
+                outputs = self._model(**inputs)
+                logits_img = outputs.logits_per_image
+                probs = logits_img.softmax(dim=1)[0].numpy()
+
+            best_idx = int(probs.argmax())
+
+            # If a negative prompt won
+            if best_idx >= num_positive:
+                matched_prompt = all_prompts[best_idx]
+                reason = matched_prompt.replace("a photo of ", "").replace("a photograph of ", "").capitalize()
+                logger.info("CLIP rejected %s. Matched negative prompt: '%s' (%.3f)", image_path, matched_prompt, probs[best_idx])
+                return False, f"Image appears to be {reason.lower()}. Please upload a clear photo of a single clothing item."
+
+            # Ensure total positive confidence is reasonably high
+            pos_score = sum(probs[:num_positive])
+            if pos_score < 0.60:
+                logger.info("CLIP rejected %s. Low clothing confidence (%.3f)", image_path, pos_score)
+                return False, "Image does not clearly look like a clothing item. Please verify it is a clear photo."
+
+            return True, ""
+        except Exception as exc:
+            logger.error("CLIP clothing detection failed for %s: %s", image_path, exc)
+            return True, ""  # Fail open if inference errors out
+
     def classify(
         self,
         image_path: str,

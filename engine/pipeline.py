@@ -149,10 +149,10 @@ class RecommendationPipeline:
         category = _IDX_TO_CATEGORY.get(category_idx, "top")
 
         confidence = float(np.max(probs))
-        if confidence < 0.45:
+        if confidence < 0.75:
             raise ValueError(
-                f"Image does not appear to be a clothing item "
-                f"(confidence {confidence:.2f} < 0.45). "
+                f"Image does not appear to be a clear clothing item "
+                f"(confidence {confidence:.2f} < 0.75). "
                 f"Please upload a clear photo of a single clothing item."
             )
 

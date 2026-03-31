@@ -142,6 +142,19 @@ def upload_item():
         bg_removed = False
         logger.warning("Atelier: processing failed for %s — using original.", filename)
 
+    # ── 5c. CLIP Zero-Shot OOD Detection ──────────────────────────────────────
+    try:
+        from engine.clip_tagger import get_tagger
+        tagger = get_tagger()
+        is_clothing, rejection_reason = tagger.is_clothing_image(save_path)
+        if not is_clothing:
+            os.remove(save_path)
+            return jsonify({"error": rejection_reason}), 422
+    except RuntimeError as exc:
+        logger.warning("CLIP tagger unavailable for OOD check: %s", exc)
+    except Exception as exc:
+        logger.warning("CLIP OOD check failed for %s: %s", filename, exc)
+
     # ── 6. classify_and_embed ─────────────────────────────────────────────────
     try:
         category, embedding_array, model_confidence = current_app.pipeline.classify_and_embed(save_path)
