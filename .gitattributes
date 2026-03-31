@@ -1,0 +1,4 @@
+models/*.h5 filter=lfs diff=lfs merge=lfs -text
+models/*.keras filter=lfs diff=lfs merge=lfs -text
+models/model[[:space:]]2[[:space:]]Assets/*.h5 filter=lfs diff=lfs merge=lfs -text
+models/model[[:space:]]2[[:space:]]Assets/*.keras filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-brand-50 text-brand-900 dark:bg-brand-950 dark:text-brand-100;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  .dark body {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  ::selection {
+    @apply bg-accent-200 text-brand-900;
+  }
+
+  .dark ::selection {
+    @apply bg-accent-700 text-white;
+  }
+}
+
+@layer components {
+  /* ─── Buttons ─── */
+  .btn-primary {
+    @apply bg-brand-900 hover:bg-brand-800 active:bg-brand-950 text-white font-medium
+           rounded-lg px-5 py-2.5 transition-all duration-200 ease-spring
+           disabled:opacity-40 disabled:cursor-not-allowed
+           focus:outline-none focus:ring-2 focus:ring-brand-900/50 focus:ring-offset-2
+           focus:ring-offset-brand-50
+           hover:shadow-md active:scale-[0.98]
+           dark:bg-brand-100 dark:text-brand-900 dark:hover:bg-brand-200 dark:active:bg-brand-300
+           dark:focus:ring-brand-300/50 dark:focus:ring-offset-brand-950;
+  }
+
+  .btn-secondary {
+    @apply border border-brand-200 hover:bg-brand-100 active:bg-brand-200
+           text-brand-700 font-medium rounded-lg px-5 py-2.5
+           transition-all duration-200 ease-spring
+           disabled:opacity-40 disabled:cursor-not-allowed
+           hover:border-brand-300 active:scale-[0.98]
+           dark:border-brand-700 dark:text-brand-300 dark:hover:bg-brand-800/80
+           dark:active:bg-brand-700 dark:hover:border-brand-600;
+  }
+
+  .btn-accent {
+    @apply bg-accent-600 hover:bg-accent-700 active:bg-accent-800 text-white font-medium
+           rounded-lg px-5 py-2.5 transition-all duration-200 ease-spring
+           disabled:opacity-40 disabled:cursor-not-allowed
+           hover:shadow-md hover:shadow-accent-500/20 active:scale-[0.98];
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-medium
+           rounded-lg px-5 py-2.5 transition-all duration-200 ease-spring
+           active:scale-[0.98];
+  }
+
+  /* ─── Cards ─── */
+  .card {
+    @apply bg-white/80 backdrop-blur-sm rounded-xl shadow-card border border-brand-100/80
+           dark:bg-brand-900/70 dark:border-brand-800/60 dark:shadow-none
+           dark:backdrop-blur-sm;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-card-hover hover:border-brand-200 transition-all duration-300 ease-spring cursor-pointer
+           hover:-translate-y-0.5
+           dark:hover:border-brand-700 dark:hover:shadow-lg dark:hover:shadow-brand-950/20;
+  }
+
+  /* ─── Glass Card (premium variant) ─── */
+  .card-glass {
+    @apply bg-white/60 backdrop-blur-md rounded-2xl border border-white/40
+           shadow-card
+           dark:bg-brand-800/40 dark:border-brand-700/30;
+  }
+
+  /* ─── Form inputs ─── */
+  .input-field {
+    @apply w-full border border-brand-200 rounded-lg px-4 py-3
+           text-brand-900 placeholder-brand-400 bg-white/80
+           focus:outline-none focus:ring-2 focus:ring-brand-900/20 focus:border-brand-400
+           transition-all duration-200 ease-spring font-sans
+           dark:bg-brand-800/60 dark:border-brand-700 dark:text-brand-100
+           dark:placeholder-brand-500 dark:focus:ring-brand-400/20 dark:focus:border-brand-500;
+  }
+
+  /* ─── Badges ─── */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full
+           text-[11px] font-semibold tracking-wide font-sans;
+  }
+
+  .badge-top      { @apply badge bg-sky-50 text-sky-700 ring-1 ring-sky-200/60
+                     dark:bg-sky-900/25 dark:text-sky-300 dark:ring-sky-700/40; }
+  .badge-bottom   { @apply badge bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60
+                     dark:bg-emerald-900/25 dark:text-emerald-300 dark:ring-emerald-700/40; }
+  .badge-outwear  { @apply badge bg-violet-50 text-violet-700 ring-1 ring-violet-200/60
+                     dark:bg-violet-900/25 dark:text-violet-300 dark:ring-violet-700/40; }
+  .badge-shoes    { @apply badge bg-amber-50 text-amber-700 ring-1 ring-amber-200/60
+                     dark:bg-amber-900/25 dark:text-amber-300 dark:ring-amber-700/40; }
+  .badge-dress    { @apply badge bg-rose-50 text-rose-700 ring-1 ring-rose-200/60
+                     dark:bg-rose-900/25 dark:text-rose-300 dark:ring-rose-700/40; }
+  .badge-jumpsuit { @apply badge bg-teal-50 text-teal-700 ring-1 ring-teal-200/60
+                     dark:bg-teal-900/25 dark:text-teal-300 dark:ring-teal-700/40; }
+
+  .badge-casual   { @apply badge bg-accent-50 text-accent-700 ring-1 ring-accent-200/60
+                     dark:bg-accent-900/25 dark:text-accent-300 dark:ring-accent-700/40; }
+  .badge-formal   { @apply badge bg-brand-100 text-brand-700 ring-1 ring-brand-200/60
+                     dark:bg-brand-800 dark:text-brand-300 dark:ring-brand-700/40; }
+  .badge-both     { @apply badge bg-brand-50 text-brand-500 ring-1 ring-brand-200/60
+                     dark:bg-brand-800 dark:text-brand-400 dark:ring-brand-700/40; }
+
+  /* ─── Confidence ─── */
+  .confidence-high   { @apply badge bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60
+                       dark:bg-emerald-900/25 dark:text-emerald-300 dark:ring-emerald-700/40; }
+  .confidence-medium { @apply badge bg-amber-50 text-amber-700 ring-1 ring-amber-200/60
+                       dark:bg-amber-900/25 dark:text-amber-300 dark:ring-amber-700/40; }
+  .confidence-low    { @apply badge bg-red-50 text-red-600 ring-1 ring-red-200/60
+                       dark:bg-red-900/25 dark:text-red-300 dark:ring-red-700/40; }
+
+  /* ─── Skeleton ─── */
+  .skeleton {
+    @apply bg-brand-100/80 animate-shimmer rounded-lg dark:bg-brand-800/60;
+  }
+
+  /* ─── Data values ─── */
+  .data-value {
+    @apply font-mono text-brand-900 font-semibold tabular-nums dark:text-brand-100;
+  }
+
+  /* ─── Section label ─── */
+  .label-xs {
+    @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-400 font-sans dark:text-brand-500;
+  }
+
+  /* ─── Divider ─── */
+  .divider {
+    @apply border-t border-brand-100/80 dark:border-brand-800/60;
+  }
+}
+
+@layer utilities {
+  .ease-spring {
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #d5cfc5; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #a9a193; }
+.dark ::-webkit-scrollbar-thumb { background: #46413a; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #5c554a; }
+
+/* ─── Range input styling ─── */
+input[type="range"] {
+  @apply appearance-none bg-transparent cursor-pointer;
+}
+input[type="range"]::-webkit-slider-track {
+  @apply h-1.5 rounded-full bg-brand-200 dark:bg-brand-700;
+}
+input[type="range"]::-webkit-slider-thumb {
+  @apply appearance-none w-4 h-4 rounded-full bg-brand-900 dark:bg-brand-200
+         border-2 border-white dark:border-brand-800
+         shadow-md -mt-[5px] transition-transform hover:scale-110;
+}
+
+/* ─── Focus ring utility ─── */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-accent-400/40 focus:ring-offset-2
+         focus:ring-offset-brand-50 dark:focus:ring-offset-brand-950;
+}
