@@ -9,6 +9,27 @@ import os
 from datetime import timedelta
 
 
+def _mysql_uri() -> str:
+    """Build MySQL URI from individual .env variables."""
+    user     = os.environ.get("MYSQL_USER", "root")
+    password = os.environ.get("MYSQL_PASSWORD", "")
+    host     = os.environ.get("MYSQL_HOST", "localhost")
+    port     = os.environ.get("MYSQL_PORT", "3306")
+    database = os.environ.get("MYSQL_DATABASE", "outfit_fyp")
+    return f"mysql+pymysql://{user}:{password}@{host}:{port}/{database}?charset=utf8mb4"
+
+
+def _get_db_uri() -> str:
+    """Read DATABASE_URL or build MySQL URI."""
+    uri = os.environ.get("DATABASE_URL")
+    if uri:
+        # SQLAlchemy 1.4+ requires 'postgresql://' instead of 'postgres://'
+        if uri.startswith("postgres://"):
+            uri = uri.replace("postgres://", "postgresql://", 1)
+        return uri
+    return _mysql_uri()
+
+
 class Config:
     SECRET_KEY               = os.environ.get("SECRET_KEY", "dev-secret-key-minimum-32-bytes!!")
     JWT_SECRET_KEY           = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret-key-min-32-bytes!!")
@@ -26,19 +47,9 @@ class Config:
     RATELIMIT_STORAGE_URI    = "memory://"
 
 
-def _mysql_uri() -> str:
-    """Build MySQL URI from individual .env variables."""
-    user     = os.environ.get("MYSQL_USER", "root")
-    password = os.environ.get("MYSQL_PASSWORD", "")
-    host     = os.environ.get("MYSQL_HOST", "localhost")
-    port     = os.environ.get("MYSQL_PORT", "3306")
-    database = os.environ.get("MYSQL_DATABASE", "outfit_fyp")
-    return f"mysql+pymysql://{user}:{password}@{host}:{port}/{database}?charset=utf8mb4"
-
-
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = _mysql_uri()
+    SQLALCHEMY_DATABASE_URI = _get_db_uri()
 
 
 class TestingConfig(Config):
@@ -52,8 +63,7 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    # Production: either full DATABASE_URL override or individual MYSQL_* vars
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") or _mysql_uri()
+    SQLALCHEMY_DATABASE_URI = _get_db_uri()
 
 
 config = {
