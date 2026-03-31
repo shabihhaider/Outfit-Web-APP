@@ -61,9 +61,5 @@ You need the following keys in your `.env` file:
 *   `MYSQL_DATABASE_URI`: Your database connection string.
 *   `SECRET_KEY`: Flask secret key.
 
-## 👥 Contributors
-*   **Team**: Talha Mushtaq, Fizza Ahmad, M. Shabih Haider, Shahzaib Sajid
-*   **Supervisor**: Ms. Darakhshan Bokhat
-
 ## ⚖️ License
 This project is for educational purposes (University FYP). Please refer to the contributors before commercial use.
