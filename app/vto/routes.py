@@ -290,45 +290,63 @@ def _run_tryon_job(
         job.status = "processing"
         db.session.commit()
 
-        try:
-            from gradio_client import Client, handle_file  # type: ignore[import]
+        # Retry logic for rate-limited API
+        max_retries = 3
+        attempt = 0
+        success = False
 
-            logger.info("VTO job %d: connecting to IDM-VTON Space...", job_id)
-            client = Client("yisol/IDM-VTON", token=hf_token or None)
+        import time
 
-            result = client.predict(
-                dict={
-                    "background": handle_file(person_path),
-                    "layers":     [],
-                    "composite":  None,
-                },
-                garm_img      = handle_file(garment_path),
-                garment_des   = "clothing item",
-                is_checked     = True,
-                is_checked_crop= False,
-                denoise_steps  = 30,
-                seed           = 42,
-                api_name       = "/tryon",
-            )
+        while attempt < max_retries and not success:
+            attempt += 1
+            try:
+                from gradio_client import Client, handle_file  # type: ignore[import]
 
-            # result is a tuple: (masked_person_image_path, tryon_result_path)
-            # Index 1 is the final try-on composite image.
-            result_source = result[1] if isinstance(result, (list, tuple)) else result
+                logger.info("VTO job %d: connecting to IDM-VTON Space (attempt %d/%d)...", job_id, attempt, max_retries)
+                client = Client("yisol/IDM-VTON", token=hf_token or None)
 
-            result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
-            result_path     = os.path.join(upload_dir, result_filename)
-            shutil.copy(str(result_source), result_path)
+                result = client.predict(
+                    dict={
+                        "background": handle_file(person_path),
+                        "layers":     [],
+                        "composite":  None,
+                    },
+                    garm_img      = handle_file(garment_path),
+                    garment_des   = "clothing item",
+                    is_checked     = True,
+                    is_checked_crop= False,
+                    denoise_steps  = 30,
+                    seed           = 42,
+                    api_name       = "/tryon",
+                )
 
-            job.status          = "ready"
-            job.result_filename = result_filename
-            job.completed_at    = datetime.now(timezone.utc)
-            db.session.commit()
+                # result is a tuple: (masked_person_image_path, tryon_result_path)
+                # Index 1 is the final try-on composite image.
+                result_source = result[1] if isinstance(result, (list, tuple)) else result
 
-            logger.info("VTO job %d: completed → %s", job_id, result_filename)
+                result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
+                result_path     = os.path.join(upload_dir, result_filename)
+                shutil.copy(str(result_source), result_path)
 
-        except Exception as exc:
-            job.status       = "failed"
-            job.error_msg    = f"{type(exc).__name__}: {str(exc)}"[:500]
-            job.completed_at = datetime.now(timezone.utc)
-            db.session.commit()
-            logger.error("VTO job %d failed: %s", job_id, exc)
+                job.status          = "ready"
+                job.result_filename = result_filename
+                job.completed_at    = datetime.now(timezone.utc)
+                db.session.commit()
+                success = True
+
+                logger.info("VTO job %d: completed → %s", job_id, result_filename)
+
+            except Exception as exc:
+                error_str = str(exc)
+                if "Too many requests" in error_str and attempt < max_retries:
+                    wait_time = 5 * attempt
+                    logger.warning("VTO job %d: Rate limited on attempt %d. Retrying in %ds...", job_id, attempt, wait_time)
+                    time.sleep(wait_time)
+                    continue
+                
+                job.status       = "failed"
+                job.error_msg    = f"{type(exc).__name__}: {error_str}"[:500]
+                job.completed_at = datetime.now(timezone.utc)
+                db.session.commit()
+                logger.error("VTO job %d failed: %s", job_id, exc)
+                break
