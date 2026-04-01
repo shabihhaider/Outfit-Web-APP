@@ -272,39 +272,99 @@ def _run_tryon_job(
     upload_dir:   str,
 ) -> None:
     """
-    Background thread: calls IDM-VTON on HF Spaces and saves the result.
-
-    Uses gradio_client to call the public yisol/IDM-VTON Space.
-    The HF token ties the request to the user's free quota (3.5 min/day GPU)
-    rather than the lower unauthenticated limit.
-
-    Result image is copied to uploads/ and the job row is updated to 'ready'.
-    On any failure the job is marked 'failed' with a descriptive error message.
+    Background worker: Hybrid VTO Engine.
+    1. Try Replicate (High speed, stable, uses student credits).
+    2. Fallback to HF Spaces (Shared, free, slower).
     """
     with app.app_context():
+        # Get Job & Item
         job = db.session.get(TryOnJob, job_id)
         if not job:
             return
+        
+        item = db.session.get(WardrobeItemDB, job.item_id)
+        if not item:
+            job.status = "failed"
+            job.error_msg = "Item not found."
+            db.session.commit()
+            return
 
-        # Mark processing so the frontend can show a progress indicator
         job.status = "processing"
         db.session.commit()
 
-        # Retry logic for rate-limited API
+        # ── Step 1: Attempt Replicate (The "Express" Lane) ───────────────────
+        # Using cuuupid/idm-vton:0513734a452173b8173e907e3a59d19a36266e55b48528559432bd21c7d7e985
+        replicate_token = current_app.config.get("REPLICATE_API_TOKEN")
+        if replicate_token:
+            try:
+                import replicate
+                logger.info("VTO job %d: attempting Replicate (cuuupid/idm-vton)...", job_id)
+                
+                # REPLICATE_API_TOKEN is usually picked up automatically from ENV
+                # But we can also set it explicitly just in case HF config didn't export it
+                import os
+                os.environ["REPLICATE_API_TOKEN"] = replicate_token
+
+                # Map categories: upper_body, lower_body, dresses
+                rep_cat = "upper_body"
+                cat_map = {
+                    "top":      "upper_body",
+                    "outwear":  "upper_body",
+                    "bottom":   "lower_body",
+                    "dress":    "dresses",
+                    "jumpsuit": "dresses",
+                    "shoes":    "upper_body" # Fallback
+                }
+                rep_cat = cat_map.get(item.category, "upper_body")
+
+                with open(person_path, "rb") as p_file, open(garment_path, "rb") as g_file:
+                    output = replicate.run(
+                        "cuuupid/idm-vton:0513734a452173b8173e907e3a59d19a36266e55b48528559432bd21c7d7e985",
+                        input={
+                            "human_img":   p_file,
+                            "garm_img":    g_file,
+                            "garment_des": f"{item.category} clothing",
+                            "category":    rep_cat
+                        }
+                    )
+
+                # Result is a URL
+                if output:
+                    import requests
+                    image_url = str(output)
+                    resp = requests.get(image_url, timeout=30)
+                    resp.raise_for_status()
+                    
+                    result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
+                    result_path     = os.path.join(upload_dir, result_filename)
+                    with open(result_path, "wb") as f:
+                        f.write(resp.content)
+
+                    job.status          = "ready"
+                    job.result_filename = result_filename
+                    job.completed_at    = datetime.now(timezone.utc)
+                    db.session.commit()
+                    logger.info("VTO job %d: completed via Replicate!", job_id)
+                    return # SUCCESS - Exit Early
+
+            except Exception as rep_exc:
+                logger.warning("VTO job %d: Replicate failed (%s). Falling back to HF...", job_id, rep_exc)
+                # Fail through to Step 2
+        else:
+            logger.info("VTO job %d: REPLICATE_API_TOKEN missing. Using free HF fallback.", job_id)
+
+        # ── Step 2: Fallback to Hugging Face (The "Economy" Lane) ──────────────
         max_retries = 3
         attempt = 0
-        success = False
-
         import time
 
-        while attempt < max_retries and not success:
+        while attempt < max_retries:
             attempt += 1
             try:
-                from gradio_client import Client, handle_file  # type: ignore[import]
-
-                logger.info("VTO job %d: connecting to IDM-VTON Space (attempt %d/%d)...", job_id, attempt, max_retries)
+                from gradio_client import Client, handle_file
+                logger.info("VTO job %d: trying HF Space (attempt %d/%d)...", job_id, attempt, max_retries)
+                
                 client = Client("yisol/IDM-VTON", token=hf_token or None)
-
                 result = client.predict(
                     dict={
                         "background": handle_file(person_path),
@@ -315,43 +375,36 @@ def _run_tryon_job(
                     garment_des   = "clothing item",
                     is_checked     = True,
                     is_checked_crop= False,
-                    denoise_steps  = 30,
+                    denoise_steps  = 25,
                     seed           = 42,
                     api_name       = "/tryon",
                 )
 
-                # result is a tuple: (tryon_result_path, masked_person_image_path)
-                # For yisol/IDM-VTON, index 0 is the final composite result.
-                if isinstance(result, (list, tuple)) and len(result) > 0:
-                    result_source = result[0]
-                else:
-                    result_source = result
-
+                # Fetch result image
+                result_source = result[0] if isinstance(result, (list, tuple)) else result
                 result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
                 result_path     = os.path.join(upload_dir, result_filename)
-                
-                # Ensure result_source is a string/path
                 shutil.copy(str(result_source), result_path)
 
                 job.status          = "ready"
                 job.result_filename = result_filename
                 job.completed_at    = datetime.now(timezone.utc)
                 db.session.commit()
-                success = True
+                logger.info("VTO job %d: completed via HF Fallback!", job_id)
+                return
 
-                logger.info("VTO job %d: completed → %s", job_id, result_filename)
-
-            except Exception as exc:
-                error_str = str(exc)
+            except Exception as hf_exc:
+                error_str = str(hf_exc)
                 if "Too many requests" in error_str and attempt < max_retries:
-                    wait_time = 5 * attempt
-                    logger.warning("VTO job %d: Rate limited on attempt %d. Retrying in %ds...", job_id, attempt, wait_time)
+                    wait_time = 8 * attempt
+                    logger.warning("VTO job %d: HF throttled. Waiting %ds...", job_id, wait_time)
                     time.sleep(wait_time)
                     continue
                 
+                # Terminal Failure
                 job.status       = "failed"
-                job.error_msg    = f"{type(exc).__name__}: {error_str}"[:500]
+                job.error_msg    = f"HF Error: {error_str}"[:500]
                 job.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
-                logger.error("VTO job %d failed: %s", job_id, exc)
+                logger.error("VTO job %d failed: %s", job_id, hf_exc)
                 break

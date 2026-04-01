@@ -45,3 +45,4 @@ accelerate>=0.27.0
 safetensors>=0.4.0
 onnxruntime>=1.17.0
 gradio_client>=1.0.1
+replicate>=0.25.0
