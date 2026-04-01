@@ -320,12 +320,17 @@ def _run_tryon_job(
                     api_name       = "/tryon",
                 )
 
-                # result is a tuple: (masked_person_image_path, tryon_result_path)
-                # Index 1 is the final try-on composite image.
-                result_source = result[1] if isinstance(result, (list, tuple)) else result
+                # result is a tuple: (tryon_result_path, masked_person_image_path)
+                # For yisol/IDM-VTON, index 0 is the final composite result.
+                if isinstance(result, (list, tuple)) and len(result) > 0:
+                    result_source = result[0]
+                else:
+                    result_source = result
 
                 result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
                 result_path     = os.path.join(upload_dir, result_filename)
+                
+                # Ensure result_source is a string/path
                 shutil.copy(str(result_source), result_path)
 
                 job.status          = "ready"
