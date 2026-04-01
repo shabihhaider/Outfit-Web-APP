@@ -1,3 +1,12 @@
+---
+title: OutfitAI
+emoji: 👕
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # OutfitAI — Smart Outfit Recommendation System
 
 OutfitAI is an intelligent fashion assistant that recommends the perfect outfit from your personal wardrobe based on **local weather**, **occasion**, and **color harmony**. 
