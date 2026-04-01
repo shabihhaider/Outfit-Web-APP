@@ -1,7 +1,33 @@
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FiZap } from 'react-icons/fi'
+import { FiZap, FiTarget, FiSun, FiMoon, FiCoffee, FiActivity, FiGlobe, FiHexagon } from 'react-icons/fi'
 import { getMyStyleDNA } from '../../api/social.js'
+
+const PERSONA_ICONS = {
+  'The Old Money':       FiGlobe,
+  'The Power Dresser':   FiTarget,
+  'Statement Maker':    FiZap,
+  'Mughal Luxe':        FiHexagon,
+  'The Elegant':        FiMoon,
+  'The Classicist':     FiCoffee,
+  'The Minimalist':     FiSun,
+  'The Dark Academic':  FiMoon,
+  'Street Explorer':    FiActivity,
+  'The Boho Soul':      FiSun,
+  'The Smart Casual':   FiCoffee,
+  'The Cottagecore':    FiSun,
+  'The Gorpcore':      FiActivity,
+  'Urban Navigator':    FiTarget,
+  'The Sneakerhead':    FiZap,
+  'The Purist':         FiSun,
+  'The Collector':      FiHexagon,
+  'Versatile Classic':  FiGlobe,
+  'Y2K Revivalist':     FiZap,
+  'The Desi Chic':      FiSun,
+  'Modern Mughal':      FiHexagon,
+  'East-West Fusion':   FiGlobe,
+  'The Lawn Chic':      FiSun,
+}
 
 const TONE_LABELS = {
   neutral: '⚪ Neutral',
@@ -52,18 +78,59 @@ export default function StyleDNACard() {
       animate={{ opacity: 1, y: 0 }}
       className="card p-5 overflow-hidden relative"
     >
-      {/* Background accent */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-accent-100/40 dark:from-accent-900/20 to-transparent rounded-bl-full -z-0" />
+      {/* Background patterns */}
+      <div className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-30">
+        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <motion.path
+            d="M-10,50 Q25,20 50,50 T110,50"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            className="text-accent-500"
+            animate={{
+              d: [
+                "M-10,50 Q25,20 50,50 T110,50",
+                "M-10,50 Q25,80 50,50 T110,50",
+                "M-10,50 Q25,20 50,50 T110,50"
+              ]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.path
+            d="M-10,50 Q25,80 50,50 T110,50"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.3"
+            className="text-brand-300 dark:text-brand-600"
+            animate={{
+              d: [
+                "M-10,50 Q25,80 50,50 T110,50",
+                "M-10,50 Q25,20 50,50 T110,50",
+                "M-10,50 Q25,80 50,50 T110,50"
+              ]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </svg>
+      </div>
 
-      <div className="relative">
+      <div className="relative z-10">
         <div className="flex items-center gap-2 mb-3">
-          <FiZap size={13} className="text-accent-500" />
-          <p className="label-xs">Style DNA</p>
+          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-accent-100 dark:bg-accent-900/30">
+            <FiZap size={11} className="text-accent-600 dark:text-accent-400" />
+          </div>
+          <p className="label-xs text-brand-400 dark:text-brand-500">Style DNA</p>
         </div>
 
-        <h3 className="font-display text-2xl font-bold text-brand-900 dark:text-brand-100 mb-1">
-          {persona_name}
-        </h3>
+        <div className="flex items-center gap-3 mb-1">
+          {(() => {
+            const Icon = PERSONA_ICONS[persona_name] || FiZap
+            return <Icon size={24} className="text-brand-900 dark:text-brand-100" />
+          })()}
+          <h3 className="font-display text-2xl font-bold text-brand-900 dark:text-brand-100">
+            {persona_name}
+          </h3>
+        </div>
         <p className="text-sm text-brand-500 dark:text-brand-400 italic mb-4">
           "{tagline}"
         </p>

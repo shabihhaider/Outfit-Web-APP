@@ -15,25 +15,38 @@ from dataclasses import dataclass
 # ── Persona lookup table ───────────────────────────────────────────────────────
 # Key: (dominant_formality, dominant_tone, dominant_category) → (persona_name, vibe_slug, tagline)
 _PERSONAS: dict[tuple, tuple[str, str, str]] = {
-    ("formal",  "neutral", "top")    : ("Old Money",          "quiet-luxury",       "Your wardrobe speaks quietly but says everything."),
-    ("formal",  "dark",    "top")    : ("Power Dresser",       "business-casual",    "Precision tailoring, zero compromise."),
-    ("formal",  "bright",  "top")    : ("Statement Formal",    "party-glam",         "You make every entrance count."),
-    ("formal",  "rich",    "top")    : ("Mughal Luxe",         "mughal-luxe",        "Heritage richness in every thread."),
-    ("formal",  "neutral", "dress")  : ("Elegant",             "quiet-luxury",       "Effortless polish is your signature."),
-    ("casual",  "neutral", "top")    : ("Minimalist",          "minimalist",         "Less noise, more signal."),
-    ("casual",  "dark",    "top")    : ("Dark Academia",       "dark-academia",      "Knowledge is the ultimate accessory."),
-    ("casual",  "bright",  "top")    : ("Streetwear Explorer", "streetwear",         "The street is your runway."),
-    ("casual",  "earthy",  "top")    : ("Boho",                "boho",               "Free-spirited and beautifully unstructured."),
-    ("casual",  "neutral", "bottom") : ("Smart Casual",        "smart-casual",       "Relaxed but never underdressed."),
-    ("casual",  "bright",  "dress")  : ("Cottagecore",         "cottagecore",        "Soft, romantic, and completely your own."),
-    ("casual",  "earthy",  "bottom") : ("Gorpcore",            "gorpcore",           "Outdoors-ready wherever you go."),
-    ("both",    "neutral", "top")    : ("Versatile Classic",   "smart-casual",       "You dress for every room."),
-    ("both",    "bright",  "top")    : ("Y2K Revival",         "y2k",                "Nostalgic energy with modern edge."),
+    # Formal / Semi-Formal
+    ("formal",  "neutral", "top")    : ("The Old Money",       "quiet-luxury",       "Your wardrobe speaks quietly but says everything."),
+    ("formal",  "dark",    "top")    : ("The Power Dresser",   "business-casual",    "Precision tailoring, zero compromise."),
+    ("formal",  "bright",  "top")    : ("Statement Maker",    "party-glam",         "You make every entrance count."),
+    ("formal",  "rich",    "top")    : ("Mughal Luxe",        "mughal-luxe",        "Heritage richness in every thread."),
+    ("formal",  "neutral", "dress")  : ("The Elegant",        "quiet-luxury",       "Effortless polish is your signature."),
+    ("formal",  "earthy",  "top")    : ("The Classicist",     "old-money",          "Timeless textures and grounded tones."),
+    
+    # Casual 
+    ("casual",  "neutral", "top")    : ("The Minimalist",     "minimalist",         "Less noise, more signal."),
+    ("casual",  "dark",    "top")    : ("The Dark Academic",  "dark-academia",      "Knowledge is the ultimate accessory."),
+    ("casual",  "bright",  "top")    : ("Street Explorer",    "streetwear",         "The city is your runway."),
+    ("casual",  "earthy",  "top")    : ("The Boho Soul",      "boho",               "Free-spirited and beautifully unstructured."),
+    ("casual",  "neutral", "bottom") : ("The Smart Casual",   "smart-casual",       "Relaxed but never underdressed."),
+    ("casual",  "bright",  "dress")  : ("The Cottagecore",    "cottagecore",        "Soft, romantic, and completely your own."),
+    ("casual",  "earthy",  "bottom") : ("The Gorpcore",      "gorpcore",           "Outdoors-ready wherever you go."),
+    ("casual",  "dark",    "outerwear"): ("Urban Navigator",   "techwear",           "Modern functionality for the urban wild."),
+    
+    # Shoes / Accessories Focus
+    ("casual",  "bright",  "shoes")  : ("The Sneakerhead",    "streetwear",         "Your style starts from the ground up."),
+    ("casual",  "neutral", "shoes")  : ("The Purist",         "minimalist",         "Refined choices in every step."),
+    ("both",    "bright",  "shoes")  : ("The Collector",      "y2k",                "Rare finds and bold statements."),
+
+    # Hybrid / Transition
+    ("both",    "neutral", "top")    : ("Versatile Classic",  "smart-casual",       "You dress for every room."),
+    ("both",    "bright",  "top")    : ("Y2K Revivalist",     "y2k",                "Nostalgic energy with modern edge."),
+    
     # South Asian overrides (checked when dominant tone is rich/earthy + formal dominant)
-    ("desi",    "bright",  "top")    : ("Desi Chic",           "desi-casual",        "Colour and culture worn with pride."),
-    ("desi",    "rich",    "top")    : ("Mughal Luxe",         "mughal-luxe",        "Heritage richness in every thread."),
-    ("desi",    "neutral", "top")    : ("Modern Fusion",       "fusion-east-west",   "East meets West in perfect harmony."),
-    ("desi",    "earthy",  "top")    : ("Lawn Chic",           "lawn-chic",          "Effortless summer elegance."),
+    ("desi",    "bright",  "top")    : ("The Desi Chic",      "desi-casual",        "Colour and culture worn with pride."),
+    ("desi",    "rich",    "top")    : ("Modern Mughal",      "mughal-luxe",        "Heritage richness with a contemporary eye."),
+    ("desi",    "neutral", "top")    : ("East-West Fusion",   "fusion-east-west",   "Where heritage meets modern elegance."),
+    ("desi",    "earthy",  "top")    : ("The Lawn Chic",      "lawn-chic",          "Effortless summer elegance."),
 }
 
 _FALLBACK = ("Style Explorer", "smart-casual", "Your style is uniquely your own.")
