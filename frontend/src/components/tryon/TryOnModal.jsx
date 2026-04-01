@@ -111,8 +111,9 @@ export default function TryOnModal({ open, onClose, item }) {
           setPhase('error')
         }
         // else still pending/processing — next poll fires from the effect re-run
-      } catch {
-        setErrorMsg('Lost connection while waiting. Please try again.')
+      } catch (err) {
+        const serverError = err?.response?.data?.error
+        setErrorMsg(serverError || 'Lost connection while waiting. Please try again.')
         setPhase('error')
       }
     }, POLL_INTERVAL_MS)

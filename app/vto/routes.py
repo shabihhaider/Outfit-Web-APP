@@ -70,6 +70,45 @@ def _person_photo_url(filename: str) -> str:
     return f"/uploads/{filename}"
 
 
+def _extract_output_source(output) -> str:
+    """Normalize model output payload into a URL/path string."""
+    if output is None:
+        return ""
+
+    if isinstance(output, str):
+        return output
+
+    if isinstance(output, (list, tuple)) and output:
+        return str(output[-1])
+
+    if isinstance(output, dict):
+        for key in ("output", "image", "url"):
+            value = output.get(key)
+            if value:
+                return str(value)
+
+    url_attr = getattr(output, "url", None)
+    if callable(url_attr):
+        try:
+            return str(url_attr())
+        except Exception:
+            pass
+    elif isinstance(url_attr, str):
+        return url_attr
+
+    return str(output)
+
+
+def _is_rate_limited_error(error_str: str) -> bool:
+    msg = (error_str or "").lower()
+    return (
+        "too many requests" in msg
+        or "rate limit" in msg
+        or "429" in msg
+        or "queue is full" in msg
+    )
+
+
 # ─── POST /vto/person-photo ───────────────────────────────────────────────────
 
 @vto_bp.route("/person-photo", methods=["POST"])
@@ -359,24 +398,30 @@ def _run_tryon_job(
                         }
                     )
 
-                # Result is a URL
-                if output:
+                source = _extract_output_source(output)
+                if not source:
+                    raise RuntimeError("Primary engine returned an empty response.")
+
+                result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
+                result_path = os.path.join(upload_dir, result_filename)
+
+                if source.startswith(("http://", "https://")):
                     import requests
-                    image_url = str(output)
-                    resp = requests.get(image_url, timeout=30)
+                    resp = requests.get(source, timeout=30)
                     resp.raise_for_status()
-                    
-                    result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
-                    result_path     = os.path.join(upload_dir, result_filename)
                     with open(result_path, "wb") as f:
                         f.write(resp.content)
+                else:
+                    if not os.path.exists(source):
+                        raise FileNotFoundError(f"Primary output path not found: {source}")
+                    shutil.copy(source, result_path)
 
-                    job.status          = "ready"
-                    job.result_filename = result_filename
-                    job.completed_at    = datetime.now(timezone.utc)
-                    db.session.commit()
-                    logger.info("VTO job %d: completed via primary engine.", job_id)
-                    return
+                job.status          = "ready"
+                job.result_filename = result_filename
+                job.completed_at    = datetime.now(timezone.utc)
+                db.session.commit()
+                logger.info("VTO job %d: completed via primary engine.", job_id)
+                return
 
             except Exception as rep_exc:
                 err_msg = str(rep_exc)
@@ -388,8 +433,17 @@ def _run_tryon_job(
             job.error_msg = "Info: REPLICATE_API_TOKEN missing from Space Settings. Using slow fallback."
             db.session.commit()
 
+        if not hf_token:
+            job.status = "failed"
+            job.error_msg = (
+                f"{job.error_msg or ''} | Fallback unavailable: HF_TOKEN is not configured."
+            )[:500].strip(" |")
+            job.completed_at = datetime.now(timezone.utc)
+            db.session.commit()
+            return
+
         # ── Step 2: Gradio fallback engine ──────────────────────────────────────
-        max_retries = 3
+        max_retries = 4
         attempt = 0
         import time
 
@@ -415,8 +469,10 @@ def _run_tryon_job(
                     api_name       = "/tryon",
                 )
 
-                # Fetch result image
-                result_source = result[0] if isinstance(result, (list, tuple)) else result
+                # HF space returns tuple/list. Final try-on image is usually the last element.
+                result_source = _extract_output_source(result)
+                if not result_source:
+                    raise RuntimeError("Fallback engine returned an empty response.")
                 result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
                 result_path     = os.path.join(upload_dir, result_filename)
                 shutil.copy(str(result_source), result_path)
@@ -430,14 +486,19 @@ def _run_tryon_job(
 
             except Exception as hf_exc:
                 error_str = str(hf_exc)
-                if "Too many requests" in error_str and attempt < max_retries:
-                    wait_time = 8 * attempt
+                if _is_rate_limited_error(error_str) and attempt < max_retries:
+                    wait_time = 10 * attempt
                     logger.warning("VTO job %d: fallback throttled. Waiting %ds...", job_id, wait_time)
                     time.sleep(wait_time)
                     continue
-                
+
                 # Terminal Failure
                 primary_err = job.error_msg or ""
+                if _is_rate_limited_error(error_str):
+                    error_str = (
+                        "Fallback engine is temporarily rate-limited (HF public queue busy). "
+                        "Please retry in 1-2 minutes."
+                    )
                 job.status       = "failed"
                 job.error_msg    = f"{primary_err} | Fallback Error: {error_str}"[:500]
                 job.completed_at = datetime.now(timezone.utc)
