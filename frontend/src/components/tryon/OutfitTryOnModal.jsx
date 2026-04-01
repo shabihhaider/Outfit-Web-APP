@@ -131,7 +131,7 @@ export default function OutfitTryOnModal({ open, onClose, items, occasion }) {
             <div className="mb-5 p-3 rounded-xl bg-brand-50/60 dark:bg-brand-800/40 border border-brand-100/60 dark:border-brand-700/30">
               <p className="text-xs text-brand-500 dark:text-brand-400 leading-relaxed">
                 AI will place the selected <span className="font-semibold text-brand-700 dark:text-brand-300">{active?.category}</span> on
-                your photo using IDM-VTON diffusion model. First try takes ~60-90s; cached results are instant.
+                your photo using neural fitting technology. First try takes a few seconds; cached results are instant.
               </p>
             </div>
 

@@ -1,12 +1,16 @@
 """
 app/vto/routes.py
-Virtual Try-On endpoints — powered by IDM-VTON on Hugging Face Spaces.
+Virtual Try-On endpoints — OutfitAI Neural Fitting Engine.
 
 Architecture: pre-generation + persistent cache.
   - First time (user, item, person_photo) is tried:  background thread calls
-    HF Spaces API (~60-90 s), result is saved and cached forever.
+    the VTO inference API (~5-15 s), result is saved and cached forever.
   - Every subsequent request for the same combination:  result served instantly
     from the local uploads/ folder.  Zero external calls.
+
+Engine priority:
+  1. Replicate API (fast, reliable — requires REPLICATE_API_TOKEN)
+  2. Gradio fallback (free, shared — requires HF_TOKEN)
 
 Routes:
   POST   /vto/person-photo   — upload / replace user's VTO person photo
@@ -247,9 +251,10 @@ def submit_tryon():
 
     # ── Create job ────────────────────────────────────────────────────────────
     hf_token = current_app.config.get("HF_TOKEN", "")
-    if not hf_token:
+    replicate_token = current_app.config.get("REPLICATE_API_TOKEN", "")
+    if not hf_token and not replicate_token:
         return jsonify({
-            "error": "HF_TOKEN not configured. Virtual Try-On is unavailable."
+            "error": "Virtual Try-On is not configured. Contact the administrator."
         }), 503
 
     job = TryOnJob(
@@ -304,9 +309,9 @@ def _run_tryon_job(
     upload_dir:   str,
 ) -> None:
     """
-    Background worker: Hybrid VTO Engine.
-    1. Try Replicate (High speed, stable, uses student credits).
-    2. Fallback to HF Spaces (Shared, free, slower).
+    Background worker: OutfitAI VTO Engine (hybrid).
+    1. Try Replicate API (fast, reliable).
+    2. Fallback to Gradio inference (free, shared).
     """
     with app.app_context():
         # Get Job & Item
@@ -324,21 +329,15 @@ def _run_tryon_job(
         job.status = "processing"
         db.session.commit()
 
-        # ── Step 1: Attempt Replicate (The "Express" Lane) ───────────────────
-        # Using cuuupid/idm-vton:0513734a452173b8173e907e3a59d19a36266e55b48528559432bd21c7d7e985
+        # ── Step 1: Replicate API (primary engine) ───────────────────────────
         replicate_token = current_app.config.get("REPLICATE_API_TOKEN")
         if replicate_token:
             try:
                 import replicate
-                logger.info("VTO job %d: attempting Replicate (cuuupid/idm-vton)...", job_id)
+                logger.info("VTO job %d: attempting primary engine...", job_id)
                 
-                # REPLICATE_API_TOKEN is usually picked up automatically from ENV
-                # But we can also set it explicitly just in case HF config didn't export it
-                import os
                 os.environ["REPLICATE_API_TOKEN"] = replicate_token
 
-                # Map categories: upper_body, lower_body, dresses
-                rep_cat = "upper_body"
                 cat_map = {
                     "top":      "upper_body",
                     "outwear":  "upper_body",
@@ -376,16 +375,15 @@ def _run_tryon_job(
                     job.result_filename = result_filename
                     job.completed_at    = datetime.now(timezone.utc)
                     db.session.commit()
-                    logger.info("VTO job %d: completed via Replicate!", job_id)
-                    return # SUCCESS - Exit Early
+                    logger.info("VTO job %d: completed via primary engine.", job_id)
+                    return
 
             except Exception as rep_exc:
-                logger.warning("VTO job %d: Replicate failed (%s). Falling back to HF...", job_id, rep_exc)
-                # Fail through to Step 2
+                logger.warning("VTO job %d: primary engine failed (%s). Falling back...", job_id, rep_exc)
         else:
-            logger.info("VTO job %d: REPLICATE_API_TOKEN missing. Using free HF fallback.", job_id)
+            logger.info("VTO job %d: REPLICATE_API_TOKEN not set. Using fallback engine.", job_id)
 
-        # ── Step 2: Fallback to Hugging Face (The "Economy" Lane) ──────────────
+        # ── Step 2: Gradio fallback engine ──────────────────────────────────────
         max_retries = 3
         attempt = 0
         import time
@@ -394,7 +392,7 @@ def _run_tryon_job(
             attempt += 1
             try:
                 from gradio_client import Client, handle_file
-                logger.info("VTO job %d: trying HF Space (attempt %d/%d)...", job_id, attempt, max_retries)
+                logger.info("VTO job %d: trying fallback engine (attempt %d/%d)...", job_id, attempt, max_retries)
                 
                 client = Client("yisol/IDM-VTON", token=hf_token or None)
                 result = client.predict(
@@ -422,20 +420,20 @@ def _run_tryon_job(
                 job.result_filename = result_filename
                 job.completed_at    = datetime.now(timezone.utc)
                 db.session.commit()
-                logger.info("VTO job %d: completed via HF Fallback!", job_id)
+                logger.info("VTO job %d: completed via fallback engine.", job_id)
                 return
 
             except Exception as hf_exc:
                 error_str = str(hf_exc)
                 if "Too many requests" in error_str and attempt < max_retries:
                     wait_time = 8 * attempt
-                    logger.warning("VTO job %d: HF throttled. Waiting %ds...", job_id, wait_time)
+                    logger.warning("VTO job %d: fallback throttled. Waiting %ds...", job_id, wait_time)
                     time.sleep(wait_time)
                     continue
                 
                 # Terminal Failure
                 job.status       = "failed"
-                job.error_msg    = f"HF Error: {error_str}"[:500]
+                job.error_msg    = f"Generation failed: {error_str}"[:500]
                 job.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
                 logger.error("VTO job %d failed: %s", job_id, hf_exc)

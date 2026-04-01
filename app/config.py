@@ -40,7 +40,8 @@ class Config:
     ALLOWED_EXTENSIONS       = {"jpg", "jpeg", "png"}
     MODEL1_PATH              = "models/model1_efficientnet_best.h5"
     MODEL2_PATH              = os.path.join("models", "model 2 Assets", "model2_compatibility_scorer.h5")
-    # Hugging Face token for VTO (IDM-VTON HF Space via gradio_client)
+    # VTO engine tokens (Replicate = primary, HF = fallback)
+    REPLICATE_API_TOKEN      = os.environ.get("REPLICATE_API_TOKEN", "")
     HF_TOKEN                 = os.environ.get("HF_TOKEN", "")
     # flask-limiter: explicit in-memory storage suppresses the startup warning.
     # Switch to Redis URI in production: "redis://localhost:6379/0"
