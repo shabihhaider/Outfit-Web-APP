@@ -153,10 +153,10 @@ export default function TryOnModal({ open, onClose, item }) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 12 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="card w-full max-w-lg shadow-modal max-h-[92vh] overflow-y-auto"
+          className="card w-full max-w-md shadow-modal max-h-[90vh] overflow-y-auto"
           onClick={e => e.stopPropagation()}
         >
-          <div className="p-6">
+          <div className="p-5 sm:p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
               <div>
