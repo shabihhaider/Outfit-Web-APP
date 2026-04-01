@@ -119,6 +119,16 @@ def _is_billing_error(error_str: str) -> bool:
     )
 
 
+def _clean_secret(value: str | None) -> str:
+    """Normalize env secrets so whitespace-only values are treated as missing."""
+    return (value or "").strip()
+
+
+def _is_invalid_auth_header_error(error_str: str) -> bool:
+    msg = (error_str or "").lower()
+    return "illegal header value" in msg or "bearer  " in msg
+
+
 # ─── POST /vto/person-photo ───────────────────────────────────────────────────
 
 @vto_bp.route("/person-photo", methods=["POST"])
@@ -299,9 +309,9 @@ def submit_tryon():
         }), 429
 
     # ── Create job ────────────────────────────────────────────────────────────
-    hf_token = current_app.config.get("HF_TOKEN", "")
-    replicate_token = current_app.config.get("REPLICATE_API_TOKEN", "")
-    hf_space_id = current_app.config.get("HF_VTO_SPACE_ID", "yisol/IDM-VTON")
+    hf_token = _clean_secret(current_app.config.get("HF_TOKEN", ""))
+    replicate_token = _clean_secret(current_app.config.get("REPLICATE_API_TOKEN", ""))
+    hf_space_id = _clean_secret(current_app.config.get("HF_VTO_SPACE_ID", "yisol/IDM-VTON")) or "yisol/IDM-VTON"
     if not hf_token and not replicate_token:
         return jsonify({
             "error": "Virtual Try-On is not configured. Contact the administrator."
@@ -381,7 +391,7 @@ def _run_tryon_job(
         db.session.commit()
 
         # ── Step 1: Replicate API (primary engine) ───────────────────────────
-        replicate_token = current_app.config.get("REPLICATE_API_TOKEN")
+        replicate_token = _clean_secret(current_app.config.get("REPLICATE_API_TOKEN"))
         if replicate_token:
             try:
                 import replicate
@@ -441,6 +451,11 @@ def _run_tryon_job(
                 if _is_billing_error(err_msg):
                     job.error_msg = (
                         "Primary engine unavailable (Replicate billing/credits not active). "
+                        "Using fallback engine."
+                    )[:250]
+                elif _is_invalid_auth_header_error(err_msg):
+                    job.error_msg = (
+                        "Primary engine token is invalid or empty in deployment secrets. "
                         "Using fallback engine."
                     )[:250]
                 else:
@@ -511,21 +526,30 @@ def _run_tryon_job(
             except Exception as hf_exc:
                 error_str = str(hf_exc)
                 if _is_rate_limited_error(error_str) and attempt < max_retries:
-                    wait_time = 10 * attempt
+                    wait_time = 15 * attempt
                     logger.warning("VTO job %d: fallback throttled. Waiting %ds...", job_id, wait_time)
                     time.sleep(wait_time)
                     continue
 
                 # Terminal Failure
-                primary_err = job.error_msg or ""
+                primary_err = (job.error_msg or "").strip()
                 if _is_rate_limited_error(error_str):
                     error_str = (
                         "Try-on service is busy right now. Please retry in 1-2 minutes."
                     )
                 else:
                     error_str = "Try-on service is temporarily unavailable. Please retry shortly."
+
+                # Keep user-facing errors concise; detailed traces stay in logs.
+                if "Using fallback engine" in primary_err:
+                    user_error = error_str
+                elif primary_err:
+                    user_error = f"{primary_err} {error_str}"[:500]
+                else:
+                    user_error = error_str
+
                 job.status       = "failed"
-                job.error_msg    = f"{primary_err} | Fallback Error: {error_str}"[:500]
+                job.error_msg    = user_error[:500]
                 job.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
                 logger.error("VTO job %d failed: %s", job_id, hf_exc)
