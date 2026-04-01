@@ -40,6 +40,12 @@ TEMPLATES: dict[str, list[str]] = {
     "D": ["dress", "outwear", "shoes"],
     "E": ["jumpsuit", "shoes"],
     "F": ["jumpsuit", "outwear", "shoes"],
+    "G": ["top", "bottom"],
+    "H": ["top", "bottom", "outwear"],
+    "I": ["dress"],
+    "J": ["dress", "outwear"],
+    "K": ["jumpsuit"],
+    "L": ["jumpsuit", "outwear"],
 }
 
 # Safety cap — prevents combinatorial explosion on large wardrobes
@@ -78,9 +84,9 @@ def _check_wardrobe_minimum(items: list[WardrobeItem]) -> None:
         by_cat[item.category].append(item)
 
     can_make_outfit = (
-        (by_cat["top"] and by_cat["bottom"] and by_cat["shoes"])
-        or (by_cat["dress"] and by_cat["shoes"])
-        or (by_cat["jumpsuit"] and by_cat["shoes"])
+        (by_cat["top"] and by_cat["bottom"])
+        or by_cat["dress"]
+        or by_cat["jumpsuit"]
     )
     if not can_make_outfit:
         raise InsufficientWardrobeError(

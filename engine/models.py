@@ -54,6 +54,12 @@ class OutfitTemplate(str, Enum):
     D = "D"  # dress + outwear + shoes
     E = "E"  # jumpsuit + shoes
     F = "F"  # jumpsuit + outwear + shoes
+    G = "G"  # top + bottom
+    H = "H"  # top + bottom + outwear
+    I = "I"  # dress (standalone)
+    J = "J"  # dress + outwear
+    K = "K"  # jumpsuit (standalone)
+    L = "L"  # jumpsuit + outwear
 
 
 # ─── Category order — MUST match model2_results.json ─────────────────────────
@@ -73,6 +79,12 @@ TEMPLATE_CATEGORIES: dict[OutfitTemplate, list[Category]] = {
     OutfitTemplate.D: [Category.DRESS, Category.OUTWEAR, Category.SHOES],
     OutfitTemplate.E: [Category.JUMPSUIT, Category.SHOES],
     OutfitTemplate.F: [Category.JUMPSUIT, Category.OUTWEAR, Category.SHOES],
+    OutfitTemplate.G: [Category.TOP, Category.BOTTOM],
+    OutfitTemplate.H: [Category.TOP, Category.BOTTOM, Category.OUTWEAR],
+    OutfitTemplate.I: [Category.DRESS],
+    OutfitTemplate.J: [Category.DRESS, Category.OUTWEAR],
+    OutfitTemplate.K: [Category.JUMPSUIT],
+    OutfitTemplate.L: [Category.JUMPSUIT, Category.OUTWEAR],
 }
 
 

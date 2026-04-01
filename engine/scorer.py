@@ -107,7 +107,7 @@ def score_outfit(
         for j in range(i + 1, len(outfit))
     ]
     pair_scores = [_score_pair_symmetric(a, b, model2) for a, b in pairs]
-    model2_score = sum(pair_scores) / len(pair_scores)
+    model2_score = sum(pair_scores) / len(pair_scores) if pair_scores else 0.80
 
     color_score    = score_outfit_color(outfit)
     weather_score  = score_outfit_weather(outfit, temp_celsius)

@@ -54,21 +54,25 @@ def _missing_categories_hint(items_db: list) -> str:
     has_jumpsuit = "jumpsuit" in cats
 
     # Check if any valid template is satisfiable
-    template_a = has_top and has_bottom and has_shoes
-    template_d = has_dress and has_shoes
-    template_f = has_jumpsuit and has_shoes
+    template_standard = (has_top and has_bottom and has_shoes) or (has_dress and has_shoes) or (has_jumpsuit and has_shoes)
+    template_basic    = (has_top and has_bottom) or has_dress or has_jumpsuit
 
-    if template_a or template_d or template_f:
-        # Templates are satisfiable in principle — likely a formality/occasion filter issue
+    if template_standard:
+        # Standard templates are satisfiable — likely a formality issue
         return (
             "No items matched this occasion's formality requirements. "
             "Try changing the occasion or update your items' formality tags."
         )
 
+    if template_basic:
+        # Basic templates are satisfiable but shoe-less — likely formality issue for shoe-less variants
+        return (
+            "No items matched this occasion's formality requirements. "
+            "Try updating your items' formality tags to 'formal' or 'both', and consider uploading shoes for a complete Look."
+        )
+
     # Build a specific missing-categories message
     missing = []
-    if not has_shoes:
-        missing.append("shoes")
     if not (has_top or has_dress or has_jumpsuit):
         missing.append("a top, dress, or jumpsuit")
     if has_top and not has_bottom:
@@ -76,13 +80,13 @@ def _missing_categories_hint(items_db: list) -> str:
 
     if missing:
         return (
-            f"Cannot form a complete outfit. Missing: {', '.join(missing)}. "
-            "Upload at least a top + bottom + shoes (or dress + shoes) to get recommendations."
+            f"Cannot form a basic outfit. Missing: {', '.join(missing)}. "
+            "Upload more items to get recommendations."
         )
 
     return (
-        "Not enough wardrobe items to form an outfit. "
-        "Upload at least a top, bottom, and shoes to get started."
+        "Not enough wardrobe items to form a basic outfit. "
+        "Upload at least a top and bottom to get started."
     )
 
 
