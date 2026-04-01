@@ -379,11 +379,14 @@ def _run_tryon_job(
                     return
 
             except Exception as rep_exc:
-                logger.warning("VTO job %d: primary engine failed (%s). Falling back...", job_id, rep_exc)
-                job.error_msg = f"Primary engine failed: {rep_exc}"[:500]
+                err_msg = str(rep_exc)
+                logger.warning("VTO job %d: primary engine failed (%s). Falling back...", job_id, err_msg)
+                job.error_msg = f"Primary (Fast) Error: {err_msg}"[:250]
                 db.session.commit()
         else:
             logger.info("VTO job %d: REPLICATE_API_TOKEN not set. Using fallback engine.", job_id)
+            job.error_msg = "Info: REPLICATE_API_TOKEN missing from Space Settings. Using slow fallback."
+            db.session.commit()
 
         # ── Step 2: Gradio fallback engine ──────────────────────────────────────
         max_retries = 3
@@ -434,8 +437,9 @@ def _run_tryon_job(
                     continue
                 
                 # Terminal Failure
+                primary_err = job.error_msg or ""
                 job.status       = "failed"
-                job.error_msg    = f"Generation failed: {error_str}"[:500]
+                job.error_msg    = f"{primary_err} | Fallback Error: {error_str}"[:500]
                 job.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
                 logger.error("VTO job %d failed: %s", job_id, hf_exc)
