@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FiX, FiUploadCloud, FiUser, FiRefreshCw, FiCheck, FiAlertTriangle } from 'react-icons/fi'
@@ -139,13 +140,13 @@ export default function TryOnModal({ open, onClose, item }) {
   const itemImageUrl = item.image_url ? `${API_BASE}${item.image_url}` : null
   const personPhotoUrl = photoData?.photo_url ? `${API_BASE}${photoData.photo_url}` : null
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-950/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/50 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
@@ -450,6 +451,7 @@ export default function TryOnModal({ open, onClose, item }) {
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

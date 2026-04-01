@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiX, FiUser } from 'react-icons/fi'
 import TryOnModal from './TryOnModal.jsx'
@@ -44,13 +45,13 @@ export default function OutfitTryOnModal({ open, onClose, items, occasion }) {
     )
   }
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-950/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-950/50 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
@@ -151,6 +152,7 @@ export default function OutfitTryOnModal({ open, onClose, items, occasion }) {
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

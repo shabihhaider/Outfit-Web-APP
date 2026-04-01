@@ -380,6 +380,8 @@ def _run_tryon_job(
 
             except Exception as rep_exc:
                 logger.warning("VTO job %d: primary engine failed (%s). Falling back...", job_id, rep_exc)
+                job.error_msg = f"Primary engine failed: {rep_exc}"[:500]
+                db.session.commit()
         else:
             logger.info("VTO job %d: REPLICATE_API_TOKEN not set. Using fallback engine.", job_id)
 
