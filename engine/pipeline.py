@@ -42,20 +42,32 @@ _IDX_TO_CATEGORY: dict[int, str] = {
 # Input size for Model 1 (EfficientNet-B0 expects 256×256 RGB)
 _MODEL1_INPUT_SIZE = (256, 256)
 
+# Minimum confidence for Model 1 to accept a classification (0.0–1.0).
+# Images below this threshold are rejected as unclear or non-clothing.
+_MODEL1_CONFIDENCE_THRESHOLD = 0.45
+
 
 def _load_and_preprocess(image_path: str) -> np.ndarray:
     """
     Load an image and preprocess it for Model 1 inference.
     Returns a float32 array of shape (256, 256, 3) in [0, 255] range.
-    Note: EfficientNet-B0 has built-in preprocessing; model was trained on [0, 255].
+
+    Uses PIL with LANCZOS resampling to match the training preprocessing pipeline
+    in scripts/07_preprocess_images.py, which used PIL LANCZOS resize and RGB
+    conversion. Using the same algorithm avoids pixel-value drift that can shift
+    class probabilities and produce wrong predictions.
+
+    Note: EfficientNet-B0 has a built-in rescaling layer; model was trained on [0, 255].
     """
-    import cv2
-    img = cv2.imread(image_path)
-    if img is None:
+    from PIL import Image, UnidentifiedImageError
+    try:
+        img = Image.open(image_path).convert("RGB")
+    except FileNotFoundError:
         raise FileNotFoundError(f"Could not load image: {image_path}")
-    img = cv2.resize(img, _MODEL1_INPUT_SIZE)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    return img.astype(np.float32)
+    except (UnidentifiedImageError, OSError) as exc:
+        raise ValueError(f"Could not decode image '{image_path}': {exc}") from exc
+    img = img.resize(_MODEL1_INPUT_SIZE, Image.Resampling.LANCZOS)
+    return np.array(img, dtype=np.float32)
 
 
 class RecommendationPipeline:
@@ -101,13 +113,19 @@ class RecommendationPipeline:
     def _build_embedding_extractor(self):
         """
         Construct a sub-model that returns the 1280-dim embedding vector from
-        the full classifier. The embedding is the output of the penultimate layer
-        (GlobalAveragePooling2D in EfficientNet-B0).
+        the full classifier. The embedding is the output of the GlobalAveragePooling2D
+        layer named 'embedding_layer' (set explicitly during training for reliable
+        extraction). Falls back to the layer before the final Dense head if the
+        named layer is not found.
         """
         from tensorflow.keras.models import Model  # type: ignore[import]
-        # The embedding layer is the second-to-last layer in our EfficientNet-B0
-        # training setup (last layer is the Dense softmax classifier)
-        embedding_layer = self._classifier.layers[-2]
+        # The training notebook named this layer 'embedding_layer' explicitly
+        # ("named for reliable extraction") so we use get_layer() for robustness.
+        try:
+            embedding_layer = self._classifier.get_layer("embedding_layer")
+        except ValueError:
+            # Fallback: layer before the final Dense classifier
+            embedding_layer = self._classifier.layers[-2]
         return Model(
             inputs  = self._classifier.input,
             outputs = embedding_layer.output,
@@ -149,10 +167,10 @@ class RecommendationPipeline:
         category = _IDX_TO_CATEGORY.get(category_idx, "top")
 
         confidence = float(np.max(probs))
-        if confidence < 0.75:
+        if confidence < _MODEL1_CONFIDENCE_THRESHOLD:
             raise ValueError(
                 f"Image does not appear to be a clear clothing item "
-                f"(confidence {confidence:.2f} < 0.75). "
+                f"(confidence {confidence:.2f} < {_MODEL1_CONFIDENCE_THRESHOLD}). "
                 f"Please upload a clear photo of a single clothing item."
             )
 
