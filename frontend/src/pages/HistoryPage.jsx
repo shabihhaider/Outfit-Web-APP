@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FiThermometer, FiStar, FiRepeat } from 'react-icons/fi'
+import { FiThermometer, FiStar, FiRepeat, FiUser } from 'react-icons/fi'
 import { getHistory } from '../api/outfits.js'
 import { saveOutfit } from '../api/outfits.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
@@ -12,12 +12,14 @@ import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import ShareButton from '../components/ui/ShareButton.jsx'
 import WearAgainModal from '../components/ui/WearAgainModal.jsx'
+import OutfitTryOnModal from '../components/tryon/OutfitTryOnModal.jsx'
 import { formatDate, scoreToPercent } from '../utils/formatters.js'
 
 export default function HistoryPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [wearAgainTarget, setWearAgainTarget] = useState(null)
+  const [tryOnTarget, setTryOnTarget] = useState(null)
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['history'],
@@ -99,6 +101,13 @@ export default function HistoryPage() {
                     <FiRepeat size={14} />
                     Wear Again
                   </button>
+                  <button
+                    onClick={() => setTryOnTarget(entry)}
+                    className="inline-flex items-center gap-1.5 text-sm text-brand-500 hover:text-accent-600 dark:text-brand-400 dark:hover:text-accent-400 font-medium transition-colors"
+                  >
+                    <FiUser size={14} />
+                    Try On
+                  </button>
                   <ShareButton outfit={entry} items={entry.items ?? []} />
                 </div>
               </motion.div>
@@ -113,6 +122,13 @@ export default function HistoryPage() {
         onClose={() => setWearAgainTarget(null)}
         onSave={(outfit) => saveMutation.mutate(outfit)}
         onCalendar={() => { setWearAgainTarget(null); navigate('/calendar') }}
+      />
+
+      <OutfitTryOnModal
+        open={!!tryOnTarget}
+        onClose={() => setTryOnTarget(null)}
+        items={tryOnTarget?.items ?? []}
+        occasion={tryOnTarget?.occasion}
       />
     </>
   )

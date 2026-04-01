@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiBookmark, FiCheck, FiShare2, FiInfo, FiX } from 'react-icons/fi'
+import { FiBookmark, FiCheck, FiShare2, FiInfo, FiX, FiUser } from 'react-icons/fi'
 import { saveOutfit } from '../../api/outfits.js'
 import OutfitItems from './OutfitItems.jsx'
 import WhyThisOutfit from './WhyThisOutfit.jsx'
@@ -9,6 +9,7 @@ import FeedbackButtons from './FeedbackButtons.jsx'
 import ConfidenceBadge from '../ui/ConfidenceBadge.jsx'
 import { scoreToPercent } from '../../utils/formatters.js'
 import ShareButton from '../ui/ShareButton.jsx'
+import OutfitTryOnModal from '../tryon/OutfitTryOnModal.jsx'
 
 export default function OutfitCard({ outfit, occasion }) {
   const [saved, setSaved] = useState(false)
@@ -16,6 +17,7 @@ export default function OutfitCard({ outfit, occasion }) {
   const [showNameModal, setShowNameModal] = useState(false)
   const [outfitName, setOutfitName] = useState('')
   const [saveError, setSaveError] = useState('')
+  const [tryOnOpen, setTryOnOpen] = useState(false)
   const inputRef = useRef(null)
   const queryClient = useQueryClient()
 
@@ -167,6 +169,13 @@ export default function OutfitCard({ outfit, occasion }) {
         <div className="mt-6 pt-5 border-t border-brand-100/60 dark:border-brand-800/40 flex items-center justify-between">
           <FeedbackButtons historyId={outfit.history_id} />
           <div className="flex items-center gap-3">
+             <button
+               onClick={() => setTryOnOpen(true)}
+               className="h-9 px-3.5 rounded-xl text-xs font-medium text-brand-500 dark:text-brand-400 border border-brand-200/60 dark:border-brand-700/40 hover:bg-accent-50 dark:hover:bg-accent-900/15 hover:text-accent-600 dark:hover:text-accent-400 hover:border-accent-200 dark:hover:border-accent-700 transition-all flex items-center gap-1.5"
+               title="Virtual Try-On"
+             >
+               <FiUser size={13} /> Try On
+             </button>
              <ShareButton outfit={outfit} items={outfit.items} rounded />
           </div>
         </div>
@@ -227,6 +236,13 @@ export default function OutfitCard({ outfit, occasion }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <OutfitTryOnModal
+        open={tryOnOpen}
+        onClose={() => setTryOnOpen(false)}
+        items={outfit.items}
+        occasion={occasion}
+      />
     </motion.div>
   )
 }

@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiX, FiPlus, FiCalendar, FiBookmark, FiAlertTriangle, FiZap, FiDroplet, FiThermometer, FiCpu, FiCheck, FiLayers, FiMaximize2, FiMinimize2, FiTrash2, FiChevronDown } from 'react-icons/fi'
+import { FiX, FiPlus, FiCalendar, FiBookmark, FiAlertTriangle, FiZap, FiDroplet, FiThermometer, FiCpu, FiCheck, FiLayers, FiMaximize2, FiMinimize2, FiTrash2, FiChevronDown, FiUser } from 'react-icons/fi'
 import { getItems } from '../api/wardrobe.js'
 import { scoreOutfit } from '../api/recommendations.js'
 import { saveOutfit } from '../api/outfits.js'
@@ -13,6 +13,7 @@ import EmptyState from '../components/ui/EmptyState.jsx'
 import ConfidenceBadge from '../components/ui/ConfidenceBadge.jsx'
 import CustomSelect from '../components/ui/CustomSelect.jsx'
 import { scoreToPercent } from '../utils/formatters.js'
+import OutfitTryOnModal from '../components/tryon/OutfitTryOnModal.jsx'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
@@ -33,6 +34,7 @@ export default function OutfitEditorPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [scoreModalOpen, setScoreModalOpen] = useState(false)
   const [canvasFullscreen, setCanvasFullscreen] = useState(false)
+  const [tryOnOpen, setTryOnOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
@@ -380,6 +382,13 @@ export default function OutfitEditorPage() {
                     {saved ? <><FiCheck size={16} /> Saved</> : <><FiBookmark size={16} /> Archive Looks</>}
                   </button>
                   <button
+                    onClick={() => setTryOnOpen(true)}
+                    disabled={canvasItems.length === 0}
+                    className="h-11 rounded-2xl btn-secondary flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest disabled:opacity-40"
+                  >
+                    <FiUser size={16} /> Try On
+                  </button>
+                  <button
                     onClick={() => navigate('/calendar')}
                     disabled={!isValid}
                     className="h-11 rounded-2xl btn-secondary flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-widest disabled:opacity-40"
@@ -678,6 +687,13 @@ export default function OutfitEditorPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <OutfitTryOnModal
+        open={tryOnOpen}
+        onClose={() => setTryOnOpen(false)}
+        items={canvasItems}
+        occasion={occasion}
+      />
     </PageWrapper>
   )
 }

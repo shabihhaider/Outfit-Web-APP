@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiX, FiHeart, FiRefreshCw, FiBookmark, FiUserPlus, FiUserCheck } from 'react-icons/fi'
+import { FiX, FiHeart, FiRefreshCw, FiBookmark, FiUserPlus, FiUserCheck, FiUser } from 'react-icons/fi'
 import { getPost, toggleLike, toggleBookmark, followUser, unfollowUser } from '../../api/social.js'
 import { useAuth } from '../../context/AuthContext.jsx'
 import VibeTagPill from './VibeTagPill.jsx'
+import OutfitTryOnModal from '../tryon/OutfitTryOnModal.jsx'
 
 const BASE = import.meta.env.VITE_API_URL || ''
 
@@ -29,6 +30,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
   const [bookmarked,  setBookmarked] = useState(post?.is_bookmarked ?? false)
   const [following,   setFollowing]  = useState(post?.is_following_author ?? false)
   const [imgError,    setImgError]   = useState(false)
+  const [tryOnOpen,   setTryOnOpen]  = useState(false)
 
   const isOwn = user?.id === p?.user_id
   const previewUrl = p?.preview_url ? `${BASE}${p.preview_url}` : null
@@ -63,6 +65,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
   if (!open || !post) return null
 
   return (
+    <>
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -203,6 +206,16 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                   <span>{likeCount}</span>
                 </button>
 
+                {fullPost?.items?.length > 0 && (
+                  <button
+                    onClick={() => setTryOnOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-brand-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
+                  >
+                    <FiUser size={15} />
+                    <span>Try On</span>
+                  </button>
+                )}
+
                 {!isOwn && (
                   <button
                     onClick={() => onRemixClick?.(p)}
@@ -232,6 +245,14 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
         </div>
       )}
     </AnimatePresence>
+
+    <OutfitTryOnModal
+      open={tryOnOpen}
+      onClose={() => setTryOnOpen(false)}
+      items={fullPost?.items ?? []}
+      occasion={p?.outfit?.occasion}
+    />
+  </>
   )
 }
 

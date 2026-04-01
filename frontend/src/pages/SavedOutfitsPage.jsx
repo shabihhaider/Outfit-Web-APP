@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiTrash2, FiStar, FiChevronRight, FiGrid, FiList, FiShare2 } from 'react-icons/fi'
+import { FiTrash2, FiStar, FiChevronRight, FiGrid, FiList, FiShare2, FiUser } from 'react-icons/fi'
 import { getSaved, deleteSaved } from '../api/outfits.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import OutfitItems from '../components/recommendations/OutfitItems.jsx'
@@ -10,12 +10,14 @@ import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import PublishModal from '../components/social/PublishModal.jsx'
+import OutfitTryOnModal from '../components/tryon/OutfitTryOnModal.jsx'
 import { formatDate } from '../utils/formatters.js'
 import { useNavigate } from 'react-router-dom'
 
 export default function SavedOutfitsPage() {
   const [deleteTarget,  setDeleteTarget]  = useState(null)
   const [publishTarget, setPublishTarget] = useState(null)
+  const [tryOnTarget,   setTryOnTarget]   = useState(null)
   const [viewMode,      setViewMode]      = useState('grid')
   const queryClient = useQueryClient()
   const navigate    = useNavigate()
@@ -126,6 +128,13 @@ export default function SavedOutfitsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
+                        onClick={() => setTryOnTarget(outfit)}
+                        className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-accent-600 dark:hover:text-accent-400 font-medium px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
+                        title="Virtual Try-On"
+                      >
+                        <FiUser size={13} /> Try On
+                      </button>
+                      <button
                         onClick={() => setPublishTarget(outfit)}
                         className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-accent-600 dark:hover:text-accent-400 font-medium px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
                         title="Share to Feed"
@@ -154,6 +163,13 @@ export default function SavedOutfitsPage() {
         open={!!publishTarget}
         onClose={() => setPublishTarget(null)}
         savedOutfit={publishTarget}
+      />
+
+      <OutfitTryOnModal
+        open={!!tryOnTarget}
+        onClose={() => setTryOnTarget(null)}
+        items={tryOnTarget?.items ?? []}
+        occasion={tryOnTarget?.occasion}
       />
     </>
   )
