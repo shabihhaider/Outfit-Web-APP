@@ -109,6 +109,16 @@ def _is_rate_limited_error(error_str: str) -> bool:
     )
 
 
+def _is_billing_error(error_str: str) -> bool:
+    msg = (error_str or "").lower()
+    return (
+        "insufficient credit" in msg
+        or "status: 402" in msg
+        or "payment required" in msg
+        or "billing" in msg
+    )
+
+
 # ─── POST /vto/person-photo ───────────────────────────────────────────────────
 
 @vto_bp.route("/person-photo", methods=["POST"])
@@ -291,6 +301,7 @@ def submit_tryon():
     # ── Create job ────────────────────────────────────────────────────────────
     hf_token = current_app.config.get("HF_TOKEN", "")
     replicate_token = current_app.config.get("REPLICATE_API_TOKEN", "")
+    hf_space_id = current_app.config.get("HF_VTO_SPACE_ID", "yisol/IDM-VTON")
     if not hf_token and not replicate_token:
         return jsonify({
             "error": "Virtual Try-On is not configured. Contact the administrator."
@@ -309,7 +320,7 @@ def submit_tryon():
     app = current_app._get_current_object()  # type: ignore[attr-defined]
     t = threading.Thread(
         target  = _run_tryon_job,
-        args    = (app, job.id, person_path, garment_path, hf_token, upload_dir),
+        args    = (app, job.id, person_path, garment_path, hf_token, hf_space_id, upload_dir),
         daemon  = True,
         name    = f"vto-job-{job.id}",
     )
@@ -345,6 +356,7 @@ def _run_tryon_job(
     person_path:  str,
     garment_path: str,
     hf_token:     str,
+    hf_space_id:  str,
     upload_dir:   str,
 ) -> None:
     """
@@ -426,7 +438,13 @@ def _run_tryon_job(
             except Exception as rep_exc:
                 err_msg = str(rep_exc)
                 logger.warning("VTO job %d: primary engine failed (%s). Falling back...", job_id, err_msg)
-                job.error_msg = f"Primary (Fast) Error: {err_msg}"[:250]
+                if _is_billing_error(err_msg):
+                    job.error_msg = (
+                        "Primary engine unavailable (Replicate billing/credits not active). "
+                        "Using fallback engine."
+                    )[:250]
+                else:
+                    job.error_msg = "Primary engine temporarily unavailable. Using fallback engine."[:250]
                 db.session.commit()
         else:
             logger.info("VTO job %d: REPLICATE_API_TOKEN not set. Using fallback engine.", job_id)
@@ -451,9 +469,15 @@ def _run_tryon_job(
             attempt += 1
             try:
                 from gradio_client import Client, handle_file
-                logger.info("VTO job %d: trying fallback engine (attempt %d/%d)...", job_id, attempt, max_retries)
+                logger.info(
+                    "VTO job %d: trying fallback engine %s (attempt %d/%d)...",
+                    job_id,
+                    hf_space_id,
+                    attempt,
+                    max_retries,
+                )
                 
-                client = Client("yisol/IDM-VTON", token=hf_token or None)
+                client = Client(hf_space_id, token=hf_token or None)
                 result = client.predict(
                     dict={
                         "background": handle_file(person_path),
@@ -496,9 +520,10 @@ def _run_tryon_job(
                 primary_err = job.error_msg or ""
                 if _is_rate_limited_error(error_str):
                     error_str = (
-                        "Fallback engine is temporarily rate-limited (HF public queue busy). "
-                        "Please retry in 1-2 minutes."
+                        "Try-on service is busy right now. Please retry in 1-2 minutes."
                     )
+                else:
+                    error_str = "Try-on service is temporarily unavailable. Please retry shortly."
                 job.status       = "failed"
                 job.error_msg    = f"{primary_err} | Fallback Error: {error_str}"[:500]
                 job.completed_at = datetime.now(timezone.utc)
