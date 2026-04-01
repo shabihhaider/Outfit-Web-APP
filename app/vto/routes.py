@@ -44,6 +44,24 @@ def _photo_hash(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
 
 
+def _get_daily_usage(user_id: int) -> int:
+    """
+    Counts how many NEW Virtual Try-On jobs this user has submitted 
+    in the last 24 hours. Cache hits do not count.
+    """
+    from datetime import timedelta
+    now     = datetime.now(timezone.utc)
+    since_24h = now - timedelta(hours=24)
+    
+    # We count jobs that are ready, pending, or processing.
+    # Failed jobs do NOT count toward the daily limit (user shouldn't pay for errors).
+    return TryOnJob.query.filter(
+        TryOnJob.user_id == user_id,
+        TryOnJob.created_at >= since_24h,
+        TryOnJob.status != "failed"
+    ).count()
+
+
 def _person_photo_url(filename: str) -> str:
     return f"/uploads/{filename}"
 
@@ -127,9 +145,14 @@ def get_person_photo():
     if not user.profile_photo_filename:
         return jsonify({"has_photo": False, "photo_url": None}), 200
 
+    usage = _get_daily_usage(user_id)
     return jsonify({
         "has_photo": True,
         "photo_url": _person_photo_url(user.profile_photo_filename),
+        "quota": {
+            "current": usage,
+            "limit": 5
+        }
     }), 200
 
 
@@ -212,6 +235,15 @@ def submit_tryon():
             return jsonify({**existing.to_dict(), "cached": False}), 202
 
         # Previous attempt failed — allow retry by falling through to create new job
+
+    # ── Quota lookup (NEW requests only) ──────────────────────────────────────
+    usage = _get_daily_usage(user_id)
+    limit = 5
+    if usage >= limit:
+        return jsonify({
+            "error": f"Daily limit reached ({usage}/{limit}). Please try again tomorrow.",
+            "quota": {"current": usage, "limit": limit}
+        }), 429
 
     # ── Create job ────────────────────────────────────────────────────────────
     hf_token = current_app.config.get("HF_TOKEN", "")

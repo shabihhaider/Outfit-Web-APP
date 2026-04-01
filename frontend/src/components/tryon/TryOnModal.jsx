@@ -18,6 +18,7 @@ export default function TryOnModal({ open, onClose, item }) {
   const [errorMsg, setErrorMsg] = useState('')
   const [previewFile, setPreviewFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
+  const [quota, setQuota] = useState({ current: 0, limit: 5 })
   const [pollCount, setPollCount] = useState(0)
 
   // ── Fetch person photo status ──────────────────────────────────────────────
@@ -43,6 +44,7 @@ export default function TryOnModal({ open, onClose, item }) {
   // ── Determine initial phase once photo status is known ────────────────────
   useEffect(() => {
     if (!open || photoLoading || !photoData) return
+    if (photoData.quota) setQuota(photoData.quota)
     if (phase !== 'check') return
     setPhase(photoData.has_photo ? 'ready' : 'setup')
   }, [open, photoLoading, photoData, phase])
@@ -72,12 +74,18 @@ export default function TryOnModal({ open, onClose, item }) {
       } else {
         setJobId(data.id)
         setPhase('loading')
+        // Optimistically increment or wait for server to report updated quota
+        if (data.quota) setQuota(data.quota)
       }
     },
     onError: (err) => {
       const d = err.response?.data
       if (d?.needs_photo) {
         setPhase('setup')
+      } else if (err.response?.status === 429) {
+        if (d?.quota) setQuota(d.quota)
+        setErrorMsg(d?.error || 'Daily limit reached.')
+        setPhase('error')
       } else {
         setErrorMsg(d?.error || 'Failed to start try-on.')
         setPhase('error')
@@ -296,15 +304,31 @@ export default function TryOnModal({ open, onClose, item }) {
                   </button>
                   <button
                     onClick={() => submitMutation.mutate()}
-                    disabled={submitMutation.isPending}
-                    className="flex-1 btn-primary flex items-center justify-center gap-2"
+                    disabled={submitMutation.isPending || quota.current >= quota.limit}
+                    className="flex-1 btn-primary flex items-center justify-center gap-2 relative"
                   >
                     {submitMutation.isPending
                       ? <><LoadingSpinner size="sm" /> Starting...</>
-                      : 'Generate Try-On'
+                      : (
+                        <>
+                          <span className="flex-1 text-center">Generate Try-On</span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            quota.current >= quota.limit
+                              ? 'bg-red-500/20 text-red-500' 
+                              : 'bg-brand-900/40 text-brand-200'
+                          }`}>
+                            {quota.current} / {quota.limit}
+                          </span>
+                        </>
+                      )
                     }
                   </button>
                 </div>
+                {quota.current >= quota.limit && (
+                   <p className="text-[10px] text-red-500 text-center mt-2 font-medium">
+                     Daily quota reached. Please try again tomorrow.
+                   </p>
+                )}
               </motion.div>
             )}
 
