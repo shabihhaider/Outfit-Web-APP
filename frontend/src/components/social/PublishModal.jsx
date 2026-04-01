@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiX, FiGlobe, FiUsers, FiLock, FiCheck } from 'react-icons/fi'
 import { publishOutfit, getVibes } from '../../api/social.js'
-import { getActiveSeason } from '../../utils/seasons.js'
+// import { getActiveSeason } from '../../utils/seasons.js'
 
 const VISIBILITY_OPTIONS = [
   { value: 'public',    label: 'Public',    Icon: FiGlobe,  desc: 'Anyone can see' },
@@ -17,7 +17,7 @@ export default function PublishModal({ open, onClose, savedOutfit, remixSourcePo
   const [visibility, setVisibility] = useState('public')
   const [selectedVibes, setSelectedVibes] = useState([])
 
-  const activeSeason = getActiveSeason()
+  // const activeSeason = getActiveSeason()
 
   const { data: vibesData } = useQuery({
     queryKey: ['vibes'],
@@ -63,8 +63,8 @@ export default function PublishModal({ open, onClose, savedOutfit, remixSourcePo
   ]
 
   // Auto-suggest season vibe
-  const seasonVibe = activeSeason?.vibe
-  const seasonLabel = activeSeason?.label
+  // const seasonVibe = activeSeason?.vibe
+  // const seasonLabel = activeSeason?.label
 
   return (
     <AnimatePresence>
@@ -100,21 +100,6 @@ export default function PublishModal({ open, onClose, savedOutfit, remixSourcePo
             </div>
 
             <div className="overflow-y-auto flex-1 p-5 space-y-5">
-              {/* Season suggestion */}
-              {seasonVibe && !selectedVibes.includes(seasonVibe) && (
-                <div className="flex items-center gap-2 p-3 bg-accent-50 dark:bg-accent-900/20 rounded-xl border border-accent-100 dark:border-accent-800/40">
-                  <span className="text-lg">{activeSeason?.emoji}</span>
-                  <p className="text-xs text-accent-700 dark:text-accent-300 flex-1">
-                    It's {seasonLabel}! Tag this look with <strong>{seasonVibe}</strong>?
-                  </p>
-                  <button
-                    onClick={() => toggleVibe(seasonVibe)}
-                    className="text-xs px-2 py-1 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition-colors"
-                  >
-                    Add
-                  </button>
-                </div>
-              )}
 
               {/* Caption */}
               <div>

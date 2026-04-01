@@ -12,7 +12,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import OOTDWidget from '../components/dashboard/OOTDWidget.jsx'
 import WardrobeStats from '../components/dashboard/WardrobeStats.jsx'
 import StyleDNACard from '../components/social/StyleDNACard.jsx'
-import EidPlannerWidget from '../components/social/EidPlannerWidget.jsx'
+// import EidPlannerWidget from '../components/social/EidPlannerWidget.jsx'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } }
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } }
@@ -45,11 +45,6 @@ export default function DashboardPage() {
             {getGreeting()},<br />
             <span className="text-accent-500 italic">{user?.name?.split(' ')[0] || 'there'}</span>
           </h1>
-        </motion.div>
-
-        {/* Eid / Season Planner */}
-        <motion.div variants={fadeUp} className="mb-6">
-          <EidPlannerWidget />
         </motion.div>
 
         {/* OOTD Widget */}

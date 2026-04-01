@@ -5,24 +5,6 @@
 
 const SEASONS = [
   {
-    key:    'eid_fitr',
-    start:  [3, 15],
-    end:    [4, 20],
-    label:  'Eid ul-Fitr',
-    vibe:   'mehndi-festive',
-    emoji:  '🌙',
-    daysWarning: [30, 14, 7, 3, 1],
-  },
-  {
-    key:    'eid_adha',
-    start:  [5, 20],
-    end:    [6, 25],
-    label:  'Eid ul-Adha',
-    vibe:   'desi-formal',
-    emoji:  '🐑',
-    daysWarning: [30, 14, 7, 3, 1],
-  },
-  {
     key:    'lawn',
     start:  [3, 1],
     end:    [7, 31],
