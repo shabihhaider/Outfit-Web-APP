@@ -33,7 +33,17 @@ def _mysql_uri() -> str:
 
 
 def _get_db_uri() -> str:
-    """Read DATABASE_URL or build MySQL URI."""
+    """Read DATABASE_URL or build MySQL URI.
+
+    Local override:
+      USE_LOCAL_MYSQL=1 forces MySQL URI even when DATABASE_URL is set.
+    """
+    use_local_mysql = os.environ.get("USE_LOCAL_MYSQL", "").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+    if use_local_mysql:
+        return _mysql_uri()
+
     uri = os.environ.get("DATABASE_URL")
     if uri:
         # SQLAlchemy 1.4+ requires 'postgresql://' instead of 'postgres://'
