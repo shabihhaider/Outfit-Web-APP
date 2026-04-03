@@ -14,7 +14,18 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-      - name: Push to hub
+      - name: Validate secrets
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://shabihhaider:$HF_TOKEN@huggingface.co/spaces/shabihhaider/outfitai main
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "HF_TOKEN secret is missing."
+            exit 1
+          fi
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git remote add hf "https://shabihhaider:$HF_TOKEN@huggingface.co/spaces/shabihhaider/outfitai"
+          git push hf HEAD:main
