@@ -9,6 +9,19 @@ import os
 from datetime import timedelta
 
 
+def _maybe_load_dotenv() -> None:
+    """Best-effort .env loading for local/dev; harmless in production."""
+    try:
+        from dotenv import load_dotenv  # type: ignore[import]
+        load_dotenv()
+    except Exception:
+        # Do not fail app startup if python-dotenv is unavailable.
+        pass
+
+
+_maybe_load_dotenv()
+
+
 def _mysql_uri() -> str:
     """Build MySQL URI from individual .env variables."""
     user     = os.environ.get("MYSQL_USER", "root")
