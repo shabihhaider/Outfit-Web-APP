@@ -11,6 +11,8 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,
 )
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.extensions import db, bcrypt
 from app.models_db import User
@@ -74,17 +76,38 @@ def login():
     if not email or not password:
         return jsonify({"error": "email and password are required."}), 422
 
-    user = User.query.filter_by(email=email).first()
-    if not user or not bcrypt.check_password_hash(user.password_hash, password):
+    user = None
+    fallback_row = None
+
+    try:
+        user = User.query.filter_by(email=email).first()
+    except SQLAlchemyError as exc:
+        # Fallback for schema drift in local databases (e.g., missing newly added columns).
+        current_app.logger.error("Auth login ORM lookup failed; using fallback query: %s", exc)
+        db.session.rollback()
+        fallback_row = db.session.execute(
+            text(
+                "SELECT id, name, gender, password_hash "
+                "FROM users WHERE email = :email LIMIT 1"
+            ),
+            {"email": email},
+        ).mappings().first()
+
+    password_hash = user.password_hash if user is not None else (fallback_row["password_hash"] if fallback_row else None)
+    if not password_hash or not bcrypt.check_password_hash(password_hash, password):
         return jsonify({"error": "Invalid email or password."}), 401
 
-    access_token = create_access_token(identity=str(user.id))
+    user_id = user.id if user is not None else int(fallback_row["id"])
+    name = user.name if user is not None else str(fallback_row["name"])
+    gender = user.gender if user is not None else str(fallback_row["gender"])
+
+    access_token = create_access_token(identity=str(user_id))
     return jsonify({
         "access_token": access_token,
-        "user_id":      user.id,
-        "name":         user.name,
-        "gender":       user.gender,
-        "avatar_url":   f"/uploads/{user.avatar_filename}" if user.avatar_filename else None,
+        "user_id":      user_id,
+        "name":         name,
+        "gender":       gender,
+        "avatar_url":   f"/uploads/{user.avatar_filename}" if user is not None and user.avatar_filename else None,
     }), 200
 
 
