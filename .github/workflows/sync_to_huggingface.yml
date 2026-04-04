@@ -28,4 +28,5 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git remote add hf "https://shabihhaider:$HF_TOKEN@huggingface.co/spaces/shabihhaider/outfitai"
-          git push hf HEAD:main
+          # GitHub main is the single source of truth for this Space.
+          git push --force hf HEAD:main
