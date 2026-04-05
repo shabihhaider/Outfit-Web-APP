@@ -46,6 +46,22 @@ dist/
 .env.*
 .flaskenv
 
+# High-sensitivity local files
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+id_rsa
+id_rsa.pub
+secrets*.json
+credentials*.json
+
+# Local databases and runtime state
+*.db
+*.sqlite
+*.sqlite3
+
 # Python
 __pycache__/
 *.py[cod]
@@ -97,6 +113,11 @@ uploads/
 
 # Logs
 *.log
+
+# Dev-only throwaway scripts (not part of the app)
+integration_test_helper.py
+test_fashn_call.py
+view_fashn_api.py
 
 # Deployment
 hf-deploy/
