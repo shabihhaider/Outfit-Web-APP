@@ -159,7 +159,7 @@ export async function shareOrDownload(outfit, items) {
         await navigator.share({ files: [file], title: 'My Outfit — OutfitAI' })
         return
       }
-    } catch {}
+    } catch (_e) { /* Web Share API not available, fall through to download */ }
   }
 
   // Desktop fallback: download
