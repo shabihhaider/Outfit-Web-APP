@@ -20,6 +20,7 @@ from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
 
+from app.cache import recommendation_cache
 from app.extensions import db, limiter
 from app.models_db import User, WardrobeItemDB, OutfitHistory
 from app.utils import item_db_to_engine
@@ -209,7 +210,13 @@ def recommend():
     if err:
         return err
 
-    # 3. Load wardrobe
+    # 3. Check cache
+    cached = recommendation_cache.get(user_id, occasion, temp_celsius)
+    if cached is not None:
+        logger.debug("Cache HIT for user=%s occasion=%s", user_id, occasion)
+        return jsonify(cached), 200
+
+    # 4. Load wardrobe
     user = db.session.get(User, user_id)
     if user is None:
         return jsonify({"error": "User not found."}), 404
@@ -222,7 +229,7 @@ def recommend():
     )
     wardrobe = [item_db_to_engine(item) for item in items_db]
 
-    # 4. Run recommendation pipeline
+    # 5. Run recommendation pipeline
     from engine.models import InsufficientWardrobeError
     try:
         outfits = current_app.pipeline.recommend(
@@ -237,12 +244,14 @@ def recommend():
         logger.error("Recommendation engine error: %s", exc)
         return jsonify({"error": "Recommendation engine failed. Please try again."}), 500
 
-    # 5. Auto-log each outfit to history
+    # 6. Auto-log each outfit to history
     _log_history(user_id, occasion, temp_celsius, outfits)
 
-    # 6. Format and return response
+    # 7. Format, cache, and return response
     filename_map = {item.id: item.image_filename for item in items_db}
-    return jsonify(_format_outfits_response(outfits, filename_map, temp_celsius, occasion)), 200
+    response_data = _format_outfits_response(outfits, filename_map, temp_celsius, occasion)
+    recommendation_cache.put(user_id, occasion, temp_celsius, response_data)
+    return jsonify(response_data), 200
 
 
 # ─── POST /recommendations/around-item/<item_id> ─────────────────────────────
