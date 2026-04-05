@@ -27,13 +27,14 @@ def create_app(config_name: str = "development") -> Flask:
     app.config.from_object(config[config_name])
 
     # -- Init extensions -------------------------------------------------------
-    from app.extensions import db, migrate, jwt, bcrypt, cors, limiter
+    from app.extensions import db, migrate, jwt, bcrypt, cors, compress, limiter
 
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
     bcrypt.init_app(app)
     cors.init_app(app)
+    compress.init_app(app)
     limiter.init_app(app)
 
     # -- Load ML pipeline once at startup --------------------------------------

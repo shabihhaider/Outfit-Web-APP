@@ -30,6 +30,9 @@ psycopg2-binary>=2.9.0
 PyMySQL>=1.1.0
 cryptography>=41.0.0
 
+# Response compression
+flask-compress>=1.14
+
 # Production WSGI server
 gunicorn>=21.2.0
 

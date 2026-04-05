@@ -31,6 +31,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from sqlalchemy import func
 
+from app.cache import recommendation_cache
 from app.extensions import db
 from app.models_db import WardrobeItemDB, OutfitHistory, OutfitFeedback, SavedOutfit, User
 from app.utils import allowed_file, validate_image_content, validate_clothing_photo, process_image_for_atelier
@@ -209,6 +210,7 @@ def upload_item():
     )
     db.session.add(item)
     db.session.commit()
+    recommendation_cache.invalidate_user(user_id)
 
     # ── 9. Return with upload guidance ────────────────────────────────────────
     return jsonify({**item.to_dict(), "tips": UPLOAD_TIPS, "bg_removed": bg_removed}), 201
@@ -255,6 +257,7 @@ def delete_item(item_id: int):
 
     db.session.delete(item)
     db.session.commit()
+    recommendation_cache.invalidate_user(user_id)
     return jsonify({"message": "Item deleted."}), 200
 
 
