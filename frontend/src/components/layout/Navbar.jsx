@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiHome, FiGrid, FiStar, FiCalendar, FiBookmark, FiClock, FiLogOut, FiEdit3, FiMenu, FiX, FiUsers, FiSettings } from 'react-icons/fi'
@@ -24,6 +24,11 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [avatarError, setAvatarError] = useState(false)
 
+  const location = useLocation()
+
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false) }, [location.pathname])
+
   // Reset error state whenever the avatar URL changes (new upload)
   useEffect(() => { setAvatarError(false) }, [user?.avatar_url])
 
@@ -34,7 +39,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-40 bg-white/70 dark:bg-brand-900/70 backdrop-blur-xl border-b border-brand-100/60 dark:border-brand-800/40">
+      <nav className="sticky top-0 z-40 bg-white/70 dark:bg-brand-900/70 backdrop-blur-xl border-b border-brand-100/60 dark:border-brand-800/40" aria-label="Main navigation">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="h-16 flex items-center justify-between">
             {/* Logo */}
@@ -115,6 +120,8 @@ export default function Navbar() {
               <button
                 onClick={() => setMobileOpen(o => !o)}
                 className="md:hidden p-2 rounded-lg text-brand-500 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors"
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileOpen}
               >
                 {mobileOpen ? <FiX size={20} /> : <FiMenu size={20} />}
               </button>
@@ -126,6 +133,16 @@ export default function Navbar() {
       {/* Mobile slide-down menu */}
       <AnimatePresence>
         {mobileOpen && (
+          <>
+          {/* Backdrop to dismiss on tap */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="md:hidden fixed inset-0 top-16 z-20 bg-black/20"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -180,6 +197,7 @@ export default function Navbar() {
               </div>
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

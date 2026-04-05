@@ -7,7 +7,6 @@ import { getHistory } from '../api/outfits.js'
 import { saveOutfit } from '../api/outfits.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import OutfitItems from '../components/recommendations/OutfitItems.jsx'
-import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import ShareButton from '../components/ui/ShareButton.jsx'
@@ -56,7 +55,22 @@ export default function HistoryPage() {
           <p className="text-brand-500 dark:text-brand-400 mt-1">Your past outfit recommendations</p>
         </div>
 
-        {isLoading && <LoadingSpinner className="py-16" size="lg" />}
+        {isLoading && (
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="card p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="skeleton h-5 w-16 rounded-full" />
+                  <div className="skeleton h-4 w-12 rounded" />
+                  <div className="skeleton h-4 w-20 rounded ml-auto" />
+                </div>
+                <div className="flex gap-2">
+                  {[1,2,3].map(j => <div key={j} className="skeleton w-16 h-16 rounded-xl" />)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {error && <ErrorMessage message="Could not load history." onRetry={refetch} />}
 
         {!isLoading && !error && history.length === 0 && (

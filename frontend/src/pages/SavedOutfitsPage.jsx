@@ -5,7 +5,6 @@ import { FiTrash2, FiStar, FiChevronRight, FiGrid, FiList, FiShare2, FiUser } fr
 import { getSaved, deleteSaved } from '../api/outfits.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import OutfitItems from '../components/recommendations/OutfitItems.jsx'
-import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
@@ -71,7 +70,21 @@ export default function SavedOutfitsPage() {
           </div>
         </motion.div>
 
-        {isLoading && <LoadingSpinner className="py-32" size="lg" />}
+        {isLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="card-glass p-6">
+                <div className="skeleton h-3 w-20 rounded mb-2" />
+                <div className="skeleton h-6 w-36 rounded mb-6" />
+                <div className="skeleton h-32 w-full rounded-2xl mb-8" />
+                <div className="flex justify-between">
+                  <div className="skeleton h-5 w-16 rounded-full" />
+                  <div className="skeleton h-5 w-20 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {error && <ErrorMessage message="The gallery could not be synchronized." onRetry={refetch} />}
 
         {!isLoading && !error && outfits.length === 0 && (

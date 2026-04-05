@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 import AuthGuard from './guards/AuthGuard.jsx'
+import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
 import Navbar from './components/layout/Navbar.jsx'
 
 import LoginPage from './pages/LoginPage.jsx'
@@ -20,8 +21,15 @@ import OnboardingFlow from './components/onboarding/OnboardingFlow.jsx'
 function Layout({ children }) {
   return (
     <div className="min-h-screen bg-brand-50 dark:bg-brand-950">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-brand-900 focus:text-white focus:rounded-lg focus:text-sm focus:font-medium">
+        Skip to content
+      </a>
       <Navbar />
-      {children}
+      <main id="main-content">
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
+      </main>
     </div>
   )
 }
