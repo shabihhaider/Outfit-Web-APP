@@ -9,7 +9,6 @@ import FeedCard from '../components/social/FeedCard.jsx'
 import RemixResultModal from '../components/social/RemixResultModal.jsx'
 import PostDetailModal from '../components/social/PostDetailModal.jsx'
 import VibeTagPill from '../components/social/VibeTagPill.jsx'
-import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 
 const TABS = [
@@ -136,7 +135,26 @@ export default function SocialFeedPage() {
         </div>
 
         {/* Feed grid */}
-        {isLoading && <LoadingSpinner className="py-24" size="lg" />}
+        {isLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="card overflow-hidden">
+                <div className="skeleton aspect-square" />
+                <div className="p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="skeleton w-6 h-6 rounded-full" />
+                    <div className="skeleton h-3 w-20 rounded" />
+                  </div>
+                  <div className="skeleton h-3 w-full rounded" />
+                  <div className="flex gap-1">
+                    <div className="skeleton h-5 w-12 rounded-full" />
+                    <div className="skeleton h-5 w-14 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {isError && (
           <EmptyState

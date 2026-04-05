@@ -55,6 +55,8 @@ export default function WardrobeCard({ item, onDelete }) {
             <img
               src={imageUrl}
               alt={`${item.category} item`}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onError={e => { e.target.style.display = 'none' }}
             />

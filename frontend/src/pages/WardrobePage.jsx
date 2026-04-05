@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FiCamera, FiPlus } from 'react-icons/fi'
+import { FiPlus } from 'react-icons/fi'
 import { getItems, deleteItem } from '../api/wardrobe.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import WardrobeGrid from '../components/wardrobe/WardrobeGrid.jsx'
 import UploadModal from '../components/wardrobe/UploadModal.jsx'
-import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 
 const CATEGORIES = ['all', 'top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit']
@@ -81,7 +80,19 @@ export default function WardrobePage() {
         </div>
 
         {/* Content */}
-        {isLoading && <LoadingSpinner className="py-16" size="lg" />}
+        {isLoading && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="card overflow-hidden">
+                <div className="skeleton aspect-square" />
+                <div className="p-3 space-y-2">
+                  <div className="skeleton h-4 w-16 rounded" />
+                  <div className="skeleton h-3 w-24 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {error && <ErrorMessage message="Could not load wardrobe." onRetry={refetch} />}
         {!isLoading && !error && (
           <WardrobeGrid

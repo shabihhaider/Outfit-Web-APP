@@ -137,7 +137,7 @@ export default function OOTDWidget() {
             >
               <div className="w-20 h-20 rounded-xl overflow-hidden bg-brand-100/60 dark:bg-brand-800/40 border border-brand-100/60 dark:border-brand-700/40 shadow-sm">
                 {item.image_url && (
-                  <img src={`${API_URL}${item.image_url}`} alt={item.category} className="w-full h-full object-cover" />
+                  <img src={`${API_URL}${item.image_url}`} alt={item.category} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 )}
               </div>
               <p className="text-[11px] text-brand-500 dark:text-brand-400 text-center mt-1.5 capitalize">{item.category}</p>

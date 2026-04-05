@@ -81,6 +81,8 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
             <img
               src={previewUrl}
               alt="Outfit preview"
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onError={() => setImageError(true)}
             />
@@ -250,6 +252,8 @@ function ItemMosaic({ images, occasion, score }) {
             <img
               src={`${BASE}${url}`}
               alt=""
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onError={e => {
                 e.currentTarget.style.display = 'none'
