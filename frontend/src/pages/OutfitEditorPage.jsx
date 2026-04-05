@@ -125,7 +125,7 @@ export default function OutfitEditorPage() {
     try {
       const item = JSON.parse(e.dataTransfer.getData('application/json'))
       addToCanvas(item)
-    } catch {}
+    } catch (_e) { /* ignore malformed drag data */ }
   }
 
   function handleDragOver(e) {

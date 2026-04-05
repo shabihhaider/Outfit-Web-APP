@@ -64,8 +64,8 @@ export default function OOTDWidget() {
   if (error) {
     return (
       <div className="card p-6">
-        <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200 mb-2">Today's Pick</h2>
-        <p className="text-sm text-brand-400 dark:text-brand-500">Could not load outfit of the day.</p>
+        <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200 mb-2">Today&apos;s Pick</h2>
+        <p className="text-sm text-brand-400 dark:text-brand-500">Could not load today&apos;s outfit.</p>
       </div>
     )
   }
@@ -73,7 +73,7 @@ export default function OOTDWidget() {
   if (!outfit) {
     return (
       <div className="card p-6">
-        <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200 mb-2">Today's Pick</h2>
+        <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200 mb-2">Today&apos;s Pick</h2>
         <p className="text-sm text-brand-500 dark:text-brand-400">{data?.reason || 'Upload more items to get daily outfit suggestions.'}</p>
       </div>
     )
@@ -98,7 +98,7 @@ export default function OOTDWidget() {
             <div className="w-8 h-8 rounded-lg bg-accent-100/80 dark:bg-accent-900/25 flex items-center justify-center">
               <FiSun className="text-accent-500" size={16} />
             </div>
-            <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200">Today's Pick</h2>
+            <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200">Today&apos;s Pick</h2>
           </div>
           <p className="text-xs text-brand-400 dark:text-brand-500 mt-1 ml-[42px] flex items-center gap-1.5">
             <span className="capitalize">{outfit.occasion}</span>

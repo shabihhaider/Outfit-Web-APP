@@ -132,7 +132,7 @@ export default function StyleDNACard() {
           </h3>
         </div>
         <p className="text-sm text-brand-500 dark:text-brand-400 italic mb-4">
-          "{tagline}"
+          &ldquo;{tagline}&rdquo;
         </p>
 
         {/* Tone pills */}
