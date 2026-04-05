@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { FiX, FiUploadCloud, FiUser, FiRefreshCw, FiCheck, FiAlertTriangle } from 'react-icons/fi'
+import { FiX, FiUploadCloud, FiUser, FiRefreshCw, FiCheck, FiAlertTriangle, FiDownload } from 'react-icons/fi'
 import { getPersonPhoto, uploadPersonPhoto, submitTryOn, getJobStatus } from '../../api/vto.js'
 import LoadingSpinner from '../ui/LoadingSpinner.jsx'
 
@@ -296,41 +296,37 @@ export default function TryOnModal({ open, onClose, item }) {
                   First try takes a few seconds; subsequent tries are instant from cache.
                 </p>
 
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setPhase('setup')}
-                    className="btn-secondary flex items-center gap-2"
-                    title="Change person photo"
-                  >
-                    <FiRefreshCw size={14} /> Change photo
-                  </button>
+                <div className="flex flex-col gap-3">
                   <button
                     onClick={() => submitMutation.mutate()}
                     disabled={submitMutation.isPending || quota.current >= quota.limit}
-                    className="flex-1 btn-primary flex items-center justify-center gap-2 relative"
+                    className="w-full btn-primary py-3 flex items-center justify-center gap-2.5 text-sm font-semibold tracking-wide"
                   >
                     {submitMutation.isPending
                       ? <><LoadingSpinner size="sm" /> Starting...</>
-                      : (
-                        <>
-                          <span className="flex-1 text-center">Generate Try-On</span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            quota.current >= quota.limit
-                              ? 'bg-red-500/20 text-red-500' 
-                              : 'bg-brand-900/40 text-brand-200'
-                          }`}>
-                            {quota.current} / {quota.limit}
-                          </span>
-                        </>
-                      )
+                      : <>Generate Try-On</>
                     }
                   </button>
+                  <div className="flex items-center justify-between">
+                    <button
+                      onClick={() => setPhase('setup')}
+                      className="text-xs text-brand-400 hover:text-brand-200 flex items-center gap-1.5 transition-colors"
+                      title="Change person photo"
+                    >
+                      <FiRefreshCw size={12} /> Change photo
+                    </button>
+                    <span className={`text-xs font-medium ${
+                      quota.current >= quota.limit
+                        ? 'text-red-400'
+                        : 'text-brand-400'
+                    }`}>
+                      {quota.current >= quota.limit
+                        ? 'Daily limit reached'
+                        : <>{quota.limit - quota.current} of {quota.limit} credits left</>
+                      }
+                    </span>
+                  </div>
                 </div>
-                {quota.current >= quota.limit && (
-                   <p className="text-[10px] text-red-500 text-center mt-2 font-medium">
-                     Daily quota reached. Please try again tomorrow.
-                   </p>
-                )}
               </motion.div>
             )}
 
@@ -420,7 +416,7 @@ export default function TryOnModal({ open, onClose, item }) {
                     download={`tryon_${item.category}.png`}
                     className="flex-1 btn-primary text-center flex items-center justify-center gap-2"
                   >
-                    Download
+                    <FiDownload size={14} /> Download
                   </a>
                 </div>
               </motion.div>
