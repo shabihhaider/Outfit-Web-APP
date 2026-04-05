@@ -48,15 +48,15 @@ def main():
     t1 = time.time()
     try:
         result = client.predict(
-            handle_file(PERSON_IMG),  # person_image
-            handle_file(GARMENT_IMG), # garment_image
-            "tops",                   # category
-            "flat-lay",              # garment_photo_type
-            50,                       # num_timesteps
-            1.5,                      # guidance_scale
-            42,                       # seed
-            True,                     # segmentation_free
-            fn_index=0
+            person_image=handle_file(PERSON_IMG),
+            garment_image=handle_file(GARMENT_IMG),
+            category="tops",
+            garment_photo_type="flat-lay",
+            num_timesteps=50,
+            guidance_scale=1.5,
+            seed=42,
+            segmentation_free=True,
+            api_name="/try_on",
         )
     except Exception as exc:
         elapsed = time.time() - t1
@@ -73,33 +73,38 @@ def main():
     print(f"  type(result) = {type(result).__name__}")
     print(f"  repr(result) = {repr(result)[:200]}")
 
-    # Check if it's a file path we can copy
-    if isinstance(result, str) and os.path.exists(result):
+    # Extract file path from result (API returns dict with 'path' key)
+    import shutil
+    out_path = "uploads/fashn_smoke_test_result.png"
+
+    if isinstance(result, dict):
+        file_path = result.get("path") or result.get("url", "")
+        print(f"  Result dict keys: {list(result.keys())}")
+        if file_path and os.path.exists(file_path):
+            size_kb = os.path.getsize(file_path) / 1024
+            print(f"  Result file: {file_path} ({size_kb:.0f} KB)")
+            shutil.copy(file_path, out_path)
+            print(f"  Copied to: {out_path}")
+            print("\n  SUCCESS — open that file to visually verify the try-on result.")
+        elif file_path and file_path.startswith(("http://", "https://")):
+            print(f"  Result URL: {file_path}")
+            import requests
+            resp = requests.get(file_path, timeout=30)
+            with open(out_path, "wb") as f:
+                f.write(resp.content)
+            print(f"  Downloaded to: {out_path}")
+            print("\n  SUCCESS — open that file to verify.")
+        else:
+            print(f"  WARNING: Could not resolve file from dict: {result}")
+    elif isinstance(result, str) and os.path.exists(result):
         size_kb = os.path.getsize(result) / 1024
         print(f"  Result is a file path: {result} ({size_kb:.0f} KB)")
-
-        # Copy to uploads for visual check
-        import shutil
-        out_path = "uploads/fashn_smoke_test_result.png"
         shutil.copy(result, out_path)
         print(f"  Copied to: {out_path}")
-        print("\n  SUCCESS — open that file to visually verify the try-on result.")
-    elif isinstance(result, (list, tuple)):
-        print(f"  Result is {type(result).__name__} with {len(result)} elements:")
-        for i, item in enumerate(result):
-            print(f"    [{i}] type={type(item).__name__}, repr={repr(item)[:100]}")
-        # Try the last element as file path
-        last = result[-1] if result else None
-        if isinstance(last, str) and os.path.exists(last):
-            import shutil
-            out_path = "uploads/fashn_smoke_test_result.png"
-            shutil.copy(last, out_path)
-            print(f"\n  Copied last element to: {out_path}")
-            print("  SUCCESS — open that file to verify.")
-        else:
-            print("\n  WARNING: Could not find a file path in result. Manual inspection needed.")
+        print("\n  SUCCESS — open that file to verify.")
     else:
-        print(f"  Unexpected result type. Check if _extract_output_source handles this.")
+        print(f"  Unexpected result type: {type(result).__name__}")
+        print(f"  Value: {repr(result)[:300]}")
 
     print(f"\nTotal wall time: {time.time() - t0:.1f}s")
 

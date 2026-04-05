@@ -402,18 +402,22 @@ def _run_tryon_job(
 
                 client = Client(fashn_space_id, token=hf_token or None)
                 result = client.predict(
-                    handle_file(person_path),  # person_image
-                    handle_file(garment_path), # garment_image
-                    fashn_cat,                # category
-                    "flat-lay",               # garment_photo_type
-                    50,                        # num_timesteps
-                    1.5,                       # guidance_scale
-                    42,                        # seed
-                    True,                      # segmentation_free
-                    fn_index=0
+                    person_image=handle_file(person_path),
+                    garment_image=handle_file(garment_path),
+                    category=fashn_cat,
+                    garment_photo_type="flat-lay",
+                    num_timesteps=50,
+                    guidance_scale=1.5,
+                    seed=42,
+                    segmentation_free=True,
+                    api_name="/try_on",
                 )
 
-                result_source = _extract_output_source(result)
+                # Result is a dict with 'path' key for local file
+                if isinstance(result, dict):
+                    result_source = result.get("path") or result.get("url") or ""
+                else:
+                    result_source = _extract_output_source(result)
                 if not result_source:
                     raise RuntimeError("FASHN engine returned an empty response.")
 
@@ -492,13 +496,17 @@ def _run_tryon_job(
                     api_name       = "/tryon",
                 )
 
-                # HF space returns tuple/list. Final try-on image is usually the last element.
-                result_source = _extract_output_source(result)
+                # IDM-VTON returns (output_filepath, masked_image_filepath).
+                # We want the first element (the try-on result).
+                if isinstance(result, (list, tuple)) and len(result) >= 1:
+                    result_source = str(result[0])
+                else:
+                    result_source = _extract_output_source(result)
                 if not result_source:
                     raise RuntimeError("Fallback engine returned an empty response.")
                 result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
                 result_path     = os.path.join(upload_dir, result_filename)
-                shutil.copy(str(result_source), result_path)
+                shutil.copy(result_source, result_path)
 
                 job.status          = "ready"
                 job.result_filename = result_filename
