@@ -9,8 +9,8 @@ Architecture: pre-generation + persistent cache.
     from the local uploads/ folder.  Zero external calls.
 
 Engine priority:
-  1. Replicate API (fast, reliable — requires REPLICATE_API_TOKEN)
-  2. Gradio fallback (free, shared — requires HF_TOKEN)
+  1. FASHN VTON v1.5 via HF Space (fast, free ZeroGPU — requires HF_TOKEN)
+  2. IDM-VTON via HF Space (slower fallback — requires HF_TOKEN)
 
 Routes:
   POST   /vto/person-photo   — upload / replace user's VTO person photo
@@ -26,6 +26,7 @@ import logging
 import os
 import shutil
 import threading
+import time
 import uuid
 from datetime import datetime, timezone
 
@@ -109,24 +110,9 @@ def _is_rate_limited_error(error_str: str) -> bool:
     )
 
 
-def _is_billing_error(error_str: str) -> bool:
-    msg = (error_str or "").lower()
-    return (
-        "insufficient credit" in msg
-        or "status: 402" in msg
-        or "payment required" in msg
-        or "billing" in msg
-    )
-
-
 def _clean_secret(value: str | None) -> str:
     """Normalize env secrets so whitespace-only values are treated as missing."""
     return (value or "").strip()
-
-
-def _is_invalid_auth_header_error(error_str: str) -> bool:
-    msg = (error_str or "").lower()
-    return "illegal header value" in msg or "bearer  " in msg
 
 
 # ─── POST /vto/person-photo ───────────────────────────────────────────────────
@@ -309,10 +295,10 @@ def submit_tryon():
         }), 429
 
     # ── Create job ────────────────────────────────────────────────────────────
-    hf_token = _clean_secret(current_app.config.get("HF_TOKEN", ""))
-    replicate_token = _clean_secret(current_app.config.get("REPLICATE_API_TOKEN", ""))
-    hf_space_id = _clean_secret(current_app.config.get("HF_VTO_SPACE_ID", "yisol/IDM-VTON")) or "yisol/IDM-VTON"
-    if not hf_token and not replicate_token:
+    hf_token       = _clean_secret(current_app.config.get("HF_TOKEN", ""))
+    fashn_space_id = _clean_secret(current_app.config.get("HF_FASHN_SPACE_ID", "fashn-ai/fashn-vton-1.5")) or "fashn-ai/fashn-vton-1.5"
+    hf_space_id    = _clean_secret(current_app.config.get("HF_VTO_SPACE_ID", "yisol/IDM-VTON")) or "yisol/IDM-VTON"
+    if not hf_token:
         return jsonify({
             "error": "Virtual Try-On is not configured. Contact the administrator."
         }), 503
@@ -330,7 +316,7 @@ def submit_tryon():
     app = current_app._get_current_object()  # type: ignore[attr-defined]
     t = threading.Thread(
         target  = _run_tryon_job,
-        args    = (app, job.id, person_path, garment_path, hf_token, hf_space_id, upload_dir),
+        args    = (app, job.id, person_path, garment_path, hf_token, fashn_space_id, hf_space_id, upload_dir),
         daemon  = True,
         name    = f"vto-job-{job.id}",
     )
@@ -362,17 +348,18 @@ def get_job_status(job_id: int):
 
 def _run_tryon_job(
     app,
-    job_id:       int,
-    person_path:  str,
-    garment_path: str,
-    hf_token:     str,
-    hf_space_id:  str,
-    upload_dir:   str,
+    job_id:          int,
+    person_path:     str,
+    garment_path:    str,
+    hf_token:        str,
+    fashn_space_id:  str,
+    hf_space_id:     str,
+    upload_dir:      str,
 ) -> None:
     """
     Background worker: OutfitAI VTO Engine (hybrid).
-    1. Try Replicate API (fast, reliable).
-    2. Fallback to Gradio inference (free, shared).
+    1. Try FASHN VTON v1.5 via HF Space (fast, free ZeroGPU).
+    2. Fallback to IDM-VTON via HF Space (slower, shared).
     """
     with app.app_context():
         # Get Job & Item
@@ -390,95 +377,92 @@ def _run_tryon_job(
         job.status = "processing"
         db.session.commit()
 
-        # ── Step 1: Replicate API (primary engine) ───────────────────────────
-        replicate_token = _clean_secret(current_app.config.get("REPLICATE_API_TOKEN"))
-        if replicate_token:
+        # ── Step 1: FASHN VTON v1.5 (primary engine — free ZeroGPU) ─────────
+        fashn_cat_map = {
+            "top":      "tops",
+            "outwear":  "tops",
+            "bottom":   "bottoms",
+            "dress":    "one-pieces",
+            "jumpsuit": "one-pieces",
+            "shoes":    "tops",
+        }
+        fashn_cat = fashn_cat_map.get(item.category, "tops")
+
+        fashn_max_retries = 3
+        fashn_attempt = 0
+
+        while fashn_attempt < fashn_max_retries:
+            fashn_attempt += 1
             try:
-                import replicate
-                logger.info("VTO job %d: attempting primary engine...", job_id)
-                
-                os.environ["REPLICATE_API_TOKEN"] = replicate_token
+                from gradio_client import Client, handle_file
+                logger.info(
+                    "VTO job %d: trying FASHN engine %s (attempt %d/%d)...",
+                    job_id, fashn_space_id, fashn_attempt, fashn_max_retries,
+                )
 
-                cat_map = {
-                    "top":      "upper_body",
-                    "outwear":  "upper_body",
-                    "bottom":   "lower_body",
-                    "dress":    "dresses",
-                    "jumpsuit": "dresses",
-                    "shoes":    "upper_body" # Fallback
-                }
-                rep_cat = cat_map.get(item.category, "upper_body")
+                client = Client(fashn_space_id, token=hf_token or None)
+                result = client.predict(
+                    handle_file(person_path),  # person_image
+                    handle_file(garment_path), # garment_image
+                    fashn_cat,                # category
+                    "flat-lay",               # garment_photo_type
+                    50,                        # num_timesteps
+                    1.5,                       # guidance_scale
+                    42,                        # seed
+                    True,                      # segmentation_free
+                    fn_index=0
+                )
 
-                with open(person_path, "rb") as p_file, open(garment_path, "rb") as g_file:
-                    output = replicate.run(
-                        "cuuupid/idm-vton:0513734a452173b8173e907e3a59d19a36266e55b48528559432bd21c7d7e985",
-                        input={
-                            "human_img":   p_file,
-                            "garm_img":    g_file,
-                            "garment_des": f"{item.category} clothing",
-                            "category":    rep_cat
-                        }
-                    )
-
-                source = _extract_output_source(output)
-                if not source:
-                    raise RuntimeError("Primary engine returned an empty response.")
+                result_source = _extract_output_source(result)
+                if not result_source:
+                    raise RuntimeError("FASHN engine returned an empty response.")
 
                 result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
                 result_path = os.path.join(upload_dir, result_filename)
 
-                if source.startswith(("http://", "https://")):
-                    import requests
-                    resp = requests.get(source, timeout=30)
+                source_str = str(result_source)
+                if source_str.startswith(("http://", "https://")):
+                    import requests as _req
+                    resp = _req.get(source_str, timeout=30)
                     resp.raise_for_status()
                     with open(result_path, "wb") as f:
                         f.write(resp.content)
+                elif hasattr(result_source, "save") and callable(result_source.save):
+                    result_source.save(result_path)
                 else:
-                    if not os.path.exists(source):
-                        raise FileNotFoundError(f"Primary output path not found: {source}")
-                    shutil.copy(source, result_path)
+                    if not os.path.exists(source_str):
+                        raise FileNotFoundError(f"FASHN output path not found: {source_str}")
+                    shutil.copy(source_str, result_path)
 
                 job.status          = "ready"
                 job.result_filename = result_filename
                 job.completed_at    = datetime.now(timezone.utc)
                 db.session.commit()
-                logger.info("VTO job %d: completed via primary engine.", job_id)
+                logger.info("VTO job %d: completed via FASHN engine.", job_id)
                 return
 
-            except Exception as rep_exc:
-                err_msg = str(rep_exc)
-                logger.warning("VTO job %d: primary engine failed (%s). Falling back...", job_id, err_msg)
-                if _is_billing_error(err_msg):
-                    job.error_msg = (
-                        "Primary engine unavailable (Replicate billing/credits not active). "
-                        "Using fallback engine."
-                    )[:250]
-                elif _is_invalid_auth_header_error(err_msg):
-                    job.error_msg = (
-                        "Primary engine token is invalid or empty in deployment secrets. "
-                        "Using fallback engine."
-                    )[:250]
-                else:
-                    job.error_msg = "Primary engine temporarily unavailable. Using fallback engine."[:250]
-                db.session.commit()
-        else:
-            logger.info("VTO job %d: REPLICATE_API_TOKEN not set. Using fallback engine.", job_id)
-            job.error_msg = "Info: REPLICATE_API_TOKEN missing from Space Settings. Using slow fallback."
-            db.session.commit()
+            except Exception as fashn_exc:
+                error_str = str(fashn_exc)
+                logger.warning(
+                    "VTO job %d: FASHN attempt %d/%d failed: %s",
+                    job_id, fashn_attempt, fashn_max_retries, error_str,
+                )
+                if _is_rate_limited_error(error_str) and fashn_attempt < fashn_max_retries:
+                    wait_time = 10 * fashn_attempt
+                    logger.warning("VTO job %d: FASHN throttled. Waiting %ds...", job_id, wait_time)
+                    time.sleep(wait_time)
+                    continue
+                if fashn_attempt >= fashn_max_retries:
+                    break
+                time.sleep(5)
 
-        if not hf_token:
-            job.status = "failed"
-            job.error_msg = (
-                f"{job.error_msg or ''} | Fallback unavailable: HF_TOKEN is not configured."
-            )[:500].strip(" |")
-            job.completed_at = datetime.now(timezone.utc)
-            db.session.commit()
-            return
+        logger.warning("VTO job %d: FASHN engine exhausted. Falling back to IDM-VTON...", job_id)
+        job.error_msg = "Primary engine temporarily unavailable. Using fallback engine."
+        db.session.commit()
 
-        # ── Step 2: Gradio fallback engine ──────────────────────────────────────
+        # ── Step 2: IDM-VTON fallback engine ──────────────────────────────────
         max_retries = 4
         attempt = 0
-        import time
 
         while attempt < max_retries:
             attempt += 1

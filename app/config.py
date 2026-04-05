@@ -63,9 +63,9 @@ class Config:
     ALLOWED_EXTENSIONS       = {"jpg", "jpeg", "png"}
     MODEL1_PATH              = "models/model1_efficientnet_best.h5"
     MODEL2_PATH              = os.path.join("models", "model 2 Assets", "model2_compatibility_scorer.h5")
-    # VTO engine tokens (Replicate = primary, HF = fallback)
-    REPLICATE_API_TOKEN      = os.environ.get("REPLICATE_API_TOKEN", "")
+    # VTO engines (FASHN v1.5 = primary, IDM-VTON = fallback; both use HF Spaces)
     HF_TOKEN                 = os.environ.get("HF_TOKEN", "")
+    HF_FASHN_SPACE_ID        = os.environ.get("HF_FASHN_SPACE_ID", "fashn-ai/fashn-vton-1.5")
     HF_VTO_SPACE_ID          = os.environ.get("HF_VTO_SPACE_ID", "yisol/IDM-VTON")
     # flask-limiter: explicit in-memory storage suppresses the startup warning.
     # Switch to Redis URI in production: "redis://localhost:6379/0"
