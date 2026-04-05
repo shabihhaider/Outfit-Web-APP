@@ -53,7 +53,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
-from sqlalchemy import func
+from sqlalchemy import case, func
 from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
@@ -477,10 +477,10 @@ def unfollow_user(target_id: int):
         return jsonify({"error": "Not following this user."}), 404
 
     User.query.filter_by(id=follower_id).update(
-        {"following_count": func.greatest(User.following_count - 1, 0)}
+        {"following_count": case((User.following_count >= 1, User.following_count - 1), else_=0)}
     )
     User.query.filter_by(id=target_id).update(
-        {"follower_count": func.greatest(User.follower_count - 1, 0)}
+        {"follower_count": case((User.follower_count >= 1, User.follower_count - 1), else_=0)}
     )
     db.session.commit()
     return jsonify({"message": "Unfollowed."}), 200
@@ -846,7 +846,7 @@ def toggle_like(post_id: int):
         # Unlike
         db.session.delete(existing)
         SharedOutfit.query.filter_by(id=post_id).update(
-            {"like_count": func.greatest(SharedOutfit.like_count - 1, 0)}
+            {"like_count": case((SharedOutfit.like_count >= 1, SharedOutfit.like_count - 1), else_=0)}
         )
         db.session.commit()
         db.session.refresh(post)
