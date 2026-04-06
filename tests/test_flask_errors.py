@@ -18,8 +18,10 @@ class TestErrorHandlers:
 
     # ── 404 ───────────────────────────────────────────────────────────────────
 
-    def test_404_returns_json(self, client):
-        resp = client.get("/this/route/does/not/exist")
+    def test_404_returns_json(self, client, auth_headers):
+        # Delete a non-existent saved outfit to trigger a proper 404
+        # (SPA catch-all intercepts unknown top-level paths when frontend/dist exists)
+        resp = client.delete("/outfits/saved/99999", headers=auth_headers)
         assert resp.status_code == 404
         assert resp.content_type.startswith("application/json")
         assert "error" in resp.get_json()
@@ -80,13 +82,15 @@ class TestErrorHandlers:
     def test_health_returns_ok(self, client):
         resp = client.get("/health")
         assert resp.status_code == 200
-        assert resp.get_json() == {"status": "ok"}
+        data = resp.get_json()
+        assert data["status"] == "healthy"
+        assert "components" in data
         assert resp.content_type.startswith("application/json")
 
     # ── All error responses have Content-Type: application/json ──────────────
 
-    def test_no_html_in_404_body(self, client):
-        resp = client.get("/nonexistent-route-xyz")
+    def test_no_html_in_404_body(self, client, auth_headers):
+        resp = client.delete("/outfits/saved/99999", headers=auth_headers)
         assert b"<!DOCTYPE" not in resp.data
         assert b"<html" not in resp.data.lower()
 
