@@ -390,14 +390,16 @@ def _run_tryon_job(
 
         fashn_max_retries = 3
         fashn_attempt = 0
+        engine_start = time.time()
 
         while fashn_attempt < fashn_max_retries:
             fashn_attempt += 1
             try:
                 from gradio_client import Client, handle_file
                 logger.info(
-                    "VTO job %d: trying FASHN engine %s (attempt %d/%d)...",
+                    "VTO job %d: trying FASHN engine %s (attempt %d/%d)",
                     job_id, fashn_space_id, fashn_attempt, fashn_max_retries,
+                    extra={"engine": "fashn", "job_id": job_id, "attempt": fashn_attempt},
                 )
 
                 client = Client(fashn_space_id, token=hf_token or None)
@@ -442,7 +444,12 @@ def _run_tryon_job(
                 job.result_filename = result_filename
                 job.completed_at    = datetime.now(timezone.utc)
                 db.session.commit()
-                logger.info("VTO job %d: completed via FASHN engine.", job_id)
+                elapsed = round(time.time() - engine_start, 1)
+                logger.info(
+                    "VTO job %d: completed via FASHN engine in %.1fs",
+                    job_id, elapsed,
+                    extra={"engine": "fashn", "job_id": job_id, "duration_s": elapsed},
+                )
                 return
 
             except Exception as fashn_exc:
@@ -460,24 +467,28 @@ def _run_tryon_job(
                     break
                 time.sleep(5)
 
-        logger.warning("VTO job %d: FASHN engine exhausted. Falling back to IDM-VTON...", job_id)
+        fashn_elapsed = round(time.time() - engine_start, 1)
+        logger.warning(
+            "VTO job %d: FASHN engine exhausted after %.1fs. Falling back to IDM-VTON.",
+            job_id, fashn_elapsed,
+            extra={"engine": "fashn", "job_id": job_id, "outcome": "exhausted", "duration_s": fashn_elapsed},
+        )
         job.error_msg = "Primary engine temporarily unavailable. Using fallback engine."
         db.session.commit()
 
         # ── Step 2: IDM-VTON fallback engine ──────────────────────────────────
         max_retries = 4
         attempt = 0
+        fallback_start = time.time()
 
         while attempt < max_retries:
             attempt += 1
             try:
                 from gradio_client import Client, handle_file
                 logger.info(
-                    "VTO job %d: trying fallback engine %s (attempt %d/%d)...",
-                    job_id,
-                    hf_space_id,
-                    attempt,
-                    max_retries,
+                    "VTO job %d: trying fallback engine %s (attempt %d/%d)",
+                    job_id, hf_space_id, attempt, max_retries,
+                    extra={"engine": "idm-vton", "job_id": job_id, "attempt": attempt},
                 )
                 
                 client = Client(hf_space_id, token=hf_token or None)
@@ -512,7 +523,12 @@ def _run_tryon_job(
                 job.result_filename = result_filename
                 job.completed_at    = datetime.now(timezone.utc)
                 db.session.commit()
-                logger.info("VTO job %d: completed via fallback engine.", job_id)
+                elapsed = round(time.time() - fallback_start, 1)
+                logger.info(
+                    "VTO job %d: completed via IDM-VTON fallback in %.1fs",
+                    job_id, elapsed,
+                    extra={"engine": "idm-vton", "job_id": job_id, "duration_s": elapsed},
+                )
                 return
 
             except Exception as hf_exc:
@@ -544,5 +560,10 @@ def _run_tryon_job(
                 job.error_msg    = user_error[:500]
                 job.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
-                logger.error("VTO job %d failed: %s", job_id, hf_exc)
+                total_elapsed = round(time.time() - engine_start, 1)
+                logger.error(
+                    "VTO job %d failed after %.1fs (both engines exhausted): %s",
+                    job_id, total_elapsed, hf_exc,
+                    extra={"engine": "all", "job_id": job_id, "outcome": "failed", "duration_s": total_elapsed},
+                )
                 break
