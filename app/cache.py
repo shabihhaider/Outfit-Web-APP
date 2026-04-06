@@ -24,6 +24,8 @@ class TTLCache:
         self._lock = threading.Lock()
         self._ttl = ttl
         self._max = max_entries
+        self._hits = 0
+        self._misses = 0
 
     def _make_key(self, user_id: int, occasion: str, temp_celsius: float) -> str:
         bucket = round(temp_celsius / 5) * 5
@@ -34,11 +36,14 @@ class TTLCache:
         with self._lock:
             entry = self._store.get(key)
             if entry is None:
+                self._misses += 1
                 return None
             expires_at, value = entry
             if time.monotonic() > expires_at:
                 del self._store[key]
+                self._misses += 1
                 return None
+            self._hits += 1
             return value
 
     def put(self, user_id: int, occasion: str, temp_celsius: float, value: Any) -> None:
@@ -63,6 +68,19 @@ class TTLCache:
         if len(self._store) >= self._max:
             oldest_key = min(self._store, key=lambda k: self._store[k][0])
             del self._store[oldest_key]
+
+
+    def stats(self) -> dict:
+        """Return cache statistics for the /metrics endpoint."""
+        with self._lock:
+            total = self._hits + self._misses
+            return {
+                "entries": len(self._store),
+                "max_entries": self._max,
+                "hits": self._hits,
+                "misses": self._misses,
+                "hit_rate": round(self._hits / total, 3) if total > 0 else 0.0,
+            }
 
 
 recommendation_cache = TTLCache()
