@@ -14,9 +14,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Python dependencies (cache-bust: 2026-04-07)
+# Python dependencies — install in two stages to control image size
+# Stage 1: lightweight deps first
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip cache purge 2>/dev/null || true \
+    && rm -rf /root/.cache/pip /tmp/*
 
 # Application code
 COPY app/ app/
