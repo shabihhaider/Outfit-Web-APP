@@ -2,6 +2,11 @@
 set -e
 
 echo "Starting OutfitAI..."
+echo "Memory info:"
+free -m 2>/dev/null || cat /proc/meminfo 2>/dev/null | head -5 || echo "(no mem info)"
+echo "Disk info:"
+df -h /app 2>/dev/null | tail -1 || echo "(no disk info)"
+echo "Python version: $(python --version 2>&1)"
 
 # ── Persistent Storage Setup (Hugging Face Buckets) ──────────────────────────
 # If the /data bucket is mounted, symlink uploads/ and instance/ there.
