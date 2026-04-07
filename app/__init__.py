@@ -33,7 +33,11 @@ def create_app(config_name: str = "development") -> Flask:
     migrate.init_app(app, db)
     jwt.init_app(app)
     bcrypt.init_app(app)
-    cors.init_app(app)
+    _origins = app.config.get("CORS_ORIGINS", "*")
+    if _origins == "*":
+        cors.init_app(app)
+    else:
+        cors.init_app(app, origins=[o.strip() for o in _origins.split(",")])
     compress.init_app(app)
     limiter.init_app(app)
 

@@ -67,6 +67,9 @@ class Config:
     HF_TOKEN                 = os.environ.get("HF_TOKEN", "")
     HF_FASHN_SPACE_ID        = os.environ.get("HF_FASHN_SPACE_ID", "fashn-ai/fashn-vton-1.5")
     HF_VTO_SPACE_ID          = os.environ.get("HF_VTO_SPACE_ID", "yisol/IDM-VTON")
+    # CORS: comma-separated allowed origins. "*" = allow all (default for dev/monolith).
+    # For split deployment set e.g. "https://outfitai.com,https://www.outfitai.com"
+    CORS_ORIGINS             = os.environ.get("CORS_ORIGINS", "*")
     # flask-limiter: explicit in-memory storage suppresses the startup warning.
     # Switch to Redis URI in production: "redis://localhost:6379/0"
     RATELIMIT_STORAGE_URI    = "memory://"
