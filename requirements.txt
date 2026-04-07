@@ -39,13 +39,10 @@ gunicorn>=21.2.0
 # Testing
 pytest>=7.4.0
 
-# AI Generative Try-On (VTO)
-torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu
-torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cpu
-torchaudio==2.10.0
-diffusers>=0.26.0
-transformers>=4.38.0
-accelerate>=0.27.0
-safetensors>=0.4.0
-onnxruntime>=1.17.0
+# AI Generative Try-On (VTO) — gradio_client calls remote HF Spaces
 gradio_client>=1.0.1
+
+# CLIP sub-category tagging (optional — degrades gracefully if absent)
+# Install locally for full feature set:
+#   pip install torch torchvision transformers accelerate safetensors
+# These are excluded from production to keep the Docker image under 2GB RAM.
