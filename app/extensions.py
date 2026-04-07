@@ -13,10 +13,27 @@ from flask_compress import Compress
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+
+def _rate_limit_key():
+    """
+    Per-user rate limiting: use JWT user ID for authenticated requests,
+    fall back to IP address for unauthenticated (login, register, public).
+    """
+    try:
+        from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+        verify_jwt_in_request(optional=True)
+        uid = get_jwt_identity()
+        if uid:
+            return f"user:{uid}"
+    except Exception:
+        pass
+    return get_remote_address()
+
+
 db       = SQLAlchemy()
 migrate  = Migrate()
 jwt      = JWTManager()
 bcrypt   = Bcrypt()
 cors     = CORS()
 compress = Compress()
-limiter  = Limiter(key_func=get_remote_address, default_limits=[])
+limiter  = Limiter(key_func=_rate_limit_key, default_limits=[])

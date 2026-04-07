@@ -26,16 +26,27 @@ def allowed_file(filename: str, allowed_extensions: set[str]) -> bool:
     )
 
 
+_MAGIC_BYTES = {
+    b"\x89PNG\r\n\x1a\n": "image/png",
+    b"\xff\xd8\xff": "image/jpeg",
+}
+
+
 def validate_image_content(content: bytes) -> bool:
     """
     Return True if the bytes represent a valid image.
 
-    Uses Pillow's Image.verify() which actually parses the file format —
-    a malicious file that fakes a .jpg extension cannot pass this check.
-
-    Note: verify() "consumes" the image object; the raw bytes in `content`
-    remain safe to write to disk afterwards.
+    Two-layer validation:
+      1. Magic byte check — reject files that don't start with PNG/JPEG signatures.
+      2. Pillow verify() — actually parses the file format; catches truncated or
+         malicious files that fake an extension.
     """
+    # Layer 1: magic bytes
+    if not any(content.startswith(sig) for sig in _MAGIC_BYTES):
+        logger.debug("Image validation failed: unrecognised magic bytes")
+        return False
+
+    # Layer 2: Pillow structural check
     try:
         from PIL import Image
         img = Image.open(io.BytesIO(content))

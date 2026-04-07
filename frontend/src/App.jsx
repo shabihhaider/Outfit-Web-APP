@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 import AuthGuard from './guards/AuthGuard.jsx'
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
+import ConsentBanner from './components/ui/ConsentBanner.jsx'
 import Navbar from './components/layout/Navbar.jsx'
 
 import LoginPage from './pages/LoginPage.jsx'
@@ -30,6 +31,7 @@ function Layout({ children }) {
           {children}
         </ErrorBoundary>
       </main>
+      <ConsentBanner />
     </div>
   )
 }

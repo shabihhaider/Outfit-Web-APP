@@ -1,9 +1,10 @@
 """
 app/middleware.py
-Request-level middleware for observability.
+Request-level middleware for observability and security.
 
 - Request ID: UUID attached to every request, propagated through logs and
   returned in the X-Request-ID response header.
+- Security headers: CSP, X-Content-Type-Options, X-Frame-Options, etc.
 - Structured JSON logging: replaces default text logs with machine-readable
   JSON lines (timestamp, level, request_id, user_id, message).
 """
@@ -28,9 +29,26 @@ def _before_request():
 
 
 def _after_request(response):
-    """Inject request ID into response headers and log the request."""
+    """Inject request ID, security headers, and log the request."""
     req_id = getattr(g, "request_id", "-")
     response.headers["X-Request-ID"] = req_id
+
+    # ── Security headers ──────────────────────────────────────────────────
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(self)"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: blob: https:; "
+        "connect-src 'self' https://*.hf.space https://nominatim.openstreetmap.org https://api.open-meteo.com; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'"
+    )
 
     # Log completed request
     duration_ms = 0.0
