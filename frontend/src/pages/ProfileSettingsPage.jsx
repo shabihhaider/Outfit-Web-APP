@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FiCamera, FiUser, FiSave, FiCheck, FiAlertCircle } from 'react-icons/fi'
+import { FiCamera, FiUser, FiSave, FiCheck, FiAlertCircle, FiShield, FiDownload, FiTrash2, FiLock } from 'react-icons/fi'
 import { getMyProfile, updateProfile, uploadAvatar } from '../api/social.js'
 import { getPersonPhoto, uploadPersonPhoto } from '../api/vto.js'
+import { getConsent, updateConsent, getPrivacySummary, exportData, deleteAccount, changePassword } from '../api/auth.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
@@ -11,9 +12,10 @@ import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 const API_URL = import.meta.env.VITE_API_URL || ''
 
 const TABS = [
-  { key: 'account',  label: 'Account Info' },
-  { key: 'avatar',   label: 'Profile Photo' },
-  { key: 'vto',      label: 'VTO Body Photo' },
+  { key: 'account',  label: 'Account' },
+  { key: 'avatar',   label: 'Photo' },
+  { key: 'vto',      label: 'VTO' },
+  { key: 'privacy',  label: 'Privacy' },
 ]
 
 export default function ProfileSettingsPage() {
@@ -58,6 +60,7 @@ export default function ProfileSettingsPage() {
         {tab === 'account'  && <AccountTab profile={profile} qc={qc} updateUser={updateUser} />}
         {tab === 'avatar'   && <AvatarTab  profile={profile} qc={qc} updateUser={updateUser} />}
         {tab === 'vto'      && <VtoTab />}
+        {tab === 'privacy'  && <PrivacyTab />}
       </div>
     </PageWrapper>
   )
@@ -371,6 +374,229 @@ function VtoTab() {
     </div>
   )
 }
+
+/* ── Privacy & Security tab ────────────────────────────────────────────── */
+
+function PrivacyTab() {
+  const { logoutUser } = useAuth()
+  const qc = useQueryClient()
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState('')
+  const [pwForm, setPwForm] = useState({ current_password: '', new_password: '' })
+  const [pwSaved, setPwSaved] = useState(false)
+  const [pwError, setPwError] = useState('')
+
+  const { data: consentData, isLoading: consentLoading } = useQuery({
+    queryKey: ['user-consent'],
+    queryFn: getConsent,
+  })
+
+  const { data: privacyData, isLoading: privacyLoading } = useQuery({
+    queryKey: ['privacy-summary'],
+    queryFn: getPrivacySummary,
+  })
+
+  const consentMutation = useMutation({
+    mutationFn: updateConsent,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['user-consent'] }),
+  })
+
+  const exportMutation = useMutation({
+    mutationFn: exportData,
+    onSuccess: (data) => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `outfitai_data_export.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteAccount({ password: deletePassword }),
+    onSuccess: () => logoutUser(),
+    onError: (err) => setDeleteError(err?.response?.data?.error ?? 'Failed to delete account.'),
+  })
+
+  const pwMutation = useMutation({
+    mutationFn: () => changePassword(pwForm),
+    onSuccess: () => {
+      setPwSaved(true)
+      setPwError('')
+      setPwForm({ current_password: '', new_password: '' })
+      setTimeout(() => setPwSaved(false), 3000)
+    },
+    onError: (err) => setPwError(err?.response?.data?.error ?? 'Failed to change password.'),
+  })
+
+  if (consentLoading || privacyLoading) return <LoadingSpinner className="py-12" />
+
+  const consents = consentData?.consents || {}
+
+  return (
+    <div className="space-y-6">
+      {/* Data Consent */}
+      <div className="card p-6 space-y-5">
+        <div className="flex items-center gap-2 mb-1">
+          <FiShield size={18} className="text-accent-500" />
+          <h3 className="font-semibold text-brand-800 dark:text-brand-200">Data Usage Consent</h3>
+        </div>
+        <p className="text-sm text-brand-500 dark:text-brand-400">
+          Control how your data is used. You can change these at any time. Revoking consent does not delete your existing data.
+        </p>
+
+        {Object.entries(consents).map(([key, consent]) => (
+          <div key={key} className="flex items-start justify-between gap-4 py-3 border-t border-brand-100 dark:border-brand-800">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-brand-800 dark:text-brand-200 capitalize">
+                {key.replace('_', ' ')}
+              </p>
+              <p className="text-xs text-brand-400 mt-0.5">{consent.description}</p>
+              {consent.granted && consent.granted_at && (
+                <p className="text-[10px] text-brand-300 mt-1">
+                  Granted: {new Date(consent.granted_at).toLocaleDateString()} (v{consent.version})
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => consentMutation.mutate({ [key]: !consent.granted })}
+              disabled={consentMutation.isPending}
+              className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 mt-1 ${
+                consent.granted ? 'bg-accent-500' : 'bg-brand-300 dark:bg-brand-700'
+              }`}
+            >
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${
+                consent.granted ? 'left-7' : 'left-1'
+              }`} />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Data Summary */}
+      {privacyData && (
+        <div className="card p-6 space-y-4">
+          <h3 className="font-semibold text-brand-800 dark:text-brand-200">Your Data Summary</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              ['Wardrobe Items', privacyData.data_summary?.wardrobe_items],
+              ['Outfit History', privacyData.data_summary?.outfit_history],
+              ['Saved Outfits', privacyData.data_summary?.saved_outfits],
+              ['Feedback Given', privacyData.data_summary?.feedback_given],
+            ].map(([label, val]) => (
+              <div key={label} className="bg-brand-50 dark:bg-brand-900/40 rounded-xl p-3 text-center">
+                <p className="text-lg font-bold text-brand-800 dark:text-brand-200">{val ?? 0}</p>
+                <p className="text-[10px] text-brand-400 uppercase tracking-wider">{label}</p>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => exportMutation.mutate()}
+            disabled={exportMutation.isPending}
+            className="w-full btn-secondary h-10 rounded-2xl flex items-center justify-center gap-2 text-sm"
+          >
+            <FiDownload size={15} />
+            {exportMutation.isPending ? 'Preparing...' : 'Download My Data'}
+          </button>
+        </div>
+      )}
+
+      {/* Change Password */}
+      <div className="card p-6 space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <FiLock size={16} className="text-brand-500" />
+          <h3 className="font-semibold text-brand-800 dark:text-brand-200">Change Password</h3>
+        </div>
+        <div className="space-y-3">
+          <input
+            type="password"
+            value={pwForm.current_password}
+            onChange={e => setPwForm(p => ({ ...p, current_password: e.target.value }))}
+            placeholder="Current password"
+            className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-300 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400"
+          />
+          <input
+            type="password"
+            value={pwForm.new_password}
+            onChange={e => setPwForm(p => ({ ...p, new_password: e.target.value }))}
+            placeholder="New password (min 8 characters)"
+            className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-300 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400"
+          />
+        </div>
+        {pwError && (
+          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm">
+            <FiAlertCircle size={15} /> {pwError}
+          </div>
+        )}
+        <button
+          onClick={() => { setPwError(''); pwMutation.mutate() }}
+          disabled={pwMutation.isPending || !pwForm.current_password || !pwForm.new_password}
+          className="w-full btn-primary h-10 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50"
+        >
+          {pwSaved ? <><FiCheck size={15} /> Password Changed</> : pwMutation.isPending ? 'Changing...' : 'Update Password'}
+        </button>
+      </div>
+
+      {/* Delete Account */}
+      <div className="card p-6 space-y-4 border-red-200 dark:border-red-900/40">
+        <div className="flex items-center gap-2">
+          <FiTrash2 size={16} className="text-red-500" />
+          <h3 className="font-semibold text-red-600 dark:text-red-400">Delete Account</h3>
+        </div>
+        <p className="text-sm text-brand-500 dark:text-brand-400">
+          Permanently delete your account and all associated data. This action cannot be undone.
+        </p>
+
+        {!deleteConfirm ? (
+          <button
+            onClick={() => setDeleteConfirm(true)}
+            className="w-full h-10 rounded-2xl border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          >
+            Delete My Account
+          </button>
+        ) : (
+          <div className="space-y-3 p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-200 dark:border-red-800/40">
+            <p className="text-sm font-medium text-red-700 dark:text-red-300">
+              Enter your password to confirm account deletion:
+            </p>
+            <input
+              type="password"
+              value={deletePassword}
+              onChange={e => { setDeletePassword(e.target.value); setDeleteError('') }}
+              placeholder="Your password"
+              className="w-full px-4 py-3 rounded-2xl border border-red-200 dark:border-red-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+            />
+            {deleteError && (
+              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                <FiAlertCircle size={14} /> {deleteError}
+              </p>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setDeleteConfirm(false); setDeletePassword(''); setDeleteError('') }}
+                className="flex-1 h-10 rounded-2xl border border-brand-200 dark:border-brand-700 text-sm font-medium text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending || !deletePassword}
+                className="flex-1 h-10 rounded-2xl bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 
 /* ── Shared ───────────────────────────────────────────────────────────────── */
 

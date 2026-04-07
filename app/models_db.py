@@ -396,3 +396,66 @@ class TryOnJob(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
         }
+
+
+# ── Audit Log ────────────────────────────────────────────────────────────────
+
+class AuditLog(db.Model):
+    """
+    Immutable audit trail for security-relevant actions.
+
+    Every row records WHO did WHAT and WHEN. Rows are never updated or deleted.
+    """
+    __tablename__ = "audit_log"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, nullable=True, index=True)   # null for failed logins
+    action     = db.Column(db.String(50), nullable=False, index=True)
+    detail     = db.Column(db.String(500), nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)            # IPv4 or IPv6
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "action": self.action,
+            "detail": self.detail,
+            "ip_address": self.ip_address,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+# ── User Consent ─────────────────────────────────────────────────────────────
+
+class UserConsent(db.Model):
+    """
+    Tracks explicit user consent for data usage.
+
+    Each row is one consent type for one user. When consent is revoked,
+    `granted` is set to False and `revoked_at` is timestamped.
+    A new row is created if consent is re-granted after revocation (audit trail).
+    """
+    __tablename__ = "user_consents"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    user_id      = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    consent_type = db.Column(db.String(30), nullable=False)   # "data_training", "analytics"
+    granted      = db.Column(db.Boolean, nullable=False, default=False)
+    version      = db.Column(db.String(10), nullable=False, default="1.0")  # policy version
+    ip_address   = db.Column(db.String(45), nullable=True)
+    granted_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    revoked_at   = db.Column(db.DateTime, nullable=True)
+
+    __table_args__ = (
+        db.Index("ix_consent_lookup", "user_id", "consent_type"),
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "consent_type": self.consent_type,
+            "granted": self.granted,
+            "version": self.version,
+            "granted_at": self.granted_at.isoformat() if self.granted_at else None,
+            "revoked_at": self.revoked_at.isoformat() if self.revoked_at else None,
+        }

@@ -31,6 +31,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from sqlalchemy import func
 
+from app.audit import log_action
 from app.cache import recommendation_cache
 from app.extensions import db
 from app.models_db import WardrobeItemDB, OutfitHistory, OutfitFeedback, SavedOutfit, User
@@ -212,6 +213,7 @@ def upload_item():
     db.session.add(item)
     db.session.commit()
     recommendation_cache.invalidate_user(user_id)
+    log_action("upload_item", user_id=user_id, detail=f"item_id={item.id} category={category}")
 
     # ── 9. Return with upload guidance ────────────────────────────────────────
     return jsonify({**item.to_dict(), "tips": UPLOAD_TIPS, "bg_removed": bg_removed}), 201
@@ -259,6 +261,7 @@ def delete_item(item_id: int):
     db.session.delete(item)
     db.session.commit()
     recommendation_cache.invalidate_user(user_id)
+    log_action("delete_item", user_id=user_id, detail=f"item_id={item_id}")
     return jsonify({"message": "Item deleted."}), 200
 
 

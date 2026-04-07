@@ -36,6 +36,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from app.extensions import db
 from app.models_db import TryOnJob, User, WardrobeItemDB
 from app.utils import allowed_file, validate_image_content
+from app.audit import log_action
 
 logger = logging.getLogger(__name__)
 
@@ -323,6 +324,7 @@ def submit_tryon():
     t.start()
 
     logger.info("VTO job %d submitted (user=%d, item=%d)", job.id, user_id, item_id)
+    log_action("vto_job_submitted", user_id=user_id, detail=f"job_id={job.id} item_id={item_id}")
 
     return jsonify({**job.to_dict(), "cached": False}), 202
 
