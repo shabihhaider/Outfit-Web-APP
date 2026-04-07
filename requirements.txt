@@ -1,5 +1,5 @@
-# Core ML
-tensorflow>=2.15.0
+# Core ML (CPU-only build — smaller image for HF Spaces free tier)
+tensorflow-cpu>=2.15.0
 numpy>=1.24.0
 
 # Data validation
