@@ -17,7 +17,7 @@ from flask_jwt_extended import (
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.extensions import db, bcrypt
+from app.extensions import db, bcrypt, limiter
 from app.models_db import User, UserConsent, WardrobeItemDB, OutfitHistory, SavedOutfit, OutfitFeedback
 from app.audit import log_action
 
@@ -27,6 +27,7 @@ VALID_GENDERS = {"men", "women", "unisex"}
 
 
 @auth_bp.route("/register", methods=["POST"])
+@limiter.limit("3/minute")
 def register():
     """
     POST /auth/register
@@ -67,6 +68,7 @@ def register():
 
 
 @auth_bp.route("/login", methods=["POST"])
+@limiter.limit("5/minute")
 def login():
     """
     POST /auth/login
@@ -387,6 +389,8 @@ def change_password():
         return jsonify({"error": "New password must be at least 8 characters."}), 422
 
     user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({"error": "User not found."}), 404
     if not bcrypt.check_password_hash(user.password_hash, current_pw):
         return jsonify({"error": "Current password is incorrect."}), 401
 
