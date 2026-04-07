@@ -1,16 +1,5 @@
 # ============================================================
-# Stage 1 — Build React frontend
-# ============================================================
-FROM node:18-slim AS frontend-build
-WORKDIR /frontend
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci --no-audit --no-fund
-COPY frontend/ ./
-ENV VITE_API_URL=""
-RUN npm run build
-
-# ============================================================
-# Stage 2 — Python backend + serve built frontend
+# OutfitAI — API-only backend (frontend served by Vercel)
 # ============================================================
 FROM python:3.11-slim
 
@@ -36,9 +25,6 @@ COPY models/ models/
 COPY migrations/ migrations/
 COPY run.py .
 COPY entrypoint.sh .
-
-# Built frontend from Stage 1
-COPY --from=frontend-build /frontend/dist ./frontend/dist
 
 # Runtime directories
 RUN mkdir -p uploads instance && chmod 777 uploads instance
