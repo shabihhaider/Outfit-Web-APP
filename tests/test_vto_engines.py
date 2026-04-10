@@ -136,39 +136,45 @@ class TestFallbackToIDMVTON:
 
         mock_handle_file.side_effect = lambda x: x
 
-        call_count = [0]
+        fashn_calls = [0]
+        idm_calls = [0]
 
         def side_effect_client(space_id, **kwargs):
             instance = MagicMock()
-            call_count[0] += 1
             if "fashn" in space_id.lower():
-                # FASHN fails
+                fashn_calls[0] += 1
                 instance.predict.side_effect = RuntimeError("429 too many requests")
             else:
-                # IDM-VTON succeeds
-                instance.predict.return_value = (None, fake_result)
+                idm_calls[0] += 1
+                instance.predict.return_value = (fake_result, None)
             return instance
 
         mock_client_cls.side_effect = side_effect_client
 
-        resp = vto_client.post(
-            "/vto/jobs",
-            json={"item_id": vto_item["id"]},
-            headers=vto_auth,
-        )
+        # Patch Thread so the VTO worker runs synchronously (avoids SQLite locking)
+        original_thread = __import__("threading").Thread
+        class SyncThread:
+            def __init__(self, target=None, args=(), kwargs=None, **kw):
+                self._target = target
+                self._args = args
+                self._kwargs = kwargs or {}
+            def start(self):
+                self._target(*self._args, **self._kwargs)
+
+        with patch("threading.Thread", SyncThread):
+            resp = vto_client.post(
+                "/vto/jobs",
+                json={"item_id": vto_item["id"]},
+                headers=vto_auth,
+            )
         assert resp.status_code == 202
         job_id = resp.get_json()["id"]
-
-        import time
-        for _ in range(20):
-            if call_count[0] >= 2: break
-            time.sleep(1)
 
         resp = vto_client.get(f"/vto/jobs/{job_id}", headers=vto_auth)
         data = resp.get_json()
 
-        # Both engines should have been tried
-        assert call_count[0] >= 2
+        assert fashn_calls[0] >= 1, "FASHN should have been tried"
+        assert idm_calls[0] >= 1, "IDM-VTON fallback should have been tried"
         assert data["status"] == "ready"
 
 

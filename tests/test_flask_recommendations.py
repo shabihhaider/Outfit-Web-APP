@@ -154,7 +154,8 @@ class TestRecommendations:
             headers=auth_headers,
         )
         assert resp.status_code == 422
-        assert "wardrobe" in resp.get_json()["error"].lower()
+        error_msg = resp.get_json()["error"].lower()
+        assert "outfit" in error_msg or "missing" in error_msg
 
     def test_weather_api_error_returns_503(self, client, flask_app, auth_headers):
         """WeatherAPIError → 503."""

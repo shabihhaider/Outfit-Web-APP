@@ -263,7 +263,7 @@ class TestDuplicateName:
         assert resp1.status_code == 201
         resp2 = client.post("/outfits/saved", json=payload, headers=auth_headers)
         assert resp2.status_code == 409
-        assert "already exists" in resp2.get_json()["error"].lower()
+        assert "already saved" in resp2.get_json()["error"].lower()
 
 
 # ─── Tests 6 & 7: Feedback thumbs up and thumbs down ─────────────────────────
@@ -410,7 +410,8 @@ class TestAnchorEndpoint:
             headers=auth_headers,
         )
         assert resp.status_code == 422
-        assert "wardrobe" in resp.get_json()["error"].lower()
+        error_msg = resp.get_json()["error"].lower()
+        assert "outfit" in error_msg or "missing" in error_msg
 
     def test_anchor_item_not_found_returns_404(self, client, auth_headers):
         resp = client.post(

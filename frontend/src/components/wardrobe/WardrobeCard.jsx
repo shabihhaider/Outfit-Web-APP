@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { FiEdit2, FiTrash2, FiStar, FiUser } from 'react-icons/fi'
 import { patchItem } from '../../api/wardrobe.js'
+import { resolveUrl } from '../../utils/resolveUrl.js'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
 import TryOnModal from '../tryon/TryOnModal.jsx'
 
@@ -32,9 +33,7 @@ export default function WardrobeCard({ item, onDelete }) {
     }
   })
 
-  const imageUrl = item.image_url
-    ? `${import.meta.env.VITE_API_URL || ''}${item.image_url}`
-    : null
+  const imageUrl = resolveUrl(item.image_url)
 
   function handleSave() {
     mutation.mutate({ category, formality })

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { resolveUrl } from '../../utils/resolveUrl.js'
 
 const CAT_EMOJI = { top: '\u{1F455}', bottom: '\u{1F456}', outwear: '\u{1F9E5}', shoes: '\u{1F45F}', dress: '\u{1F457}', jumpsuit: '\u{1F938}' }
 
@@ -8,9 +9,7 @@ export default function OutfitItems({ items }) {
   return (
     <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
       {items.map((item, i) => {
-        const imageUrl = item.image_url
-          ? `${import.meta.env.VITE_API_URL || ''}${item.image_url}`
-          : null
+        const imageUrl = resolveUrl(item.image_url)
 
         return (
           <motion.div 
