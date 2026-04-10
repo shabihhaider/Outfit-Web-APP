@@ -61,6 +61,9 @@ class Config:
     MAX_CONTENT_LENGTH       = 10 * 1024 * 1024   # 10 MB — Flask raises 413 on exceed
     UPLOAD_FOLDER            = "uploads"
     ALLOWED_EXTENSIONS       = {"jpg", "jpeg", "png"}
+    SUPABASE_URL             = os.environ.get("SUPABASE_URL", "")
+    SUPABASE_SERVICE_KEY     = os.environ.get("SUPABASE_SERVICE_KEY", "")
+    SUPABASE_BUCKET          = "wardrobe-images"
     MODEL1_PATH              = "models/model1_efficientnet_best.h5"
     MODEL2_PATH              = os.path.join("models", "model 2 Assets", "model2_compatibility_scorer.h5")
     # VTO engines (FASHN v1.5 = primary, IDM-VTON = fallback; both use HF Spaces)

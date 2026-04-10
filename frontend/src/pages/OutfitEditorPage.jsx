@@ -14,8 +14,7 @@ import ConfidenceBadge from '../components/ui/ConfidenceBadge.jsx'
 import CustomSelect from '../components/ui/CustomSelect.jsx'
 import { scoreToPercent } from '../utils/formatters.js'
 import OutfitTryOnModal from '../components/tryon/OutfitTryOnModal.jsx'
-
-const API_URL = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../utils/resolveUrl.js'
 
 const CAT_EMOJI = { top: '👕', bottom: '👖', outwear: '🧥', shoes: '👟', dress: '👗', jumpsuit: '🧘' }
 const CATEGORIES = ['all', 'top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit']
@@ -228,7 +227,7 @@ export default function OutfitEditorPage() {
                 >
                   <div className="aspect-square rounded-2xl overflow-hidden bg-brand-50/60 dark:bg-brand-800/40 border border-brand-100/60 dark:border-brand-700/40 group-hover:border-accent-400 transition-all duration-300 relative shadow-sm">
                     {item.image_url ? (
-                      <img src={`${API_URL}${item.image_url}`} alt={item.category} className="w-full h-full object-cover" />
+                      <img src={resolveUrl(item.image_url)} alt={item.category} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl opacity-40 grayscale">
                         {CAT_EMOJI[item.category] || '\u{1F454}'}
@@ -314,7 +313,7 @@ export default function OutfitEditorPage() {
                       >
                         <div className="aspect-square rounded-[24px] overflow-hidden bg-white dark:bg-brand-800 border-2 border-brand-100 dark:border-brand-700 shadow-elevated group-hover/item:shadow-card-hover transition-all duration-500 group-hover/item:-translate-y-2">
                           {item.image_url ? (
-                            <img src={`${API_URL}${item.image_url}`} alt={item.category} className="w-full h-full object-cover" />
+                            <img src={resolveUrl(item.image_url)} alt={item.category} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-4xl opacity-60">
                               {CAT_EMOJI[item.category] || '👔'}
@@ -662,7 +661,7 @@ export default function OutfitEditorPage() {
                       >
                         <div className="aspect-square rounded-[28px] overflow-hidden bg-white dark:bg-brand-800 border-2 border-brand-100 dark:border-brand-700 shadow-elevated group-hover/fs:shadow-card-hover group-hover/fs:-translate-y-2 transition-all duration-400">
                           {item.image_url ? (
-                            <img src={`${API_URL}${item.image_url}`} alt={item.category} className="w-full h-full object-cover" />
+                            <img src={resolveUrl(item.image_url)} alt={item.category} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-5xl opacity-60">
                               {CAT_EMOJI[item.category] || '👔'}
@@ -733,7 +732,7 @@ function SwapSuggestions({ suggestions, onSwap }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {suggestions.map((s, i) => {
           const delta = Math.round((s.score_delta ?? 0) * 100)
-          const imageUrl = s.add_item_image ? `${API_URL}${s.add_item_image}` : null
+          const imageUrl = s.add_item_image ? resolveUrl(s.add_item_image) : null
           return (
             <motion.button
               key={i}

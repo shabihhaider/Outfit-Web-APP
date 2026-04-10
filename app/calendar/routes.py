@@ -21,6 +21,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
 from app.models_db import OutfitPlan, SavedOutfit, WardrobeItemDB
+from app.storage import get_public_url as _img_url
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ def _fetch_plan_items(item_ids: list[int]) -> list[dict]:
     rows = WardrobeItemDB.query.filter(WardrobeItemDB.id.in_(item_ids)).all()
     item_map = {r.id: r for r in rows}
     return [
-        {"id": r.id, "category": r.category, "image_url": f"/uploads/{r.image_filename}"}
+        {"id": r.id, "category": r.category, "image_url": _img_url(r.image_filename)}
         for iid in item_ids
         if (r := item_map.get(iid))
     ]

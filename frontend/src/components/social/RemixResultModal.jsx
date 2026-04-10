@@ -5,8 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FiX, FiArrowRight, FiRefreshCw, FiAlertCircle } from 'react-icons/fi'
 import { remixPost } from '../../api/social.js'
 import PublishModal from './PublishModal.jsx'
-
-const BASE = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../../utils/resolveUrl.js'
 
 export default function RemixResultModal({ open, onClose, post }) {
   const navigate = useNavigate()
@@ -134,7 +133,7 @@ export default function RemixResultModal({ open, onClose, post }) {
                             <div className="w-16 h-16 rounded-lg bg-brand-100 dark:bg-brand-800 overflow-hidden">
                               {match.source_item?.image_url ? (
                                 <img
-                                  src={`${BASE}${match.source_item.image_url}`}
+                                  src={resolveUrl(match.source_item.image_url)}
                                   className="w-full h-full object-cover"
                                   alt=""
                                 />
@@ -167,7 +166,7 @@ export default function RemixResultModal({ open, onClose, post }) {
                                   }`}
                                 >
                                   <img
-                                    src={`${BASE}${c.image_url}`}
+                                    src={resolveUrl(c.image_url)}
                                     className="w-full h-full object-cover"
                                     alt=""
                                     onError={e => { e.target.style.display = 'none' }}

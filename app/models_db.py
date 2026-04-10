@@ -12,6 +12,12 @@ import json
 from datetime import datetime, timezone
 
 from app.extensions import db
+from app.storage import get_public_url
+
+
+def _image_url(filename: str | None) -> str | None:
+    """Return Supabase CDN URL for a filename, or None."""
+    return get_public_url(filename) if filename else None
 
 
 # ── Junction table: post ↔ vibe (many-to-many) ────────────────────────────────
@@ -91,7 +97,7 @@ class User(db.Model):
             "follower_count":  self.follower_count,
             "following_count": self.following_count,
             "fusion_mode_enabled": self.fusion_mode_enabled,
-            "avatar_url": f"/uploads/{self.avatar_filename}" if self.avatar_filename else None,
+            "avatar_url": _image_url(self.avatar_filename),
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
@@ -105,7 +111,7 @@ class User(db.Model):
             "follower_count": self.follower_count,
             "following_count": self.following_count,
             "is_public":      self.is_public,
-            "avatar_url":     f"/uploads/{self.avatar_filename}" if self.avatar_filename else None,
+            "avatar_url":     _image_url(self.avatar_filename),
         }
 
 
@@ -134,7 +140,7 @@ class WardrobeItemDB(db.Model):
             "sub_category":     self.sub_category,
             "formality":        self.formality,
             "gender":           self.gender,
-            "image_url":        image_url or f"/uploads/{self.image_filename}",
+            "image_url":        image_url or _image_url(self.image_filename),
             "model_confidence": self.model_confidence,
             "clip_confidence":  self.clip_confidence,
             "created_at":       self.created_at.isoformat() if self.created_at else None,
@@ -289,7 +295,7 @@ class SharedOutfit(db.Model):
             "user_id":     self.user_id,
             "user":        self.author.social_dict() if self.author else None,
             "caption":     self.caption,
-            "preview_url": f"/uploads/{self.preview_image_filename}" if self.preview_image_filename else None,
+            "preview_url": _image_url(self.preview_image_filename),
             "visibility":  self.visibility,
             "like_count":  self.like_count,
             "remix_count": self.remix_count,
@@ -391,7 +397,7 @@ class TryOnJob(db.Model):
             "id":         self.id,
             "item_id":    self.item_id,
             "status":     self.status,
-            "result_url": f"/uploads/{self.result_filename}" if self.result_filename else None,
+            "result_url": _image_url(self.result_filename),
             "error":      self.error_msg,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,

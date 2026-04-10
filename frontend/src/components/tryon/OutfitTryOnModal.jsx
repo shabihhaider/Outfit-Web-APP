@@ -3,8 +3,7 @@ import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiX, FiUser } from 'react-icons/fi'
 import TryOnModal from './TryOnModal.jsx'
-
-const API_BASE = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../../utils/resolveUrl.js'
 
 // Hero priority — most visually impactful garments first
 const HERO_PRIORITY = ['dress', 'jumpsuit', 'top', 'outwear', 'bottom', 'shoes']
@@ -86,7 +85,7 @@ export default function OutfitTryOnModal({ open, onClose, items, occasion }) {
             <div className="grid grid-cols-3 gap-3 mb-6">
               {tryableItems.map((item) => {
                 const isActive = active?.id === item.id
-                const imgUrl = `${API_BASE}${item.image_url}`
+                const imgUrl = resolveUrl(item.image_url)
 
                 return (
                   <button

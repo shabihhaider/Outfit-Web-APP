@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from './resolveUrl.js'
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath()
@@ -83,7 +83,7 @@ export async function generateOutfitImage(outfit, items) {
         await new Promise((resolve, reject) => {
           img.onload = resolve
           img.onerror = reject
-          img.src = `${API_URL}${imgUrl}`
+          img.src = resolveUrl(imgUrl)
         })
         ctx.save()
         roundRect(ctx, x, startY, imageSize, imageSize, 12)

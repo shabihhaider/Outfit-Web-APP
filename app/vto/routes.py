@@ -69,7 +69,8 @@ def _get_daily_usage(user_id: int) -> int:
 
 
 def _person_photo_url(filename: str) -> str:
-    return f"/uploads/{filename}"
+    from app.storage import get_public_url
+    return get_public_url(filename)
 
 
 def _extract_output_source(output) -> str:
@@ -156,6 +157,8 @@ def upload_person_photo():
                 os.remove(old_path)
         except OSError as exc:
             logger.warning("Could not delete old person photo %s: %s", old_path, exc)
+        from app.storage import delete_file as storage_delete
+        storage_delete(user.profile_photo_filename)
 
         # Invalidate all existing try-on jobs for this user — person photo changed
         TryOnJob.query.filter_by(user_id=user_id).delete()
@@ -170,6 +173,13 @@ def upload_person_photo():
 
     with open(save_path, "wb") as f:
         f.write(content)
+
+    # Upload to Supabase Storage
+    try:
+        from app.storage import upload_file_from_path
+        upload_file_from_path(save_path, filename)
+    except Exception as exc:
+        logger.warning("Supabase upload failed for %s: %s", filename, exc)
 
     user.profile_photo_filename = filename
     db.session.commit()
@@ -248,19 +258,32 @@ def submit_tryon():
         }), 422
 
     upload_dir = current_app.config["UPLOAD_FOLDER"]
+    os.makedirs(upload_dir, exist_ok=True)
     person_path = os.path.join(upload_dir, user.profile_photo_filename)
     if not os.path.exists(person_path):
-        # File missing — clear stale reference
-        user.profile_photo_filename = None
-        db.session.commit()
-        return jsonify({
-            "error":       "Person photo file not found. Please re-upload.",
-            "needs_photo": True,
-        }), 422
+        # Try downloading from Supabase (ephemeral disk may have lost the file)
+        from app.storage import download_file
+        data = download_file(user.profile_photo_filename)
+        if data:
+            with open(person_path, "wb") as f:
+                f.write(data)
+        else:
+            user.profile_photo_filename = None
+            db.session.commit()
+            return jsonify({
+                "error":       "Person photo file not found. Please re-upload.",
+                "needs_photo": True,
+            }), 422
 
     garment_path = os.path.join(upload_dir, item.image_filename)
     if not os.path.exists(garment_path):
-        return jsonify({"error": "Garment image file not found."}), 500
+        from app.storage import download_file
+        data = download_file(item.image_filename)
+        if data:
+            with open(garment_path, "wb") as f:
+                f.write(data)
+        else:
+            return jsonify({"error": "Garment image file not found."}), 500
 
     # ── Compute cache key ─────────────────────────────────────────────────────
     with open(person_path, "rb") as f:
@@ -442,6 +465,13 @@ def _run_tryon_job(
                         raise FileNotFoundError(f"FASHN output path not found: {source_str}")
                     shutil.copy(source_str, result_path)
 
+                # Upload result to Supabase
+                try:
+                    from app.storage import upload_file_from_path
+                    upload_file_from_path(result_path, result_filename)
+                except Exception as exc:
+                    logger.warning("Supabase upload failed for %s: %s", result_filename, exc)
+
                 job.status          = "ready"
                 job.result_filename = result_filename
                 job.completed_at    = datetime.now(timezone.utc)
@@ -520,6 +550,13 @@ def _run_tryon_job(
                 result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
                 result_path     = os.path.join(upload_dir, result_filename)
                 shutil.copy(result_source, result_path)
+
+                # Upload result to Supabase
+                try:
+                    from app.storage import upload_file_from_path
+                    upload_file_from_path(result_path, result_filename)
+                except Exception as exc:
+                    logger.warning("Supabase upload failed for %s: %s", result_filename, exc)
 
                 job.status          = "ready"
                 job.result_filename = result_filename

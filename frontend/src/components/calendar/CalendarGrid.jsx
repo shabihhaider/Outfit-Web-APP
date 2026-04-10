@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { FiBriefcase, FiSun, FiHeart } from 'react-icons/fi'
-
-const API_URL = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../../utils/resolveUrl.js'
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 const OCCASION_ICON = {
@@ -88,7 +87,7 @@ export default function CalendarGrid({ year, month, plans, onDayClick }) {
                     {plan.items?.slice(0, 2).map((item, j) => (
                       <div key={j} className="w-4 h-4 sm:w-5 sm:h-5 rounded overflow-hidden bg-brand-100 dark:bg-brand-800 flex-shrink-0">
                         {item.image_url && (
-                          <img src={`${API_URL}${item.image_url}`} alt="" className="w-full h-full object-cover" />
+                          <img src={resolveUrl(item.image_url)} alt="" className="w-full h-full object-cover" />
                         )}
                       </div>
                     ))}

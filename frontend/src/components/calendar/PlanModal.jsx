@@ -7,8 +7,7 @@ import { getSaved } from '../../api/outfits.js'
 import { getItems } from '../../api/wardrobe.js'
 import { createPlan, updatePlan, deletePlan } from '../../api/calendar.js'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
-
-const API_URL = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../../utils/resolveUrl.js'
 
 const OCCASIONS = [
   { val: 'casual', label: 'Casual', Icon: FiSun },
@@ -239,7 +238,7 @@ export default function PlanModal({ open, date, existingPlan, monthStr, onClose 
                         <div className="flex gap-0.5 flex-shrink-0">
                           {outfit.items?.slice(0, 3).map((item, j) => (
                             <div key={j} className="w-8 h-8 rounded-lg overflow-hidden bg-brand-100 dark:bg-brand-800">
-                              {item.image_url && <img src={`${API_URL}${item.image_url}`} alt="" className="w-full h-full object-cover" />}
+                              {item.image_url && <img src={resolveUrl(item.image_url)} alt="" className="w-full h-full object-cover" />}
                             </div>
                           ))}
                         </div>
@@ -268,7 +267,7 @@ export default function PlanModal({ open, date, existingPlan, monthStr, onClose 
                               : 'border-brand-100/60 dark:border-brand-800/40 hover:border-brand-300 dark:hover:border-brand-600'
                           }`}
                         >
-                          {item.image_url && <img src={`${API_URL}${item.image_url}`} alt={item.category} className="w-full h-full object-cover" />}
+                          {item.image_url && <img src={resolveUrl(item.image_url)} alt={item.category} className="w-full h-full object-cover" />}
                           {selected && (
                             <div className="absolute top-1 right-1 w-5 h-5 bg-accent-500 rounded-full flex items-center justify-center shadow-sm">
                               <FiCheck size={12} className="text-white" />
