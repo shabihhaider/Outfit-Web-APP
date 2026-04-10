@@ -20,6 +20,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.extensions import db, bcrypt, limiter
 from app.models_db import User, UserConsent, WardrobeItemDB, OutfitHistory, SavedOutfit, OutfitFeedback
 from app.audit import log_action
+from app.storage import get_public_url as _img_url
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -116,7 +117,7 @@ def login():
         "user_id":      user_id,
         "name":         name,
         "gender":       gender,
-        "avatar_url":   f"/uploads/{user.avatar_filename}" if user is not None and user.avatar_filename else None,
+        "avatar_url":   _img_url(user.avatar_filename) if user is not None and user.avatar_filename else None,
     }), 200
 
 

@@ -7,8 +7,7 @@ import { getPost, toggleLike, toggleBookmark, followUser, unfollowUser } from '.
 import { useAuth } from '../../context/AuthContext.jsx'
 import VibeTagPill from './VibeTagPill.jsx'
 import OutfitTryOnModal from '../tryon/OutfitTryOnModal.jsx'
-
-const BASE = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../../utils/resolveUrl.js'
 
 export default function PostDetailModal({ post, open, onClose, onRemixClick, onVibeClick }) {
   const { user } = useAuth()
@@ -33,7 +32,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
   const [tryOnOpen,   setTryOnOpen]  = useState(false)
 
   const isOwn = user?.id === p?.user_id
-  const previewUrl = p?.preview_url ? `${BASE}${p.preview_url}` : null
+  const previewUrl = p?.preview_url ? resolveUrl(p.preview_url) : null
   const username = p?.user?.username || `user_${p?.user_id}`
 
   // Collect item images — from full post items OR from outfit.item_images
@@ -108,7 +107,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden bg-brand-200 dark:bg-brand-700 flex-shrink-0 flex items-center justify-center text-xs font-bold text-brand-600 dark:text-brand-300">
                       {p?.user?.avatar_url ? (
-                        <img src={`${BASE}${p.user.avatar_url}`} alt="" className="w-full h-full object-cover" />
+                        <img src={resolveUrl(p.user.avatar_url)} alt="" className="w-full h-full object-cover" />
                       ) : (
                         (p?.user?.name?.[0] || username[0]).toUpperCase()
                       )}
@@ -164,7 +163,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                     {fullPost.items.map((item, i) => (
                       <div key={i} className="aspect-square rounded-lg overflow-hidden bg-brand-100 dark:bg-brand-800 border border-brand-200 dark:border-brand-700">
                         {item.image_url ? (
-                          <img src={`${BASE}${item.image_url}`} alt={item.category} className="w-full h-full object-cover" />
+                          <img src={resolveUrl(item.image_url)} alt={item.category} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-xl opacity-30">
                             <span className="select-none">?</span>
@@ -278,7 +277,7 @@ function ModalMosaic({ images, occasion, score }) {
             }`}
           >
             <img
-              src={`${BASE}${url}`}
+              src={resolveUrl(url)}
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               onError={e => { e.currentTarget.style.display = 'none' }}

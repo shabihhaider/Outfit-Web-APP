@@ -8,8 +8,7 @@ import { getConsent, updateConsent, getPrivacySummary, exportData, deleteAccount
 import { useAuth } from '../context/AuthContext.jsx'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
-
-const API_URL = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../utils/resolveUrl.js'
 
 const TABS = [
   { key: 'account',  label: 'Account' },
@@ -172,7 +171,7 @@ function AvatarTab({ profile, qc, updateUser }) {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
 
-  const currentAvatar = profile?.avatar_url ? `${API_URL}${profile.avatar_url}` : null
+  const currentAvatar = profile?.avatar_url ? resolveUrl(profile?.avatar_url) : null
   const displayName   = profile?.name || profile?.username || 'U'
 
   const mutation = useMutation({
@@ -281,7 +280,7 @@ function VtoTab() {
     queryFn: getPersonPhoto,
   })
 
-  const currentPhoto = vtoData?.photo_url ? `${API_URL}${vtoData.photo_url}` : null
+  const currentPhoto = vtoData?.photo_url ? resolveUrl(vtoData?.photo_url) : null
 
   const mutation = useMutation({
     mutationFn: () => {

@@ -23,6 +23,7 @@ from sqlalchemy import func
 from app.cache import recommendation_cache
 from app.extensions import db, limiter
 from app.models_db import User, WardrobeItemDB, OutfitHistory
+from app.storage import get_public_url as _img_url
 from app.utils import item_db_to_engine
 
 logger = logging.getLogger(__name__)
@@ -140,7 +141,7 @@ def _format_outfits_response(
             outfit_items.append({
                 "id":        eng_item.item_id,
                 "category":  eng_item.category.value,
-                "image_url": f"/uploads/{img_filename}",
+                "image_url": _img_url(img_filename),
             })
         formatted_outfits.append({
             "rank":           rank,
@@ -433,7 +434,7 @@ def outfit_of_the_day():
         outfit_items.append({
             "id":        eng_item.item_id,
             "category":  eng_item.category.value,
-            "image_url": f"/uploads/{img_filename}",
+            "image_url": _img_url(img_filename),
         })
 
     outfit_item_ids = {item.item_id for item in best_outfit.items}
@@ -645,7 +646,7 @@ def _generate_swap_suggestions(
                         "remove_item_category": item.category.value if hasattr(item.category, 'value') else item.category,
                         "add_item_id": alt.item_id,
                         "add_item_category": cat_val,
-                        "add_item_image": f"/uploads/{img_fn}" if img_fn else None,
+                        "add_item_image": _img_url(img_fn) if img_fn else None,
                         "score_delta": round(delta, 4),
                         "new_score": round(trial_result.final_score, 4),
                     })

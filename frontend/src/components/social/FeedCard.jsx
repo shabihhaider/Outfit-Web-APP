@@ -7,8 +7,7 @@ import { toggleLike, toggleBookmark, deletePost } from '../../api/social.js'
 import VibeTagPill from './VibeTagPill.jsx'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
-
-const BASE = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../../utils/resolveUrl.js'
 
 export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick }) {
   const { user } = useAuth()
@@ -59,7 +58,7 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
     },
   })
 
-  const previewUrl  = post.preview_url ? `${BASE}${post.preview_url}` : null
+  const previewUrl  = post.preview_url ? resolveUrl(post.preview_url) : null
   const itemImages  = post.outfit?.item_images ?? []
   const username    = post.user?.username || `user_${post.user_id}`
   const timeAgo     = _timeAgo(post.created_at)
@@ -114,7 +113,7 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
             >
               <div className="w-6 h-6 rounded-full overflow-hidden bg-brand-200 dark:bg-brand-700 flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-brand-600 dark:text-brand-300">
                 {post.user?.avatar_url ? (
-                  <img src={`${BASE}${post.user.avatar_url}`} alt="" className="w-full h-full object-cover" />
+                  <img src={resolveUrl(post.user.avatar_url)} alt="" className="w-full h-full object-cover" />
                 ) : (
                   (post.user?.name?.[0] || username[0]).toUpperCase()
                 )}
@@ -250,7 +249,7 @@ function ItemMosaic({ images, occasion, score }) {
             }`}
           >
             <img
-              src={`${BASE}${url}`}
+              src={resolveUrl(url)}
               alt=""
               loading="lazy"
               decoding="async"

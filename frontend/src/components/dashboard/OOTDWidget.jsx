@@ -7,8 +7,7 @@ import { getOOTD } from '../../api/recommendations.js'
 import { saveOutfit } from '../../api/outfits.js'
 import { scoreToPercent } from '../../utils/formatters.js'
 import ConfidenceBadge from '../ui/ConfidenceBadge.jsx'
-
-const API_URL = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../../utils/resolveUrl.js'
 
 export default function OOTDWidget() {
   const [saved, setSaved] = useState(false)
@@ -137,7 +136,7 @@ export default function OOTDWidget() {
             >
               <div className="w-20 h-20 rounded-xl overflow-hidden bg-brand-100/60 dark:bg-brand-800/40 border border-brand-100/60 dark:border-brand-700/40 shadow-sm">
                 {item.image_url && (
-                  <img src={`${API_URL}${item.image_url}`} alt={item.category} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                  <img src={resolveUrl(item.image_url)} alt={item.category} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 )}
               </div>
               <p className="text-[11px] text-brand-500 dark:text-brand-400 text-center mt-1.5 capitalize">{item.category}</p>

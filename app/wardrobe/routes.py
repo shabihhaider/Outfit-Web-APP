@@ -25,7 +25,7 @@ import os
 import uuid
 
 from flask import (
-    Blueprint, current_app, jsonify, request, send_from_directory,
+    Blueprint, current_app, jsonify, redirect, request, send_from_directory,
 )
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -215,7 +215,14 @@ def upload_item():
     recommendation_cache.invalidate_user(user_id)
     log_action("upload_item", user_id=user_id, detail=f"item_id={item.id} category={category}")
 
-    # ── 9. Return with upload guidance ────────────────────────────────────────
+    # ── 9. Upload to Supabase Storage ────────────────────────────────────────
+    try:
+        from app.storage import upload_file_from_path
+        upload_file_from_path(save_path, filename)
+    except Exception as exc:
+        logger.warning("Supabase upload failed for %s: %s", filename, exc)
+
+    # ── 10. Return with upload guidance ───────────────────────────────────────
     return jsonify({**item.to_dict(), "tips": UPLOAD_TIPS, "bg_removed": bg_removed}), 201
 
 
@@ -250,13 +257,15 @@ def delete_item(item_id: int):
     if item.user_id != user_id:
         return jsonify({"error": "Access forbidden."}), 403
 
-    # Delete image file — log but don't fail if file is already gone
+    # Delete image file from local disk and Supabase
     image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], item.image_filename)
     try:
         if os.path.exists(image_path):
             os.remove(image_path)
     except OSError as exc:
         logger.warning("Could not delete image file %s: %s", image_path, exc)
+    from app.storage import delete_file as storage_delete
+    storage_delete(item.image_filename)
 
     db.session.delete(item)
     db.session.commit()
@@ -429,21 +438,13 @@ def wardrobe_stats():
 def serve_upload(filename: str):
     """
     GET /uploads/<filename>
-    Serves uploaded images publicly (no auth required).
-    Returns 404 if the filename is not in the database.
+    Redirects to Supabase CDN when configured, otherwise serves from local disk.
     """
-    # Check wardrobe items, then user photos (avatar / VTO person photo)
-    is_known = WardrobeItemDB.query.filter_by(image_filename=filename).first() is not None
-    if not is_known:
-        is_known = User.query.filter(
-            (User.avatar_filename == filename) |
-            (User.profile_photo_filename == filename)
-        ).first() is not None
-    if not is_known:
-        # Also allow shared-outfit preview images and try-on results (prefix check)
-        is_known = filename.startswith(("preview_", "person_", "avatar_", "tryon_"))
-    if not is_known:
-        return jsonify({"error": "File not found."}), 404
+    from app.storage import is_configured, get_public_url
 
+    if is_configured():
+        return redirect(get_public_url(filename), code=302)
+
+    # Fallback for local dev without Supabase
     upload_dir = current_app.config["UPLOAD_FOLDER"]
     return send_from_directory(os.path.abspath(upload_dir), filename)

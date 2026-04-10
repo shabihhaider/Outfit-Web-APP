@@ -5,8 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FiX, FiUploadCloud, FiUser, FiRefreshCw, FiCheck, FiAlertTriangle, FiDownload } from 'react-icons/fi'
 import { getPersonPhoto, uploadPersonPhoto, submitTryOn, getJobStatus } from '../../api/vto.js'
 import LoadingSpinner from '../ui/LoadingSpinner.jsx'
+import { resolveUrl } from '../../utils/resolveUrl.js'
 
-const API_BASE = import.meta.env.VITE_API_URL || ''
 const POLL_INTERVAL_MS = 3000
 
 export default function TryOnModal({ open, onClose, item }) {
@@ -138,8 +138,8 @@ export default function TryOnModal({ open, onClose, item }) {
 
   if (!open || !item) return null
 
-  const itemImageUrl = item.image_url ? `${API_BASE}${item.image_url}` : null
-  const personPhotoUrl = photoData?.photo_url ? `${API_BASE}${photoData.photo_url}` : null
+  const itemImageUrl = item.image_url ? resolveUrl(item.image_url) : null
+  const personPhotoUrl = photoData?.photo_url ? resolveUrl(photoData?.photo_url) : null
 
   return createPortal(
     <AnimatePresence>
@@ -398,7 +398,7 @@ export default function TryOnModal({ open, onClose, item }) {
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                 <div className="mb-4 rounded-2xl overflow-hidden border border-brand-200/60 dark:border-brand-700/40 shadow-md bg-white dark:bg-brand-800">
                   <img
-                    src={`${API_BASE}${result}`}
+                    src={resolveUrl(result)}
                     alt="Virtual try-on result"
                     className="w-full object-contain max-h-[50vh]"
                   />
@@ -412,7 +412,7 @@ export default function TryOnModal({ open, onClose, item }) {
                 <div className="flex gap-3">
                   <button onClick={onClose} className="flex-1 btn-secondary">Close</button>
                   <a
-                    href={`${API_BASE}${result}`}
+                    href={resolveUrl(result)}
                     download={`tryon_${item.category}.png`}
                     className="flex-1 btn-primary text-center flex items-center justify-center gap-2"
                   >

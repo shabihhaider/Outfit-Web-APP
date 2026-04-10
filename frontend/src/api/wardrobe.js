@@ -17,5 +17,8 @@ export const patchItem = (id, data) =>
 export const getWardrobeStats = () =>
   api.get('/wardrobe/stats').then(r => r.data)
 
-export const getImageUrl = (filename) =>
-  `${import.meta.env.VITE_API_URL || ''}/uploads/${filename}`
+export const getImageUrl = (filename) => {
+  if (!filename) return null
+  if (filename.startsWith('http')) return filename
+  return `${import.meta.env.VITE_API_URL || ''}/uploads/${filename}`
+}

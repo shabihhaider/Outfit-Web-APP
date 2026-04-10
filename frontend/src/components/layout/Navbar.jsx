@@ -4,8 +4,7 @@ import { useAuth } from '../../context/AuthContext.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiHome, FiGrid, FiStar, FiCalendar, FiBookmark, FiClock, FiLogOut, FiEdit3, FiMenu, FiX, FiUsers, FiSettings } from 'react-icons/fi'
 import ThemeToggle from '../ui/ThemeToggle.jsx'
-
-const API_URL = import.meta.env.VITE_API_URL || ''
+import { resolveUrl } from '../../utils/resolveUrl.js'
 
 const NAV_LINKS = [
   { to: '/dashboard',       label: 'Dashboard', Icon: FiHome },
@@ -96,7 +95,7 @@ export default function Navbar() {
               >
                 {user?.avatar_url && !avatarError ? (
                   <img
-                    src={`${API_URL}${user.avatar_url}`}
+                    src={resolveUrl(user.avatar_url)}
                     alt=""
                     className="w-full h-full object-cover"
                     onError={() => setAvatarError(true)}

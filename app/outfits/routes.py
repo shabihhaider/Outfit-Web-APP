@@ -21,6 +21,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
 from app.models_db import OutfitHistory, OutfitFeedback, SavedOutfit, WardrobeItemDB
+from app.storage import get_public_url as _img_url
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ def _fetch_items_for_display(item_ids: list[int]) -> list[dict]:
             result.append({
                 "id":        row.id,
                 "category":  row.category,
-                "image_url": f"/uploads/{row.image_filename}",
+                "image_url": _img_url(row.image_filename),
             })
     return result
 

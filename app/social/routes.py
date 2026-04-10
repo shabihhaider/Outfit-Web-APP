@@ -62,6 +62,7 @@ from app.models_db import (
     SavedOutfit, SharedOutfit, User, VibeTag, WardrobeItemDB,
     post_vibes,
 )
+from app.storage import get_public_url as _img_url
 from app.utils import allowed_file, validate_image_content
 
 logger = logging.getLogger(__name__)
@@ -176,7 +177,7 @@ def _post_to_dict(post: SharedOutfit, viewer_id: int | None) -> dict:
         thumb_items = WardrobeItemDB.query.filter(WardrobeItemDB.id.in_(item_ids[:6])).all()
         thumb_map   = {i.id: i for i in thumb_items}
         item_images = [
-            f"/uploads/{thumb_map[iid].image_filename}"
+            _img_url(thumb_map[iid].image_filename)
             for iid in item_ids[:6]
             if iid in thumb_map and thumb_map[iid].image_filename
         ]
@@ -310,19 +311,29 @@ def upload_avatar():
                 os.remove(old_path)
         except OSError:
             pass
+        from app.storage import delete_file as storage_delete
+        storage_delete(user.avatar_filename)
 
     ext = file.filename.rsplit(".", 1)[1].lower()
     filename = f"avatar_{user_id}_{uuid.uuid4().hex[:12]}.{ext}"
     upload_dir = current_app.config["UPLOAD_FOLDER"]
     os.makedirs(upload_dir, exist_ok=True)
-    with open(os.path.join(upload_dir, filename), "wb") as f:
+    save_path = os.path.join(upload_dir, filename)
+    with open(save_path, "wb") as f:
         f.write(content)
+
+    # Upload to Supabase Storage
+    try:
+        from app.storage import upload_file_from_path
+        upload_file_from_path(save_path, filename)
+    except Exception as exc:
+        logger.warning("Supabase upload failed for %s: %s", filename, exc)
 
     user.avatar_filename = filename
     db.session.commit()
 
     return jsonify({
-        "avatar_url": f"/uploads/{filename}",
+        "avatar_url": _img_url(filename),
     }), 200
 
 
@@ -608,6 +619,12 @@ def publish_outfit():
         ok = generate_outfit_preview(image_paths, preview_path)
         if ok:
             post.preview_image_filename = preview_filename
+            # Upload preview to Supabase
+            try:
+                from app.storage import upload_file_from_path
+                upload_file_from_path(preview_path, preview_filename)
+            except Exception as exc2:
+                logger.warning("Supabase upload failed for preview %s: %s", preview_filename, exc2)
     except Exception as exc:
         logger.warning("Preview generation failed for post %s: %s", post.id, exc)
 
@@ -615,7 +632,7 @@ def publish_outfit():
 
     return jsonify({
         "id":          post.id,
-        "preview_url": f"/uploads/{post.preview_image_filename}" if post.preview_image_filename else None,
+        "preview_url": _img_url(post.preview_image_filename) if post.preview_image_filename else None,
         "caption":     post.caption,
         "vibes":       [v.to_dict() for v in post.vibes],
         "visibility":  post.visibility,
@@ -662,7 +679,7 @@ def get_post(post_id: int):
             {
                 "id":           item_map[iid].id,
                 "category":     item_map[iid].category,
-                "image_url":    f"/uploads/{item_map[iid].image_filename}",
+                "image_url":    _img_url(item_map[iid].image_filename),
                 "sub_category": item_map[iid].sub_category,
             }
             for iid in item_ids if iid in item_map
@@ -976,7 +993,7 @@ def remix_post(post_id: int):
             src_info = {
                 "id":           src_item.id,
                 "category":     src_item.category,
-                "image_url":    f"/uploads/{src_item.image_filename}",
+                "image_url":    _img_url(src_item.image_filename),
                 "sub_category": src_item.sub_category,
             }
         candidates_out = [
