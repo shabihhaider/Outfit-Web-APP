@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Union
 
-from engine.models import WardrobeItem, Occasion, Formality
+from engine.models import WardrobeItem, Occasion
 
 
 OCCASION_RULES: dict[str, set[str]] = {

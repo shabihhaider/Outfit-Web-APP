@@ -32,7 +32,6 @@ and used to activate the hard-blocked fashion rules in engine/hard_rules.py.
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -43,88 +42,131 @@ logger = logging.getLogger(__name__)
 
 SUBCATEGORY_TAXONOMY: dict[str, list[dict]] = {
     "top": [
-        {"label": "formal_shirt",   "prompts": ["a dress shirt", "a formal button-down shirt", "a business shirt", "an office shirt"]},
-        {"label": "kurta",          "prompts": ["a kurta", "a Pakistani kurta", "a South Asian tunic", "a kameez", "a men's kurta shirt"]},
-        {"label": "polo_shirt",     "prompts": ["a polo shirt", "a polo t-shirt", "a collared polo"]},
-        {"label": "casual_tshirt",  "prompts": ["a casual t-shirt", "a graphic tee", "a plain t-shirt", "a casual top"]},
-        {"label": "hoodie",         "prompts": ["a hoodie", "a sweatshirt", "a pullover hoodie", "a casual hoodie"]},
-        {"label": "blouse",         "prompts": ["a blouse", "a women's blouse", "a formal blouse", "a chiffon blouse"]},
-        {"label": "kameez",         "prompts": ["a kameez", "a women's kameez", "a Pakistani women's top", "a shalwar kameez top"]},
+        {"label": "formal_shirt",
+         "prompts": ["a dress shirt",
+                     "a formal button-down shirt",
+                     "a business shirt",
+                     "an office shirt"]},
+        {"label": "kurta", "prompts": ["a kurta", "a Pakistani kurta",
+                                       "a South Asian tunic", "a kameez", "a men's kurta shirt"]},
+        {"label": "polo_shirt", "prompts": ["a polo shirt", "a polo t-shirt", "a collared polo"]},
+        {"label": "casual_tshirt", "prompts": ["a casual t-shirt",
+                                               "a graphic tee", "a plain t-shirt", "a casual top"]},
+        {"label": "hoodie", "prompts": ["a hoodie", "a sweatshirt", "a pullover hoodie", "a casual hoodie"]},
+        {"label": "blouse",
+         "prompts": ["a blouse",
+                     "a women's blouse",
+                     "a formal blouse",
+                     "a chiffon blouse"]},
+        {"label": "kameez", "prompts": ["a kameez", "a women's kameez",
+                                        "a Pakistani women's top", "a shalwar kameez top"]},
     ],
     "bottom": [
-        {"label": "jeans",          "prompts": ["jeans", "denim jeans", "blue jeans", "casual denim trousers"]},
-        {"label": "dress_trousers", "prompts": ["dress trousers", "formal pants", "business trousers", "suit pants", "dress pants"]},
-        {"label": "shalwar",        "prompts": ["shalwar", "Pakistani shalwar", "baggy trousers", "traditional Pakistani pants"]},
-        {"label": "chinos",         "prompts": ["chinos", "chino trousers", "khaki pants", "smart casual trousers"]},
-        {"label": "shorts",         "prompts": ["shorts", "casual shorts", "summer shorts", "bermuda shorts"]},
-        {"label": "skirt",          "prompts": ["a skirt", "a formal skirt", "a women's skirt", "a pencil skirt"]},
-        {"label": "leggings",       "prompts": ["leggings", "athletic leggings", "yoga pants", "tight leggings"]},
+        {"label": "jeans", "prompts": ["jeans", "denim jeans", "blue jeans", "casual denim trousers"]},
+        {"label": "dress_trousers",
+         "prompts": ["dress trousers",
+                     "formal pants",
+                     "business trousers",
+                     "suit pants",
+                     "dress pants"]},
+        {"label": "shalwar", "prompts": ["shalwar", "Pakistani shalwar",
+                                         "baggy trousers", "traditional Pakistani pants"]},
+        {"label": "chinos", "prompts": ["chinos", "chino trousers", "khaki pants", "smart casual trousers"]},
+        {"label": "shorts", "prompts": ["shorts", "casual shorts", "summer shorts", "bermuda shorts"]},
+        {"label": "skirt", "prompts": ["a skirt", "a formal skirt", "a women's skirt", "a pencil skirt"]},
+        {"label": "leggings", "prompts": ["leggings", "athletic leggings", "yoga pants", "tight leggings"]},
     ],
     "outwear": [
-        {"label": "blazer",         "prompts": ["a blazer", "a suit jacket", "a formal blazer", "a business blazer"]},
-        {"label": "sherwani",       "prompts": ["a sherwani", "a Pakistani sherwani", "a formal South Asian coat", "a wedding sherwani"]},
-        {"label": "waistcoat",      "prompts": ["a waistcoat", "a vest", "a formal vest", "a suit waistcoat"]},
-        {"label": "jacket",         "prompts": ["a casual jacket", "a denim jacket", "a leather jacket", "a casual coat"]},
-        {"label": "coat",           "prompts": ["a formal overcoat", "a trench coat", "a winter coat", "a long coat"]},
-        {"label": "hoodie_jacket",  "prompts": ["a zip-up hoodie", "a casual jacket hoodie", "a sports jacket"]},
-        {"label": "cardigan",       "prompts": ["a cardigan", "a knit cardigan", "a casual sweater", "a woolen cardigan"]},
+        {"label": "blazer", "prompts": ["a blazer", "a suit jacket", "a formal blazer", "a business blazer"]},
+        {"label": "sherwani",
+         "prompts": ["a sherwani",
+                     "a Pakistani sherwani",
+                     "a formal South Asian coat",
+                     "a wedding sherwani"]},
+        {"label": "waistcoat", "prompts": ["a waistcoat", "a vest", "a formal vest", "a suit waistcoat"]},
+        {"label": "jacket", "prompts": ["a casual jacket",
+                                        "a denim jacket", "a leather jacket", "a casual coat"]},
+        {"label": "coat", "prompts": ["a formal overcoat", "a trench coat", "a winter coat", "a long coat"]},
+        {"label": "hoodie_jacket", "prompts": ["a zip-up hoodie",
+                                               "a casual jacket hoodie", "a sports jacket"]},
+        {"label": "cardigan",
+         "prompts": ["a cardigan",
+                     "a knit cardigan",
+                     "a casual sweater",
+                     "a woolen cardigan"]},
     ],
     "shoes": [
-        {"label": "heels",          "prompts": ["high heels", "stiletto heels", "formal women's heels", "dress heels"]},
-        {"label": "formal_shoes",   "prompts": ["formal dress shoes", "oxford shoes", "leather formal shoes", "men's formal shoes"]},
-        {"label": "sneakers",       "prompts": ["sneakers", "running shoes", "casual sneakers", "athletic shoes", "trainers"]},
-        {"label": "loafers",        "prompts": ["loafers", "slip-on shoes", "casual loafers", "smart-casual loafers"]},
-        {"label": "sandals",        "prompts": ["sandals", "open-toe sandals", "casual sandals", "summer sandals"]},
-        {"label": "boots",          "prompts": ["boots", "ankle boots", "formal boots", "Chelsea boots"]},
-        {"label": "chappal",        "prompts": ["Pakistani chappal", "khussa", "traditional sandals", "South Asian footwear"]},
+        {"label": "heels",
+         "prompts": ["high heels",
+                     "stiletto heels",
+                     "formal women's heels",
+                     "dress heels"]},
+        {"label": "formal_shoes", "prompts": ["formal dress shoes",
+                                              "oxford shoes", "leather formal shoes", "men's formal shoes"]},
+        {"label": "sneakers", "prompts": ["sneakers", "running shoes",
+                                          "casual sneakers", "athletic shoes", "trainers"]},
+        {"label": "loafers",
+         "prompts": ["loafers",
+                     "slip-on shoes",
+                     "casual loafers",
+                     "smart-casual loafers"]},
+        {"label": "sandals", "prompts": ["sandals", "open-toe sandals", "casual sandals", "summer sandals"]},
+        {"label": "boots", "prompts": ["boots", "ankle boots", "formal boots", "Chelsea boots"]},
+        {"label": "chappal", "prompts": ["Pakistani chappal",
+                                         "khussa", "traditional sandals", "South Asian footwear"]},
     ],
     "dress": [
-        {"label": "formal_dress",   "prompts": ["a formal dress", "an evening gown", "a cocktail dress", "a business dress"]},
-        {"label": "casual_dress",   "prompts": ["a casual dress", "a summer dress", "a day dress", "a simple dress"]},
-        {"label": "gown",           "prompts": ["a ball gown", "a wedding gown", "a formal gown", "a maxi gown"]},
-        {"label": "anarkali",       "prompts": ["an anarkali dress", "a Pakistani anarkali", "a South Asian frock dress"]},
+        {"label": "formal_dress", "prompts": ["a formal dress",
+                                              "an evening gown", "a cocktail dress", "a business dress"]},
+        {"label": "casual_dress", "prompts": ["a casual dress",
+                                              "a summer dress", "a day dress", "a simple dress"]},
+        {"label": "gown", "prompts": ["a ball gown", "a wedding gown", "a formal gown", "a maxi gown"]},
+        {"label": "anarkali", "prompts": ["an anarkali dress",
+                                          "a Pakistani anarkali", "a South Asian frock dress"]},
     ],
     "jumpsuit": [
-        {"label": "formal_jumpsuit", "prompts": ["a formal jumpsuit", "a tailored jumpsuit", "an office jumpsuit"]},
-        {"label": "casual_jumpsuit", "prompts": ["a casual jumpsuit", "a playsuit", "a casual romper", "a utility jumpsuit"]},
+        {"label": "formal_jumpsuit", "prompts": [
+            "a formal jumpsuit", "a tailored jumpsuit", "an office jumpsuit"]},
+        {"label": "casual_jumpsuit", "prompts": ["a casual jumpsuit",
+                                                 "a playsuit", "a casual romper", "a utility jumpsuit"]},
     ],
 }
 
 # Formality mapping from sub-category to formality tag
 # Used to suggest formality when user uploads (overrides Model 1 which cannot infer this)
 SUBCATEGORY_FORMALITY_HINT: dict[str, str] = {
-    "formal_shirt":    "formal",
-    "kurta":           "both",
-    "polo_shirt":      "casual",
-    "casual_tshirt":   "casual",
-    "hoodie":          "casual",
-    "blouse":          "both",
-    "kameez":          "both",
-    "jeans":           "casual",
-    "dress_trousers":  "formal",
-    "shalwar":         "both",
-    "chinos":          "both",
-    "shorts":          "casual",
-    "skirt":           "both",
-    "leggings":        "casual",
-    "blazer":          "formal",
-    "sherwani":        "formal",
-    "waistcoat":       "formal",
-    "jacket":          "casual",
-    "coat":            "both",
-    "hoodie_jacket":   "casual",
-    "cardigan":        "casual",
-    "heels":           "formal",
-    "formal_shoes":    "formal",
-    "sneakers":        "casual",
-    "loafers":         "both",
-    "sandals":         "casual",
-    "boots":           "both",
-    "chappal":         "casual",
-    "formal_dress":    "formal",
-    "casual_dress":    "casual",
-    "gown":            "formal",
-    "anarkali":        "both",
+    "formal_shirt": "formal",
+    "kurta": "both",
+    "polo_shirt": "casual",
+    "casual_tshirt": "casual",
+    "hoodie": "casual",
+    "blouse": "both",
+    "kameez": "both",
+    "jeans": "casual",
+    "dress_trousers": "formal",
+    "shalwar": "both",
+    "chinos": "both",
+    "shorts": "casual",
+    "skirt": "both",
+    "leggings": "casual",
+    "blazer": "formal",
+    "sherwani": "formal",
+    "waistcoat": "formal",
+    "jacket": "casual",
+    "coat": "both",
+    "hoodie_jacket": "casual",
+    "cardigan": "casual",
+    "heels": "formal",
+    "formal_shoes": "formal",
+    "sneakers": "casual",
+    "loafers": "both",
+    "sandals": "casual",
+    "boots": "both",
+    "chappal": "casual",
+    "formal_dress": "formal",
+    "casual_dress": "casual",
+    "gown": "formal",
+    "anarkali": "both",
     "formal_jumpsuit": "formal",
     "casual_jumpsuit": "casual",
 }
@@ -154,7 +196,7 @@ class CLIPSubCategoryTagger:
             return
         try:
             from transformers import CLIPProcessor, CLIPModel
-            import torch
+            import torch  # noqa: F401
             self._model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
             self._processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
             self._model.eval()
@@ -171,7 +213,7 @@ class CLIPSubCategoryTagger:
     def is_clothing_image(self, image_path: str) -> tuple[bool, str]:
         """
         Zero-shot OOD detection to determine if the image actually contains clothing.
-        
+
         Evaluates the image against positive (clothing) and negative (non-clothing)
         prompts. Rejects the image if a negative prompt wins or if the overall
         clothing confidence is too low.
@@ -224,8 +266,11 @@ class CLIPSubCategoryTagger:
             # If a negative prompt won
             if best_idx >= num_positive:
                 matched_prompt = all_prompts[best_idx]
-                reason = matched_prompt.replace("a photo of ", "").replace("a photograph of ", "").capitalize()
-                logger.info("CLIP rejected %s. Matched negative prompt: '%s' (%.3f)", image_path, matched_prompt, probs[best_idx])
+                reason = matched_prompt.replace(
+                    "a photo of ", "").replace(
+                    "a photograph of ", "").capitalize()
+                logger.info("CLIP rejected %s. Matched negative prompt: '%s' (%.3f)",
+                            image_path, matched_prompt, probs[best_idx])
                 return False, f"Image appears to be {reason.lower()}. Please upload a clear photo of a single clothing item."
 
             # Ensure total positive confidence is reasonably high
@@ -275,7 +320,7 @@ class CLIPSubCategoryTagger:
 
         # Build prompt list: use the first (most descriptive) prompt per sub-category
         prompts = [cand["prompts"][0] for cand in candidates]
-        labels  = [cand["label"]      for cand in candidates]
+        labels = [cand["label"] for cand in candidates]
 
         image = Image.open(image_path).convert("RGB")
         inputs = self._processor(
@@ -286,13 +331,13 @@ class CLIPSubCategoryTagger:
         )
 
         with torch.no_grad():
-            outputs    = self._model(**inputs)
+            outputs = self._model(**inputs)
             logits_img = outputs.logits_per_image  # shape: (1, num_candidates)
-            probs      = logits_img.softmax(dim=1)[0].numpy()
+            probs = logits_img.softmax(dim=1)[0].numpy()
 
-        best_idx   = int(probs.argmax())
+        best_idx = int(probs.argmax())
         best_label = labels[best_idx]
-        best_conf  = float(probs[best_idx])
+        best_conf = float(probs[best_idx])
 
         logger.debug(
             "CLIP sub-category: image=%s category=%s → %s (%.3f)",

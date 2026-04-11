@@ -23,7 +23,7 @@ import logging
 
 from engine.models import (
     WardrobeItem, OutfitCandidate, OutfitTemplate, Occasion,
-    Gender, InsufficientWardrobeError, TEMPLATE_CATEGORIES,
+    Gender, InsufficientWardrobeError,
 )
 from engine.hard_rules import passes_hard_rules
 from engine.occasion_filter import filter_by_occasion
@@ -125,14 +125,14 @@ def generate_recommendations(
     logger.info("After gender filter (%s): %d items — %s",
                 gender_filter, len(items),
                 {cat: sum(1 for i in items if i.category == cat)
-                 for cat in ["top","bottom","outwear","shoes","dress","jumpsuit"]})
+                 for cat in ["top", "bottom", "outwear", "shoes", "dress", "jumpsuit"]})
 
     # Step 2: Gate 2 — occasion filter (item-level, reduces candidate space)
     items = filter_by_occasion(items, occasion)
     logger.info("After occasion filter (%s): %d items — %s",
                 occasion, len(items),
                 {cat: sum(1 for i in items if i.category == cat)
-                 for cat in ["top","bottom","outwear","shoes","dress","jumpsuit"]})
+                 for cat in ["top", "bottom", "outwear", "shoes", "dress", "jumpsuit"]})
 
     # Step 3: Ensure at least one valid outfit template is achievable
     _check_wardrobe_minimum(items)

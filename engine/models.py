@@ -15,36 +15,36 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 # ─── Enumerations ─────────────────────────────────────────────────────────────
 
 class Category(str, Enum):
-    TOP      = "top"
-    BOTTOM   = "bottom"
-    OUTWEAR  = "outwear"
-    SHOES    = "shoes"
-    DRESS    = "dress"
+    TOP = "top"
+    BOTTOM = "bottom"
+    OUTWEAR = "outwear"
+    SHOES = "shoes"
+    DRESS = "dress"
     JUMPSUIT = "jumpsuit"
 
 
 class Formality(str, Enum):
     CASUAL = "casual"
     FORMAL = "formal"
-    BOTH   = "both"
+    BOTH = "both"
 
 
 class Gender(str, Enum):
-    MEN     = "men"
-    WOMEN   = "women"
-    UNISEX  = "unisex"
+    MEN = "men"
+    WOMEN = "women"
+    UNISEX = "unisex"
 
 
 class Occasion(str, Enum):
-    CASUAL  = "casual"
-    FORMAL  = "formal"
+    CASUAL = "casual"
+    FORMAL = "formal"
     WEDDING = "wedding"
 
 
 class Confidence(str, Enum):
-    HIGH   = "high"    # final_score >= 0.70
+    HIGH = "high"    # final_score >= 0.70
     MEDIUM = "medium"  # final_score >= 0.40
-    LOW    = "low"     # final_score <  0.40
+    LOW = "low"     # final_score <  0.40
 
 
 class OutfitTemplate(str, Enum):
@@ -56,7 +56,7 @@ class OutfitTemplate(str, Enum):
     F = "F"  # jumpsuit + outwear + shoes
     G = "G"  # top + bottom
     H = "H"  # top + bottom + outwear
-    I = "I"  # dress (standalone)
+    I = "I"  # dress (standalone)  # noqa: E741
     J = "J"  # dress + outwear
     K = "K"  # jumpsuit (standalone)
     L = "L"  # jumpsuit + outwear
@@ -65,11 +65,11 @@ class OutfitTemplate(str, Enum):
 # ─── Category order — MUST match model2_results.json ─────────────────────────
 # {"bottom":0, "dress":1, "outwear":2, "shoes":3, "top":4}
 CAT_TO_IDX: dict[str, int] = {
-    Category.BOTTOM:   0,
-    Category.DRESS:    1,
-    Category.OUTWEAR:  2,
-    Category.SHOES:    3,
-    Category.TOP:      4,
+    Category.BOTTOM: 0,
+    Category.DRESS: 1,
+    Category.OUTWEAR: 2,
+    Category.SHOES: 3,
+    Category.TOP: 4,
 }
 
 TEMPLATE_CATEGORIES: dict[OutfitTemplate, list[Category]] = {
@@ -95,14 +95,14 @@ class WardrobeItem(BaseModel):
     A single clothing item from a user's wardrobe.
     Embedding and color are pre-computed at upload time and stored in the DB.
     """
-    item_id:       int
-    category:      Category
-    formality:     Formality
-    gender:        Gender
-    embedding:     list[float] = Field(..., min_length=1280, max_length=1280)
-    dominant_hue:  float       = Field(..., ge=0.0, le=360.0)
-    dominant_sat:  float       = Field(..., ge=0.0, le=1.0)
-    dominant_val:  float       = Field(..., ge=0.0, le=1.0)
+    item_id: int
+    category: Category
+    formality: Formality
+    gender: Gender
+    embedding: list[float] = Field(..., min_length=1280, max_length=1280)
+    dominant_hue: float = Field(..., ge=0.0, le=360.0)
+    dominant_sat: float = Field(..., ge=0.0, le=1.0)
+    dominant_val: float = Field(..., ge=0.0, le=1.0)
 
     @field_validator("embedding")
     @classmethod
@@ -134,19 +134,19 @@ class OutfitCandidate(BaseModel):
     A scored outfit candidate produced by the recommendation engine.
     Contains the items, per-component scores, final score, and confidence level.
     """
-    items:          list[WardrobeItem]
-    template_id:    OutfitTemplate
-    model2_score:   float = Field(..., ge=0.0, le=1.0)
-    color_score:    float = Field(..., ge=0.0, le=1.0)
-    weather_score:  float = Field(..., ge=0.0, le=1.0)
+    items: list[WardrobeItem]
+    template_id: OutfitTemplate
+    model2_score: float = Field(..., ge=0.0, le=1.0)
+    color_score: float = Field(..., ge=0.0, le=1.0)
+    weather_score: float = Field(..., ge=0.0, le=1.0)
     cohesion_score: float = Field(..., ge=0.0, le=1.0)
-    final_score:    float = Field(..., ge=0.0, le=1.0)
-    confidence:     Confidence
+    final_score: float = Field(..., ge=0.0, le=1.0)
+    confidence: Confidence
 
     @model_validator(mode="after")
     def validate_items_match_template(self) -> OutfitCandidate:
         expected_cats = set(TEMPLATE_CATEGORIES[self.template_id])
-        actual_cats   = {item.category for item in self.items}
+        actual_cats = {item.category for item in self.items}
         if actual_cats != expected_cats:
             raise ValueError(
                 f"Template {self.template_id} expects {expected_cats}, "
@@ -159,30 +159,30 @@ class OutfitCandidate(BaseModel):
 
     def score_breakdown(self) -> dict[str, float]:
         return {
-            "model2":   round(self.model2_score,   3),
-            "color":    round(self.color_score,    3),
-            "weather":  round(self.weather_score,  3),
+            "model2": round(self.model2_score, 3),
+            "color": round(self.color_score, 3),
+            "weather": round(self.weather_score, 3),
             "cohesion": round(self.cohesion_score, 3),
-            "final":    round(self.final_score,    3),
+            "final": round(self.final_score, 3),
         }
 
 
 class RecommendationRequest(BaseModel):
     """Input to the recommendation pipeline from the Flask layer."""
-    user_id:       int
-    occasion:      Occasion
-    temp_celsius:  float    = Field(..., ge=-20.0, le=60.0,
-                                    description="Temperature in Celsius. Lahore range: -2 to 48.")
+    user_id: int
+    occasion: Occasion
+    temp_celsius: float = Field(..., ge=-20.0, le=60.0,
+                                description="Temperature in Celsius. Lahore range: -2 to 48.")
     gender_filter: Gender
-    top_n:         int      = Field(default=3, ge=1, le=10)
+    top_n: int = Field(default=3, ge=1, le=10)
 
 
 class RecommendationResponse(BaseModel):
     """Output from the recommendation pipeline returned to the Flask layer."""
-    request:       RecommendationRequest
-    outfits:       list[OutfitCandidate]
+    request: RecommendationRequest
+    outfits: list[OutfitCandidate]
     has_low_confidence: bool  # True if best outfit has confidence=="low"
-    warning:       Optional[str] = None  # Set when has_low_confidence is True
+    warning: Optional[str] = None  # Set when has_low_confidence is True
 
 
 # ─── Exceptions ───────────────────────────────────────────────────────────────

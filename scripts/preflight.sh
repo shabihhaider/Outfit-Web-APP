@@ -34,7 +34,7 @@ echo "[1/5] Lint (flake8)"
 if $PYTHON -m flake8 --version &>/dev/null 2>&1; then
   if $PYTHON -m flake8 app/ engine/ \
       --max-line-length=110 \
-      --extend-ignore=E203,W503,E501 \
+      --extend-ignore=E203,W503,E501,E221,E251,E272 \
       --exclude=app/migrations/,__pycache__ \
       --count --statistics 2>&1; then
     _ok "flake8 — no errors"

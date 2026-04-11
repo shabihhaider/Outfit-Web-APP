@@ -296,7 +296,7 @@ def _run_weight_optimization(app, positives: int, negatives: int) -> None:
     """
     try:
         with app.app_context():
-            from sqlalchemy import func as sqlfunc
+            from sqlalchemy import func as sqlfunc  # noqa: F401
             from app.extensions import db as _db
 
             # Join feedback with history to get (final_score, rating) pairs

@@ -508,11 +508,7 @@ def score_outfit_endpoint():
 
     # 5. Convert to engine items
     engine_items = [item_db_to_engine(item) for item in items_db]
-    filename_map = {item.id: item.image_filename for item in items_db}
-
     # 6. Check hard rules (Gate 1)
-    from engine.hard_rules import passes_hard_rules
-    from engine.occasion_filter import OCCASION_RULES
     from engine.scorer import score_outfit as engine_score_outfit
 
     rule_violations = _check_rule_violations(engine_items)

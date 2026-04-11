@@ -69,7 +69,6 @@ class TTLCache:
             oldest_key = min(self._store, key=lambda k: self._store[k][0])
             del self._store[oldest_key]
 
-
     def stats(self) -> dict:
         """Return cache statistics for the /metrics endpoint."""
         with self._lock:

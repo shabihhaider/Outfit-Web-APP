@@ -54,7 +54,6 @@ from datetime import datetime, timedelta, timezone
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from sqlalchemy import case, func
-from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
 from app.models_db import (
@@ -83,36 +82,36 @@ COMPAT_LABELS = {
 }
 
 VIBE_SEED = [
-    (1,  "streetwear",            "Streetwear",             "global"),
-    (2,  "minimalist",            "Minimalist",             "global"),
-    (3,  "old-money",             "Old Money",              "global"),
-    (4,  "cottagecore",           "Cottagecore",            "global"),
-    (5,  "dark-academia",         "Dark Academia",          "global"),
-    (6,  "y2k",                   "Y2K Revival",            "global"),
-    (7,  "boho",                  "Boho",                   "global"),
-    (8,  "grunge",                "Grunge",                 "global"),
-    (9,  "preppy",                "Preppy",                 "global"),
-    (10, "athleisure",            "Athleisure",             "global"),
-    (11, "party-glam",            "Party Glam",             "global"),
-    (12, "quiet-luxury",          "Quiet Luxury",           "global"),
-    (13, "coastal",               "Coastal",                "global"),
-    (14, "balletcore",            "Balletcore",             "global"),
-    (15, "techwear",              "Techwear",               "global"),
-    (16, "gorpcore",              "Gorpcore",               "global"),
-    (17, "avant-garde",           "Avant-Garde",            "global"),
-    (18, "mob-wife",              "Mob Wife",               "global"),
-    (19, "business-casual",       "Business Casual",        "global"),
-    (20, "smart-casual",          "Smart Casual",           "global"),
-    (21, "desi-casual",           "Desi Casual",            "south-asian"),
-    (22, "desi-formal",           "Desi Formal",            "south-asian"),
-    (23, "fusion-east-west",      "East-West Fusion",       "south-asian"),
-    (24, "lawn-chic",             "Lawn Chic",              "south-asian"),
-    (25, "bridal-south-asian",    "South Asian Bridal",     "south-asian"),
-    (26, "mehndi-festive",        "Mehndi & Festive",       "south-asian"),
-    (27, "modest-fashion",        "Modest Fashion",         "south-asian"),
-    (28, "south-asian-streetwear","Desi Streetwear",        "south-asian"),
-    (29, "mughal-luxe",           "Mughal Luxe",            "south-asian"),
-    (30, "peshawari-traditional", "Peshawari Traditional",  "south-asian"),
+    (1, "streetwear", "Streetwear", "global"),
+    (2, "minimalist", "Minimalist", "global"),
+    (3, "old-money", "Old Money", "global"),
+    (4, "cottagecore", "Cottagecore", "global"),
+    (5, "dark-academia", "Dark Academia", "global"),
+    (6, "y2k", "Y2K Revival", "global"),
+    (7, "boho", "Boho", "global"),
+    (8, "grunge", "Grunge", "global"),
+    (9, "preppy", "Preppy", "global"),
+    (10, "athleisure", "Athleisure", "global"),
+    (11, "party-glam", "Party Glam", "global"),
+    (12, "quiet-luxury", "Quiet Luxury", "global"),
+    (13, "coastal", "Coastal", "global"),
+    (14, "balletcore", "Balletcore", "global"),
+    (15, "techwear", "Techwear", "global"),
+    (16, "gorpcore", "Gorpcore", "global"),
+    (17, "avant-garde", "Avant-Garde", "global"),
+    (18, "mob-wife", "Mob Wife", "global"),
+    (19, "business-casual", "Business Casual", "global"),
+    (20, "smart-casual", "Smart Casual", "global"),
+    (21, "desi-casual", "Desi Casual", "south-asian"),
+    (22, "desi-formal", "Desi Formal", "south-asian"),
+    (23, "fusion-east-west", "East-West Fusion", "south-asian"),
+    (24, "lawn-chic", "Lawn Chic", "south-asian"),
+    (25, "bridal-south-asian", "South Asian Bridal", "south-asian"),
+    (26, "mehndi-festive", "Mehndi & Festive", "south-asian"),
+    (27, "modest-fashion", "Modest Fashion", "south-asian"),
+    (28, "south-asian-streetwear", "Desi Streetwear", "south-asian"),
+    (29, "mughal-luxe", "Mughal Luxe", "south-asian"),
+    (30, "peshawari-traditional", "Peshawari Traditional", "south-asian"),
 ]
 
 
@@ -158,12 +157,12 @@ def _post_to_dict(post: SharedOutfit, viewer_id: int | None) -> dict:
             post.user_id != viewer_id and
             Follow.query.filter_by(follower_id=viewer_id, following_id=post.user_id).first() is not None
         )
-        d["is_liked"]            = liked
-        d["is_bookmarked"]       = bookmarked
+        d["is_liked"] = liked
+        d["is_bookmarked"] = bookmarked
         d["is_following_author"] = is_following_author
     else:
-        d["is_liked"]            = False
-        d["is_bookmarked"]       = False
+        d["is_liked"] = False
+        d["is_bookmarked"] = False
         d["is_following_author"] = False
 
     # Attach saved outfit metadata + item thumbnail URLs for preview fallback
@@ -175,19 +174,19 @@ def _post_to_dict(post: SharedOutfit, viewer_id: int | None) -> dict:
             item_ids = []
         # Fetch up to 6 item images so the feed card can render a grid when preview_url is null
         thumb_items = WardrobeItemDB.query.filter(WardrobeItemDB.id.in_(item_ids[:6])).all()
-        thumb_map   = {i.id: i for i in thumb_items}
+        thumb_map = {i.id: i for i in thumb_items}
         item_images = [
             _img_url(thumb_map[iid].image_filename)
             for iid in item_ids[:6]
             if iid in thumb_map and thumb_map[iid].image_filename
         ]
         d["outfit"] = {
-            "id":          so.id,
-            "name":        so.name,
-            "occasion":    so.occasion,
+            "id": so.id,
+            "name": so.name,
+            "occasion": so.occasion,
             "final_score": so.final_score,
-            "confidence":  so.confidence,
-            "item_count":  len(item_ids),
+            "confidence": so.confidence,
+            "item_count": len(item_ids),
             "item_images": item_images,
         }
 
@@ -218,12 +217,12 @@ def _feed_score(
     shared_vibes: int,
     post_vibes_count: int,
 ) -> float:
-    age_hours   = (datetime.now(timezone.utc) - created_at.replace(tzinfo=timezone.utc)).total_seconds() / 3600
-    recency     = math.exp(-0.05 * age_hours)
+    age_hours = (datetime.now(timezone.utc) - created_at.replace(tzinfo=timezone.utc)).total_seconds() / 3600
+    recency = math.exp(-0.05 * age_hours)
     impressions = max(view_count, 1)
-    engagement  = min((like_count + remix_count * 3) / impressions, 1.0)
-    follow_sig  = 1.0 if is_following else 0.2
-    vibe_aff    = (shared_vibes / post_vibes_count) if post_vibes_count > 0 else 0.0
+    engagement = min((like_count + remix_count * 3) / impressions, 1.0)
+    follow_sig = 1.0 if is_following else 0.2
+    vibe_aff = (shared_vibes / post_vibes_count) if post_vibes_count > 0 else 0.0
     return 0.40 * recency + 0.30 * engagement + 0.20 * follow_sig + 0.10 * vibe_aff
 
 
@@ -233,8 +232,8 @@ def _feed_score(
 @jwt_required()
 def update_profile():
     user_id = int(get_jwt_identity())
-    user    = db.session.get(User, user_id)
-    data    = request.get_json(silent=True) or {}
+    user = db.session.get(User, user_id)
+    data = request.get_json(silent=True) or {}
 
     if "name" in data:
         n = str(data["name"]).strip()[:80]
@@ -244,7 +243,8 @@ def update_profile():
     if "username" in data:
         uname = str(data["username"]).strip().lower()
         if not USERNAME_RE.match(uname):
-            return jsonify({"error": "username must be 3–30 chars: lowercase letters, digits, underscore."}), 422
+            return jsonify(
+                {"error": "username must be 3–30 chars: lowercase letters, digits, underscore."}), 422
         # Check uniqueness (excluding self)
         existing = User.query.filter(User.username == uname, User.id != user_id).first()
         if existing:
@@ -342,7 +342,7 @@ def upload_avatar():
 def get_my_profile():
     """Return the current user's full profile."""
     user_id = int(get_jwt_identity())
-    user    = db.session.get(User, user_id)
+    user = db.session.get(User, user_id)
     return jsonify(user.to_dict()), 200
 
 
@@ -350,7 +350,7 @@ def get_my_profile():
 @jwt_required()
 def my_style_dna():
     user_id = int(get_jwt_identity())
-    items   = WardrobeItemDB.query.filter_by(user_id=user_id).all()
+    items = WardrobeItemDB.query.filter_by(user_id=user_id).all()
     from engine.style_dna import compute_style_dna
     dna = compute_style_dna(items)
     return jsonify(dna.to_dict()), 200
@@ -397,8 +397,8 @@ def get_public_profile(username: str):
         ).first() is not None
 
     return jsonify({
-        "user":         user.social_dict(),
-        "posts":        [_post_to_dict(p, viewer_id) for p in posts],
+        "user": user.social_dict(),
+        "posts": [_post_to_dict(p, viewer_id) for p in posts],
         "is_following": is_following,
     }), 200
 
@@ -428,7 +428,7 @@ def get_compatibility(username: str):
     if other.id == viewer_id:
         return jsonify({"error": "Cannot compute compatibility with yourself."}), 400
 
-    my_items    = WardrobeItemDB.query.filter_by(user_id=viewer_id).all()
+    my_items = WardrobeItemDB.query.filter_by(user_id=viewer_id).all()
     their_items = WardrobeItemDB.query.filter_by(user_id=other.id).all()
 
     if len(my_items) < 5 or len(their_items) < 5:
@@ -445,7 +445,7 @@ def get_compatibility(username: str):
                 break
 
     # Shared vibe slugs (from published posts of each user)
-    my_vibes    = {v.slug for p in SharedOutfit.query.filter_by(user_id=viewer_id) for v in p.vibes}
+    my_vibes = {v.slug for p in SharedOutfit.query.filter_by(user_id=viewer_id) for v in p.vibes}
     their_vibes = {v.slug for p in SharedOutfit.query.filter_by(user_id=other.id) for v in p.vibes}
     shared = list(my_vibes & their_vibes)
 
@@ -501,8 +501,8 @@ def unfollow_user(target_id: int):
 @jwt_required()
 def list_followers():
     user_id = int(get_jwt_identity())
-    limit   = min(int(request.args.get("limit", 20)), 50)
-    cursor  = request.args.get("cursor")
+    limit = min(int(request.args.get("limit", 20)), 50)
+    cursor = request.args.get("cursor")
 
     q = (
         db.session.query(User)
@@ -515,9 +515,9 @@ def list_followers():
         if c:
             q = q.filter(Follow.created_at < c["ts"])
 
-    rows     = q.limit(limit + 1).all()
+    rows = q.limit(limit + 1).all()
     has_more = len(rows) > limit
-    rows     = rows[:limit]
+    rows = rows[:limit]
 
     next_cursor = None
     if has_more and rows:
@@ -528,7 +528,7 @@ def list_followers():
             next_cursor = _encode_cursor(rows[-1].id, last_follow.created_at)
 
     return jsonify({
-        "users":      [u.social_dict() for u in rows],
+        "users": [u.social_dict() for u in rows],
         "pagination": {"next_cursor": next_cursor, "has_more": has_more},
     }), 200
 
@@ -537,7 +537,7 @@ def list_followers():
 @jwt_required()
 def list_following():
     user_id = int(get_jwt_identity())
-    limit   = min(int(request.args.get("limit", 20)), 50)
+    limit = min(int(request.args.get("limit", 20)), 50)
 
     rows = (
         db.session.query(User)
@@ -557,7 +557,7 @@ def list_following():
 def publish_outfit():
     _ensure_vibes_seeded()
     user_id = int(get_jwt_identity())
-    data    = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True) or {}
 
     saved_outfit_id = data.get("saved_outfit_id")
     if not saved_outfit_id:
@@ -567,7 +567,7 @@ def publish_outfit():
     if saved is None or saved.user_id != user_id:
         return jsonify({"error": "Saved outfit not found."}), 404
 
-    caption    = str(data.get("caption", "")).strip()[:300] or None
+    caption = str(data.get("caption", "")).strip()[:300] or None
     visibility = str(data.get("visibility", "public")).lower()
     if visibility not in VALID_VISIBILITY:
         return jsonify({"error": f"visibility must be one of: {', '.join(VALID_VISIBILITY)}."}), 422
@@ -593,11 +593,11 @@ def publish_outfit():
 
     # Create the post
     post = SharedOutfit(
-        user_id             = user_id,
-        saved_outfit_id     = saved_outfit_id,
-        caption             = caption,
-        visibility          = visibility,
-        remix_source_post_id= remix_source_id,
+        user_id=user_id,
+        saved_outfit_id=saved_outfit_id,
+        caption=caption,
+        visibility=visibility,
+        remix_source_post_id=remix_source_id,
     )
     post.vibes = vibes
     db.session.add(post)
@@ -613,7 +613,7 @@ def publish_outfit():
             for item in items
         ]
         preview_filename = f"preview_{post.id}_{uuid.uuid4().hex[:8]}.jpg"
-        preview_path     = os.path.join(upload_dir, preview_filename)
+        preview_path = os.path.join(upload_dir, preview_filename)
 
         from engine.preview_generator import generate_outfit_preview
         ok = generate_outfit_preview(image_paths, preview_path)
@@ -631,12 +631,12 @@ def publish_outfit():
     db.session.commit()
 
     return jsonify({
-        "id":          post.id,
+        "id": post.id,
         "preview_url": _img_url(post.preview_image_filename) if post.preview_image_filename else None,
-        "caption":     post.caption,
-        "vibes":       [v.to_dict() for v in post.vibes],
-        "visibility":  post.visibility,
-        "created_at":  post.created_at.isoformat(),
+        "caption": post.caption,
+        "vibes": [v.to_dict() for v in post.vibes],
+        "visibility": post.visibility,
+        "created_at": post.created_at.isoformat(),
     }), 201
 
 
@@ -677,9 +677,9 @@ def get_post(post_id: int):
         item_map = {i.id: i for i in items}
         d["items"] = [
             {
-                "id":           item_map[iid].id,
-                "category":     item_map[iid].category,
-                "image_url":    _img_url(item_map[iid].image_filename),
+                "id": item_map[iid].id,
+                "category": item_map[iid].category,
+                "image_url": _img_url(item_map[iid].image_filename),
                 "sub_category": item_map[iid].sub_category,
             }
             for iid in item_ids if iid in item_map
@@ -695,7 +695,7 @@ def get_post(post_id: int):
 @jwt_required()
 def update_post(post_id: int):
     user_id = int(get_jwt_identity())
-    post    = db.session.get(SharedOutfit, post_id)
+    post = db.session.get(SharedOutfit, post_id)
     if post is None:
         return jsonify({"error": "Post not found."}), 404
     if post.user_id != user_id:
@@ -719,7 +719,7 @@ def update_post(post_id: int):
 @jwt_required()
 def delete_post(post_id: int):
     user_id = int(get_jwt_identity())
-    post    = db.session.get(SharedOutfit, post_id)
+    post = db.session.get(SharedOutfit, post_id)
     if post is None:
         return jsonify({"error": "Post not found."}), 404
     if post.user_id != user_id:
@@ -746,9 +746,9 @@ def delete_post(post_id: int):
 def get_feed():
     _ensure_vibes_seeded()
     user_id = int(get_jwt_identity())
-    tab     = request.args.get("tab", "discover").lower()
-    limit   = min(int(request.args.get("limit", FEED_PAGE_SIZE)), 50)
-    cursor  = request.args.get("cursor")
+    tab = request.args.get("tab", "discover").lower()
+    limit = min(int(request.args.get("limit", FEED_PAGE_SIZE)), 50)
+    cursor = request.args.get("cursor")
     vibe_filter = request.args.get("vibe")
 
     # Decode cursor
@@ -775,7 +775,8 @@ def get_feed():
             f.following_id for f in Follow.query.filter_by(follower_id=user_id).all()
         ]
         if not following_ids:
-            return jsonify({"tab": "following", "posts": [], "pagination": {"next_cursor": None, "has_more": False}}), 200
+            return jsonify({"tab": "following", "posts": [], "pagination": {
+                           "next_cursor": None, "has_more": False}}), 200
 
         q = SharedOutfit.query.filter(
             SharedOutfit.user_id.in_(following_ids),
@@ -817,6 +818,7 @@ def get_feed():
         following_ids_set = {
             f.following_id for f in Follow.query.filter_by(follower_id=user_id).all()
         }
+
         def _score(p: SharedOutfit) -> float:
             post_vibe_slugs = {v.slug for v in (p.vibes or [])}
             return _feed_score(
@@ -834,8 +836,8 @@ def get_feed():
         next_cursor = _encode_cursor(raw[-1].id, raw[-1].created_at)
 
     return jsonify({
-        "tab":        tab,
-        "posts":      posts,
+        "tab": tab,
+        "posts": posts,
         "pagination": {"next_cursor": next_cursor, "has_more": has_more},
     }), 200
 
@@ -908,8 +910,8 @@ def toggle_bookmark(post_id: int):
 @jwt_required()
 def list_bookmarks():
     user_id = int(get_jwt_identity())
-    limit   = min(int(request.args.get("limit", FEED_PAGE_SIZE)), 50)
-    cursor  = request.args.get("cursor")
+    limit = min(int(request.args.get("limit", FEED_PAGE_SIZE)), 50)
+    cursor = request.args.get("cursor")
 
     q = (
         db.session.query(SharedOutfit)
@@ -922,9 +924,9 @@ def list_bookmarks():
         if c:
             q = q.filter(PostBookmark.created_at < c["ts"])
 
-    raw      = q.limit(limit + 1).all()
+    raw = q.limit(limit + 1).all()
     has_more = len(raw) > limit
-    raw      = raw[:limit]
+    raw = raw[:limit]
 
     next_cursor = None
     if has_more and raw:
@@ -935,7 +937,7 @@ def list_bookmarks():
             next_cursor = _encode_cursor(raw[-1].id, bm.created_at)
 
     return jsonify({
-        "posts":      [_post_to_dict(p, user_id) for p in raw],
+        "posts": [_post_to_dict(p, user_id) for p in raw],
         "pagination": {"next_cursor": next_cursor, "has_more": has_more},
     }), 200
 
@@ -959,7 +961,8 @@ def remix_post(post_id: int):
     if post.saved_outfit is None:
         return jsonify({"error": "Source outfit no longer available."}), 422
     try:
-        source_item_ids: list[int] = json.loads(post.saved_outfit.item_ids) if post.saved_outfit.item_ids else []
+        source_item_ids: list[int] = json.loads(
+            post.saved_outfit.item_ids) if post.saved_outfit.item_ids else []
     except (json.JSONDecodeError, TypeError):
         source_item_ids = []
 
@@ -991,35 +994,35 @@ def remix_post(post_id: int):
         src_info = None
         if src_item:
             src_info = {
-                "id":           src_item.id,
-                "category":     src_item.category,
-                "image_url":    _img_url(src_item.image_filename),
+                "id": src_item.id,
+                "category": src_item.category,
+                "image_url": _img_url(src_item.image_filename),
                 "sub_category": src_item.sub_category,
             }
         candidates_out = [
             {
-                "item_id":         c.item_id,
-                "final_score":     c.final_score,
+                "item_id": c.item_id,
+                "final_score": c.final_score,
                 "embedding_score": c.embedding_score,
-                "color_score":     c.color_score,
+                "color_score": c.color_score,
                 "formality_score": c.formality_score,
-                "category":        c.category,
-                "image_url":       c.image_url,
+                "category": c.category,
+                "image_url": c.image_url,
             }
             for c in m.candidates
         ]
         matches_out.append({
-            "source_item":   src_info,
+            "source_item": src_info,
             "source_category": m.source_category,
-            "candidates":    candidates_out,
+            "candidates": candidates_out,
         })
 
     return jsonify({
-        "source_post_id":     post_id,
-        "coverage":           result.coverage,
+        "source_post_id": post_id,
+        "coverage": result.coverage,
         "missing_categories": result.missing_categories,
-        "can_remix":          result.can_remix,
-        "matches":            matches_out,
+        "can_remix": result.can_remix,
+        "matches": matches_out,
         "remix_source_post_id": post_id,   # for PublishModal to set attribution
     }), 200
 
@@ -1055,10 +1058,10 @@ def get_remix_chain(post_id: int):
     )
 
     return jsonify({
-        "ancestors":    ancestors,
-        "current":      post_id,
-        "remix_depth":  len(ancestors),
-        "remixes":      [{"id": c.id, "user": c.author.social_dict() if c.author else None} for c in children],
+        "ancestors": ancestors,
+        "current": post_id,
+        "remix_depth": len(ancestors),
+        "remixes": [{"id": c.id, "user": c.author.social_dict() if c.author else None} for c in children],
     }), 200
 
 
@@ -1069,15 +1072,15 @@ def list_vibes():
     _ensure_vibes_seeded()
     all_vibes = VibeTag.query.order_by(VibeTag.id).all()
     return jsonify({
-        "global":     [v.to_dict() for v in all_vibes if v.region == "global"],
-        "south-asian":[v.to_dict() for v in all_vibes if v.region == "south-asian"],
+        "global": [v.to_dict() for v in all_vibes if v.region == "global"],
+        "south-asian": [v.to_dict() for v in all_vibes if v.region == "south-asian"],
     }), 200
 
 
 @social_bp.route("/vibes/trending", methods=["GET"])
 def trending_vibes():
     _ensure_vibes_seeded()
-    limit  = min(int(request.args.get("limit", 5)), 10)
+    limit = min(int(request.args.get("limit", 5)), 10)
     cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
 
     results = (

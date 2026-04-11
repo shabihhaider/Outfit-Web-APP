@@ -34,7 +34,7 @@ from sqlalchemy import func
 from app.audit import log_action
 from app.cache import recommendation_cache
 from app.extensions import db
-from app.models_db import WardrobeItemDB, OutfitHistory, OutfitFeedback, SavedOutfit, User
+from app.models_db import WardrobeItemDB, OutfitHistory, OutfitFeedback, SavedOutfit
 from app.utils import allowed_file, validate_image_content, validate_clothing_photo, process_image_for_atelier
 
 logger = logging.getLogger(__name__)

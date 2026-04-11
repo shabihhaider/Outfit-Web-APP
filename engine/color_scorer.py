@@ -24,13 +24,13 @@ NEUTRAL_SATURATION_THRESHOLD = 0.15
 
 # (name, ideal_angular_distance_degrees, tolerance_degrees, harmony_score)
 HARMONY_RULES: list[tuple[str, float, float, float]] = [
-    ("monochromatic",     0.0,  25.0, 0.90),
-    ("analogous",        30.0,  20.0, 0.85),
-    ("complementary",   180.0,  25.0, 1.00),  # Strongest harmony
-    ("split_comp_left", 150.0,  20.0, 0.80),
-    ("split_comp_right",210.0,  20.0, 0.80),
-    ("triadic_60",       60.0,  20.0, 0.75),
-    ("triadic_120",     120.0,  20.0, 0.75),
+    ("monochromatic", 0.0, 25.0, 0.90),
+    ("analogous", 30.0, 20.0, 0.85),
+    ("complementary", 180.0, 25.0, 1.00),  # Strongest harmony
+    ("split_comp_left", 150.0, 20.0, 0.80),
+    ("split_comp_right", 210.0, 20.0, 0.80),
+    ("triadic_60", 60.0, 20.0, 0.75),
+    ("triadic_120", 120.0, 20.0, 0.75),
 ]
 
 

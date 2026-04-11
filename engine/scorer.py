@@ -24,7 +24,7 @@ import numpy as np
 
 from engine.models import (
     WardrobeItem, OutfitCandidate, OutfitTemplate,
-    Confidence, CAT_TO_IDX, TEMPLATE_CATEGORIES,
+    Confidence, TEMPLATE_CATEGORIES,
 )
 from engine.color_scorer import score_outfit_color
 from engine.weather_scorer import score_outfit_weather

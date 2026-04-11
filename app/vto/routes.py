@@ -52,13 +52,13 @@ def _photo_hash(content: bytes) -> str:
 
 def _get_daily_usage(user_id: int) -> int:
     """
-    Counts how many NEW Virtual Try-On jobs this user has submitted 
+    Counts how many NEW Virtual Try-On jobs this user has submitted
     in the last 24 hours. Cache hits do not count.
     """
     from datetime import timedelta
-    now     = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc)
     since_24h = now - timedelta(hours=24)
-    
+
     # We count jobs that are ready, pending, or processing.
     # Failed jobs do NOT count toward the daily limit (user shouldn't pay for errors).
     return TryOnJob.query.filter(
@@ -187,9 +187,9 @@ def upload_person_photo():
     logger.info("VTO: person photo saved for user %d → %s", user_id, filename)
 
     return jsonify({
-        "message":   "Person photo saved.",
+        "message": "Person photo saved.",
         "photo_url": _person_photo_url(filename),
-        "filename":  filename,
+        "filename": filename,
     }), 201
 
 
@@ -200,7 +200,7 @@ def upload_person_photo():
 def get_person_photo():
     """Return whether the user has uploaded a person photo and its URL."""
     user_id = int(get_jwt_identity())
-    user    = db.session.get(User, user_id)
+    user = db.session.get(User, user_id)
 
     if not user.profile_photo_filename:
         return jsonify({"has_photo": False, "photo_url": None}), 200
@@ -236,7 +236,7 @@ def submit_tryon():
          job_id so the frontend can poll GET /vto/jobs/<id>.
     """
     user_id = int(get_jwt_identity())
-    data    = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True) or {}
     item_id = data.get("item_id")
 
     if not item_id:
@@ -253,8 +253,8 @@ def submit_tryon():
     user = db.session.get(User, user_id)
     if not user.profile_photo_filename:
         return jsonify({
-            "error":        "No person photo uploaded yet.",
-            "needs_photo":  True,
+            "error": "No person photo uploaded yet.",
+            "needs_photo": True,
         }), 422
 
     upload_dir = current_app.config["UPLOAD_FOLDER"]
@@ -271,7 +271,7 @@ def submit_tryon():
             user.profile_photo_filename = None
             db.session.commit()
             return jsonify({
-                "error":       "Person photo file not found. Please re-upload.",
+                "error": "Person photo file not found. Please re-upload.",
                 "needs_photo": True,
             }), 422
 
@@ -319,19 +319,25 @@ def submit_tryon():
         }), 429
 
     # ── Create job ────────────────────────────────────────────────────────────
-    hf_token       = _clean_secret(current_app.config.get("HF_TOKEN", ""))
-    fashn_space_id = _clean_secret(current_app.config.get("HF_FASHN_SPACE_ID", "fashn-ai/fashn-vton-1.5")) or "fashn-ai/fashn-vton-1.5"
-    hf_space_id    = _clean_secret(current_app.config.get("HF_VTO_SPACE_ID", "yisol/IDM-VTON")) or "yisol/IDM-VTON"
+    hf_token = _clean_secret(current_app.config.get("HF_TOKEN", ""))
+    fashn_space_id = _clean_secret(
+        current_app.config.get(
+            "HF_FASHN_SPACE_ID",
+            "fashn-ai/fashn-vton-1.5")) or "fashn-ai/fashn-vton-1.5"
+    hf_space_id = _clean_secret(
+        current_app.config.get(
+            "HF_VTO_SPACE_ID",
+            "yisol/IDM-VTON")) or "yisol/IDM-VTON"
     if not hf_token:
         return jsonify({
             "error": "Virtual Try-On is not configured. Contact the administrator."
         }), 503
 
     job = TryOnJob(
-        user_id           = user_id,
-        item_id           = item_id,
-        person_photo_hash = person_hash,
-        status            = "pending",
+        user_id=user_id,
+        item_id=item_id,
+        person_photo_hash=person_hash,
+        status="pending",
     )
     db.session.add(job)
     db.session.commit()
@@ -339,10 +345,10 @@ def submit_tryon():
     # ── Fire background thread ────────────────────────────────────────────────
     app = current_app._get_current_object()  # type: ignore[attr-defined]
     t = threading.Thread(
-        target  = _run_tryon_job,
-        args    = (app, job.id, person_path, garment_path, hf_token, fashn_space_id, hf_space_id, upload_dir),
-        daemon  = True,
-        name    = f"vto-job-{job.id}",
+        target=_run_tryon_job,
+        args=(app, job.id, person_path, garment_path, hf_token, fashn_space_id, hf_space_id, upload_dir),
+        daemon=True,
+        name=f"vto-job-{job.id}",
     )
     t.start()
 
@@ -359,7 +365,7 @@ def submit_tryon():
 def get_job_status(job_id: int):
     """Poll the status of a try-on job."""
     user_id = int(get_jwt_identity())
-    job     = db.session.get(TryOnJob, job_id)
+    job = db.session.get(TryOnJob, job_id)
 
     if job is None:
         return jsonify({"error": "Job not found."}), 404
@@ -373,13 +379,13 @@ def get_job_status(job_id: int):
 
 def _run_tryon_job(
     app,
-    job_id:          int,
-    person_path:     str,
-    garment_path:    str,
-    hf_token:        str,
-    fashn_space_id:  str,
-    hf_space_id:     str,
-    upload_dir:      str,
+    job_id: int,
+    person_path: str,
+    garment_path: str,
+    hf_token: str,
+    fashn_space_id: str,
+    hf_space_id: str,
+    upload_dir: str,
 ) -> None:
     """
     Background worker: OutfitAI VTO Engine (hybrid).
@@ -391,7 +397,7 @@ def _run_tryon_job(
         job = db.session.get(TryOnJob, job_id)
         if not job:
             return
-        
+
         item = db.session.get(WardrobeItemDB, job.item_id)
         if not item:
             job.status = "failed"
@@ -404,12 +410,12 @@ def _run_tryon_job(
 
         # ── Step 1: FASHN VTON v1.5 (primary engine — free ZeroGPU) ─────────
         fashn_cat_map = {
-            "top":      "tops",
-            "outwear":  "tops",
-            "bottom":   "bottoms",
-            "dress":    "one-pieces",
+            "top": "tops",
+            "outwear": "tops",
+            "bottom": "bottoms",
+            "dress": "one-pieces",
             "jumpsuit": "one-pieces",
-            "shoes":    "tops",
+            "shoes": "tops",
         }
         fashn_cat = fashn_cat_map.get(item.category, "tops")
 
@@ -472,9 +478,9 @@ def _run_tryon_job(
                 except Exception as exc:
                     logger.warning("Supabase upload failed for %s: %s", result_filename, exc)
 
-                job.status          = "ready"
+                job.status = "ready"
                 job.result_filename = result_filename
-                job.completed_at    = datetime.now(timezone.utc)
+                job.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
                 elapsed = round(time.time() - engine_start, 1)
                 logger.info(
@@ -522,21 +528,21 @@ def _run_tryon_job(
                     job_id, hf_space_id, attempt, max_retries,
                     extra={"engine": "idm-vton", "job_id": job_id, "attempt": attempt},
                 )
-                
+
                 client = Client(hf_space_id, token=hf_token or None)
                 result = client.predict(
                     dict={
                         "background": handle_file(person_path),
-                        "layers":     [],
-                        "composite":  None,
+                        "layers": [],
+                        "composite": None,
                     },
-                    garm_img      = handle_file(garment_path),
-                    garment_des   = "clothing item",
-                    is_checked     = True,
-                    is_checked_crop= False,
-                    denoise_steps  = 25,
-                    seed           = 42,
-                    api_name       = "/tryon",
+                    garm_img=handle_file(garment_path),
+                    garment_des="clothing item",
+                    is_checked=True,
+                    is_checked_crop=False,
+                    denoise_steps=25,
+                    seed=42,
+                    api_name="/tryon",
                 )
 
                 # IDM-VTON returns (output_filepath, masked_image_filepath).
@@ -548,7 +554,7 @@ def _run_tryon_job(
                 if not result_source:
                     raise RuntimeError("Fallback engine returned an empty response.")
                 result_filename = f"tryon_{job_id}_{uuid.uuid4().hex[:8]}.png"
-                result_path     = os.path.join(upload_dir, result_filename)
+                result_path = os.path.join(upload_dir, result_filename)
                 shutil.copy(result_source, result_path)
 
                 # Upload result to Supabase
@@ -558,9 +564,9 @@ def _run_tryon_job(
                 except Exception as exc:
                     logger.warning("Supabase upload failed for %s: %s", result_filename, exc)
 
-                job.status          = "ready"
+                job.status = "ready"
                 job.result_filename = result_filename
-                job.completed_at    = datetime.now(timezone.utc)
+                job.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
                 elapsed = round(time.time() - fallback_start, 1)
                 logger.info(
@@ -595,14 +601,18 @@ def _run_tryon_job(
                 else:
                     user_error = error_str
 
-                job.status       = "failed"
-                job.error_msg    = user_error[:500]
+                job.status = "failed"
+                job.error_msg = user_error[:500]
                 job.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
                 total_elapsed = round(time.time() - engine_start, 1)
                 logger.error(
                     "VTO job %d failed after %.1fs (both engines exhausted): %s",
                     job_id, total_elapsed, hf_exc,
-                    extra={"engine": "all", "job_id": job_id, "outcome": "failed", "duration_s": total_elapsed},
+                    extra={
+                        "engine": "all",
+                        "job_id": job_id,
+                        "outcome": "failed",
+                        "duration_s": total_elapsed},
                 )
                 break

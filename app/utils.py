@@ -108,7 +108,7 @@ def validate_clothing_photo(content: bytes) -> tuple[bool, str]:
         return True, ""  # fail open — don't block on analysis errors
 
 
-def item_db_to_engine(item_db) -> "WardrobeItem":
+def item_db_to_engine(item_db) -> "WardrobeItem":  # noqa: F821
     """
     Convert a SQLAlchemy WardrobeItemDB to an engine WardrobeItem.
 
