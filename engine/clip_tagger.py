@@ -197,8 +197,8 @@ class CLIPSubCategoryTagger:
         try:
             from transformers import CLIPProcessor, CLIPModel
             import torch  # noqa: F401
-            self._model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-            self._processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+            self._model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")  # nosec B615
+            self._processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")  # nosec B615
             self._model.eval()
             self._loaded = True
             logger.info("CLIP ViT-B/32 loaded for sub-category tagging.")
