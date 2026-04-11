@@ -34,6 +34,7 @@ def _after_request(response):
     response.headers["X-Request-ID"] = req_id
 
     # ── Security headers ──────────────────────────────────────────────────
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"

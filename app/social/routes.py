@@ -55,7 +55,7 @@ from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from sqlalchemy import case, func
 
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models_db import (
     Follow, OutfitLike, PostBookmark, RemixLog,
     SavedOutfit, SharedOutfit, User, VibeTag, WardrobeItemDB,
@@ -230,6 +230,7 @@ def _feed_score(
 
 @social_bp.route("/profile", methods=["PATCH"])
 @jwt_required()
+@limiter.limit("10/minute")
 def update_profile():
     user_id = int(get_jwt_identity())
     user = db.session.get(User, user_id)
@@ -283,6 +284,7 @@ def update_profile():
 
 @social_bp.route("/profile/avatar", methods=["POST"])
 @jwt_required()
+@limiter.limit("5/minute")
 def upload_avatar():
     """Upload or replace the user's profile avatar image."""
     user_id = int(get_jwt_identity())
@@ -456,6 +458,7 @@ def get_compatibility(username: str):
 
 @social_bp.route("/follow/<int:target_id>", methods=["POST"])
 @jwt_required()
+@limiter.limit("30/minute")
 def follow_user(target_id: int):
     follower_id = int(get_jwt_identity())
 
@@ -554,6 +557,7 @@ def list_following():
 
 @social_bp.route("/publish", methods=["POST"])
 @jwt_required()
+@limiter.limit("5/minute")
 def publish_outfit():
     _ensure_vibes_seeded()
     user_id = int(get_jwt_identity())
@@ -846,6 +850,7 @@ def get_feed():
 
 @social_bp.route("/posts/<int:post_id>/like", methods=["POST"])
 @jwt_required()
+@limiter.limit("60/minute")
 def toggle_like(post_id: int):
     user_id = int(get_jwt_identity())
 
@@ -883,6 +888,7 @@ def toggle_like(post_id: int):
 
 @social_bp.route("/posts/<int:post_id>/bookmark", methods=["POST"])
 @jwt_required()
+@limiter.limit("60/minute")
 def toggle_bookmark(post_id: int):
     user_id = int(get_jwt_identity())
 
@@ -946,6 +952,7 @@ def list_bookmarks():
 
 @social_bp.route("/posts/<int:post_id>/remix", methods=["POST"])
 @jwt_required()
+@limiter.limit("10/minute")
 def remix_post(post_id: int):
     user_id = int(get_jwt_identity())
 

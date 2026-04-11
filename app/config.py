@@ -56,7 +56,7 @@ def _get_db_uri() -> str:
 class Config:
     SECRET_KEY               = os.environ.get("SECRET_KEY", "dev-secret-key-minimum-32-bytes!!")
     JWT_SECRET_KEY           = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret-key-min-32-bytes!!")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=2)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH       = 10 * 1024 * 1024   # 10 MB — Flask raises 413 on exceed
     UPLOAD_FOLDER            = "uploads"

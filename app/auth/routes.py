@@ -342,6 +342,7 @@ def data_export():
 
 @auth_bp.route("/account", methods=["DELETE"])
 @jwt_required()
+@limiter.limit("5/minute")
 def delete_account():
     """
     DELETE /auth/account
@@ -373,6 +374,7 @@ def delete_account():
 
 @auth_bp.route("/change-password", methods=["POST"])
 @jwt_required()
+@limiter.limit("5/minute")
 def change_password():
     """
     POST /auth/change-password

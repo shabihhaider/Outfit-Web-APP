@@ -29,6 +29,8 @@ from flask import (
 )
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
+from app.extensions import limiter
+
 from sqlalchemy import func
 
 from app.audit import log_action
@@ -57,6 +59,7 @@ UPLOAD_TIPS = [
 
 @wardrobe_bp.route("/items", methods=["POST"])
 @jwt_required()
+@limiter.limit("10/minute")
 def upload_item():
     """
     POST /wardrobe/items  (multipart/form-data)
@@ -434,7 +437,7 @@ def wardrobe_stats():
 # ─── GET /uploads/<filename> ─────────────────────────────────────────────────
 # Registered WITHOUT the /wardrobe prefix (via uploads_bp in create_app)
 
-@uploads_bp.route("/uploads/<path:filename>")
+@uploads_bp.route("/uploads/<string:filename>")
 def serve_upload(filename: str):
     """
     GET /uploads/<filename>

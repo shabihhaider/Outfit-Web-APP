@@ -12,9 +12,10 @@ import logging
 import time
 
 from flask import Blueprint, current_app, jsonify
+from flask_jwt_extended import jwt_required
 from sqlalchemy import func, text
 
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models_db import TryOnJob, User, WardrobeItemDB
 
 logger = logging.getLogger(__name__)
@@ -62,11 +63,13 @@ def health():
 # ── GET /metrics ─────────────────────────────────────────────────────────────
 
 @health_bp.get("/metrics")
+@jwt_required()
+@limiter.limit("30/minute")
 def metrics():
     """
     Operational metrics for monitoring dashboards.
 
-    Lightweight aggregates — no auth required so external monitors can poll.
+    Lightweight aggregates — requires JWT so user counts are not publicly exposed.
     """
     start = time.monotonic()
 

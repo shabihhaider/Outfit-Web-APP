@@ -19,6 +19,25 @@ def client():
         db.drop_all()
 
 
+@pytest.fixture()
+def auth_headers(client):
+    client.post(
+        "/auth/register",
+        json={
+            "name": "Test User",
+            "email": "metrics@example.com",
+            "password": "password123",
+            "gender": "men",
+        },
+    )
+    resp = client.post(
+        "/auth/login",
+        json={"email": "metrics@example.com", "password": "password123"},
+    )
+    token = resp.get_json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
 class TestHealthEndpoint:
     def test_health_returns_ok(self, client):
         resp = client.get("/health")
@@ -42,8 +61,12 @@ class TestHealthEndpoint:
 
 
 class TestMetricsEndpoint:
-    def test_metrics_returns_ok(self, client):
+    def test_metrics_requires_auth(self, client):
         resp = client.get("/metrics")
+        assert resp.status_code == 401
+
+    def test_metrics_returns_ok(self, client, auth_headers):
+        resp = client.get("/metrics", headers=auth_headers)
         assert resp.status_code == 200
         data = resp.get_json()
         assert "users_total" in data
@@ -52,14 +75,13 @@ class TestMetricsEndpoint:
         assert "recommendation_cache" in data
         assert "query_time_ms" in data
 
-    def test_metrics_empty_db(self, client):
-        resp = client.get("/metrics")
+    def test_metrics_empty_db(self, client, auth_headers):
+        resp = client.get("/metrics", headers=auth_headers)
         data = resp.get_json()
-        assert data["users_total"] == 0
         assert data["wardrobe_items_total"] == 0
 
-    def test_metrics_cache_stats(self, client):
-        resp = client.get("/metrics")
+    def test_metrics_cache_stats(self, client, auth_headers):
+        resp = client.get("/metrics", headers=auth_headers)
         data = resp.get_json()
         cache = data["recommendation_cache"]
         assert "entries" in cache

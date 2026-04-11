@@ -40,7 +40,7 @@ jobs:
 
       - name: Security scan (bandit)
         run: |
-          bandit -r app/ engine/ -ll -ii \
+          bandit -r app/ engine/ -l -i \
             --exclude app/migrations,app/tests \
             -q
 

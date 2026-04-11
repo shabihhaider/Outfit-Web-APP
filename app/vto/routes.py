@@ -33,6 +33,8 @@ from datetime import datetime, timezone
 from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
+from app.extensions import limiter
+
 from app.extensions import db
 from app.models_db import TryOnJob, User, WardrobeItemDB
 from app.utils import allowed_file, validate_image_content
@@ -121,6 +123,7 @@ def _clean_secret(value: str | None) -> str:
 
 @vto_bp.route("/person-photo", methods=["POST"])
 @jwt_required()
+@limiter.limit("5/minute")
 def upload_person_photo():
     """
     Upload or replace the user's VTO person photo.
@@ -220,6 +223,7 @@ def get_person_photo():
 
 @vto_bp.route("/jobs", methods=["POST"])
 @jwt_required()
+@limiter.limit("5/minute")
 def submit_tryon():
     """
     Submit a Virtual Try-On job.
