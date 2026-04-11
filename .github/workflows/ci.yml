@@ -47,6 +47,7 @@ jobs:
       - name: Migration check
         env:
           FLASK_CONFIG: testing
+          SQLALCHEMY_DATABASE_URI: "sqlite:////tmp/outfitai_migration.db"
         run: |
           python -m flask db upgrade
 
