@@ -18,9 +18,8 @@ import os
 
 from flask import Blueprint, current_app, jsonify, request
 
-from app.extensions import db
 from app.models_db import SharedOutfit, TryOnJob, User, WardrobeItemDB
-from app.storage import is_configured, upload_file_from_path, get_public_url
+from app.storage import is_configured, upload_file_from_path
 
 logger = logging.getLogger(__name__)
 
