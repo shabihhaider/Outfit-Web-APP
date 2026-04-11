@@ -87,13 +87,7 @@ export default function StyleDNACard() {
             stroke="currentColor"
             strokeWidth="0.5"
             className="text-accent-500"
-            animate={{
-              d: [
-                "M-10,50 Q25,20 50,50 T110,50",
-                "M-10,50 Q25,80 50,50 T110,50",
-                "M-10,50 Q25,20 50,50 T110,50"
-              ]
-            }}
+            animate={{ opacity: [0.6, 1, 0.6] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.path
@@ -102,13 +96,7 @@ export default function StyleDNACard() {
             stroke="currentColor"
             strokeWidth="0.3"
             className="text-brand-300 dark:text-brand-600"
-            animate={{
-              d: [
-                "M-10,50 Q25,80 50,50 T110,50",
-                "M-10,50 Q25,20 50,50 T110,50",
-                "M-10,50 Q25,80 50,50 T110,50"
-              ]
-            }}
+            animate={{ opacity: [1, 0.6, 1] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
         </svg>
