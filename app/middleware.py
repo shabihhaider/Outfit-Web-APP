@@ -100,9 +100,9 @@ class JSONFormatter(logging.Formatter):
                 try:
                     from flask_jwt_extended import get_jwt_identity
                     user_id = get_jwt_identity()
-                except Exception:
+                except Exception:  # nosec B110 — best-effort, enriches logs only
                     pass
-        except Exception:
+        except Exception:  # nosec B110 — log enrichment is non-critical
             pass
 
         entry = {

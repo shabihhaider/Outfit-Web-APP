@@ -25,7 +25,7 @@ def _rate_limit_key():
         uid = get_jwt_identity()
         if uid:
             return f"user:{uid}"
-    except Exception:
+    except Exception:  # nosec B110 — best-effort JWT extraction; IP fallback is safe
         pass
     return get_remote_address()
 

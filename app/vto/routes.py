@@ -96,7 +96,7 @@ def _extract_output_source(output) -> str:
     if callable(url_attr):
         try:
             return str(url_attr())
-        except Exception:
+        except Exception:  # nosec B110 — best-effort URL extraction from model output
             pass
     elif isinstance(url_attr, str):
         return url_attr

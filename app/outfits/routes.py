@@ -129,7 +129,7 @@ def save_outfit():
     for row in existing_rows:
         try:
             existing_ids = sorted(json.loads(row.item_ids))
-        except Exception:
+        except Exception:  # nosec B112 — skip malformed DB rows, not user input
             continue
         if existing_ids == sorted_ids:
             return jsonify({

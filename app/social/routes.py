@@ -374,7 +374,7 @@ def get_public_profile(username: str):
         raw = get_jwt_identity()
         if raw:
             viewer_id = int(raw)
-    except Exception:
+    except Exception:  # nosec B110 — optional auth on public route; unauthenticated is fine
         pass
 
     if not user.is_public and viewer_id != user.id:
@@ -653,7 +653,7 @@ def get_post(post_id: int):
         raw = get_jwt_identity()
         if raw:
             viewer_id = int(raw)
-    except Exception:
+    except Exception:  # nosec B110 — optional auth on public route; unauthenticated is fine
         pass
 
     post = db.session.get(SharedOutfit, post_id)

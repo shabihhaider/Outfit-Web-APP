@@ -14,7 +14,7 @@ def _maybe_load_dotenv() -> None:
     try:
         from dotenv import load_dotenv  # type: ignore[import]
         load_dotenv()
-    except Exception:
+    except Exception:  # nosec B110 — optional dependency, safe to skip
         # Do not fail app startup if python-dotenv is unavailable.
         pass
 

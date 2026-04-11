@@ -646,7 +646,7 @@ def _generate_swap_suggestions(
                         "score_delta": round(delta, 4),
                         "new_score": round(trial_result.final_score, 4),
                     })
-            except Exception:
+            except Exception:  # nosec B112 — skip items that fail scoring, batch continues
                 continue
 
     suggestions.sort(key=lambda s: s["score_delta"], reverse=True)
