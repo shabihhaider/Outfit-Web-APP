@@ -8,6 +8,19 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+# ── Fast-path: skip slow checks when only CI/docs/scripts changed ────────────
+CHANGED=$(git diff --cached --name-only 2>/dev/null || git diff HEAD~1 --name-only 2>/dev/null || true)
+CODE_CHANGED=$(echo "$CHANGED" | grep -vE '^(\.github/|scripts/|docs/|README|CLAUDE\.md|frontend/\.gitignore)' | head -1)
+if [ -z "$CODE_CHANGED" ] && [ -n "$CHANGED" ]; then
+  echo ""
+  echo "===== OutfitAI Preflight (fast-path) =================================="
+  echo "  Only CI/scripts/docs changed — skipping slow checks."
+  echo "  Remote CI will run the full gate."
+  echo "======================================================================="
+  echo ""
+  exit 0
+fi
+
 PASS=0
 FAIL=0
 PYTHON="${PYTHON:-python}"
