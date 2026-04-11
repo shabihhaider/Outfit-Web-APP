@@ -161,7 +161,7 @@ class TestFallbackToIDMVTON:
             def start(self):
                 self._target(*self._args, **self._kwargs)
 
-        with patch("threading.Thread", SyncThread):
+        with patch("app.vto.routes.threading.Thread", SyncThread):
             resp = vto_client.post(
                 "/vto/jobs",
                 json={"item_id": vto_item["id"]},
