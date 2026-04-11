@@ -90,6 +90,7 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
     SKIP_CLOTHING_PHOTO_CHECK = True  # test images are synthetic 1×1 PNGs
+    RATELIMIT_ENABLED = False          # rate limiting tested at integration level, not unit
 
 
 class ProductionConfig(Config):
