@@ -48,7 +48,7 @@ jobs:
         env:
           FLASK_CONFIG: testing
         run: |
-          python -m flask db upgrade --directory app/migrations
+          python -m flask db upgrade
 
       - name: Full test suite
         env:

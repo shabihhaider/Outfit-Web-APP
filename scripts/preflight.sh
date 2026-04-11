@@ -67,7 +67,7 @@ echo "[3/5] Migration check (flask db upgrade)"
 MIGRATION_DB="$(mktemp /tmp/outfitai_migration_XXXX.db)"
 if FLASK_CONFIG=testing \
    SQLALCHEMY_DATABASE_URI="sqlite:///$MIGRATION_DB" \
-   $PYTHON -m flask db upgrade --directory app/migrations 2>&1; then
+   $PYTHON -m flask db upgrade 2>&1; then
   _ok "flask db upgrade — all migrations applied cleanly"
 else
   _fail "flask db upgrade — migration failed (check alembic scripts)"
