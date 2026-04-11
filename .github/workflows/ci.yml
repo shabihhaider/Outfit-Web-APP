@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          lfs: true
+          lfs: false  # model files not needed for tests; avoids LFS bandwidth cost
 
       - uses: actions/setup-python@v5
         with:
