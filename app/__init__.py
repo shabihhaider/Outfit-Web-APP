@@ -69,6 +69,7 @@ def create_app(config_name: str = "development") -> Flask:
     from app.vto.routes import vto_bp
     from app.social.routes import social_bp
     from app.health.routes import health_bp
+    from app.admin.migrate_storage import admin_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(wardrobe_bp, url_prefix="/wardrobe")
@@ -79,6 +80,7 @@ def create_app(config_name: str = "development") -> Flask:
     app.register_blueprint(vto_bp, url_prefix="/vto")
     app.register_blueprint(social_bp, url_prefix="/social")
     app.register_blueprint(health_bp)            # /health and /metrics
+    app.register_blueprint(admin_bp)             # /admin/* — one-time ops
 
     # -- Observability ---------------------------------------------------------
     from app.middleware import configure_logging, init_middleware
