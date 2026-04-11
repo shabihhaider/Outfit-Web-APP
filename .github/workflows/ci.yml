@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ── Backend: pytest + coverage ──────────────────────────────────────────────
+  # ── Backend: lint + migration + tests ───────────────────────────────────────
   backend-tests:
     runs-on: ubuntu-latest
     steps:
@@ -28,24 +28,42 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest-cov
+          pip install pytest-cov flake8 bandit
 
-      - name: Run full test suite (report only)
+      - name: Lint (flake8)
+        run: |
+          flake8 app/ engine/ \
+            --max-line-length=110 \
+            --extend-ignore=E203,W503,E501 \
+            --exclude=app/migrations/,__pycache__ \
+            --count --statistics
+
+      - name: Security scan (bandit)
+        run: |
+          bandit -r app/ engine/ -ll -ii \
+            --exclude app/migrations,app/tests \
+            -q
+
+      - name: Migration check
+        env:
+          FLASK_CONFIG: testing
+        run: |
+          python -m flask db upgrade --directory app/migrations
+
+      - name: Full test suite
         env:
           FLASK_CONFIG: testing
         run: |
           pytest tests/ -v --tb=short \
             --cov=app --cov=engine \
             --cov-report=term-missing \
-            2>&1 || true
+            --ignore=tests/test_vto_engines.py
 
-      # Gate: core engine + auth tests must pass to deploy.
-      # Pre-existing fixture failures in other tests are tracked in issue #7.
-      - name: Verify core tests pass
+      - name: VTO engine tests
         env:
           FLASK_CONFIG: testing
         run: |
-          pytest tests/test_hard_rules.py tests/test_scorer.py tests/test_occasion_filter.py tests/test_color_scorer.py tests/test_weather_scorer.py tests/test_models.py tests/test_flask_auth.py tests/test_weather_api.py -v --tb=short
+          pytest tests/test_vto_engines.py -v --tb=short
 
   # ── Frontend: lint + build ──────────────────────────────────────────────────
   frontend-checks:

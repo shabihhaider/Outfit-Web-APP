@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# .git/hooks/pre-push (managed via scripts/hooks/pre-push)
+# Runs the preflight check before every `git push`.
+# Install once: bash scripts/install-hooks.sh
+
+ROOT="$(git rev-parse --show-toplevel)"
+bash "$ROOT/scripts/preflight.sh"
