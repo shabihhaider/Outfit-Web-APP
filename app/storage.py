@@ -37,13 +37,22 @@ def is_configured() -> bool:
         )
 
 
+def _base_url() -> str:
+    """Return Supabase URL with trailing slash stripped."""
+    try:
+        url, _, _ = _cfg()
+    except RuntimeError:
+        url = os.environ.get("SUPABASE_URL", "")
+    return url.rstrip("/")
+
+
 def get_public_url(filename: str) -> str:
     """Build public CDN URL for a file. No network call."""
     try:
-        url, _, bucket = _cfg()
+        _, _, bucket = _cfg()
     except RuntimeError:
-        url = os.environ.get("SUPABASE_URL", "")
         bucket = "wardrobe-images"
+    url = _base_url()
     if not url:
         return f"/uploads/{filename}"
     return f"{url}/storage/v1/object/public/{bucket}/{filename}"
@@ -52,6 +61,8 @@ def get_public_url(filename: str) -> str:
 def upload_file(filename: str, file_bytes: bytes, content_type: str = "image/png") -> str:
     """Upload bytes to Supabase Storage. Returns public URL on success."""
     url, key, bucket = _cfg()
+    url = url.rstrip("/")
+    key = key.strip()
     if not url or not key:
         logger.debug("Supabase not configured, skipping upload for %s", filename)
         return f"/uploads/{filename}"
@@ -64,7 +75,12 @@ def upload_file(filename: str, file_bytes: bytes, content_type: str = "image/png
     }
     try:
         resp = requests.post(endpoint, headers=headers, data=file_bytes, timeout=30)
-        resp.raise_for_status()
+        if not resp.ok:
+            logger.warning(
+                "Supabase upload failed for %s: HTTP %d — %s",
+                filename, resp.status_code, resp.text[:500],
+            )
+            return f"/uploads/{filename}"
         logger.info("Uploaded %s to Supabase (%d bytes)", filename, len(file_bytes))
         return get_public_url(filename)
     except requests.RequestException as exc:
