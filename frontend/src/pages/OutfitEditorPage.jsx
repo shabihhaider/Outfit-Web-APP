@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiX, FiPlus, FiCalendar, FiBookmark, FiAlertTriangle, FiZap, FiDroplet, FiThermometer, FiCpu, FiCheck, FiLayers, FiMaximize2, FiMinimize2, FiTrash2, FiChevronDown, FiUser } from 'react-icons/fi'
+import { toast } from 'sonner'
 import { getItems } from '../api/wardrobe.js'
 import { scoreOutfit } from '../api/recommendations.js'
 import { saveOutfit } from '../api/outfits.js'
@@ -74,9 +75,11 @@ export default function OutfitEditorPage() {
 
   const saveMutation = useMutation({
     mutationFn: () => {
-      const cats = canvasItems.map(i => i.category).join('+')
+      const cats = canvasItems.map(i => i.category).map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(' + ')
+      const now = new Date()
+      const dateStr = now.toLocaleString('en', { month: 'short', day: 'numeric' })
       return saveOutfit({
-        name: `${occasion} ${cats} ${Date.now()}`,
+        name: `${occasion.charAt(0).toUpperCase() + occasion.slice(1)} ${cats} · ${dateStr}`,
         occasion,
         item_ids: itemIds,
         final_score: scoreQuery.data?.final_score ?? 0,
@@ -86,7 +89,9 @@ export default function OutfitEditorPage() {
     onSuccess: () => {
       setSaved(true)
       queryClient.invalidateQueries({ queryKey: ['saved'] })
+      toast.success('Look archived to your saved outfits!')
     },
+    onError: () => toast.error('Could not archive look. Try again.'),
   })
 
   const addToCanvas = useCallback((item) => {
