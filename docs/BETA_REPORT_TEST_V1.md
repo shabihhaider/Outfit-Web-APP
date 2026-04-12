@@ -12,7 +12,7 @@ Issue 3 — Data Usage Consent modal re-appears on every new page session ✅ FI
 The consent modal appeared again when navigating to /login while already logged in (which auto-redirected to /dashboard). This means the modal is not properly persisting the user's consent decision across sessions/navigations, forcing repeated interactions.
 
 🟠 High Severity Issues
-Issue 4 — No "Forgot Password" link on Login page ⏳ DEFERRED (#32)
+Issue 4 — No "Forgot Password" link on Login page ✅ FIXED (#32)
 There is no password reset mechanism visible anywhere on the login form. Users who forget their password have no recovery path, which is a standard feature expected in any authentication flow.
 Issue 5 — Dashboard greeting uses first name only ("Good morning, Beta") instead of full name ("Beta Tester") ✅ FIXED (#33)
 The dashboard header and onboarding welcome screen parse only the first word of the full name. A user named "Beta Tester" is greeted as "Beta" everywhere. Profile Settings correctly shows "Beta Tester," making this a data display bug in the greeting component.
