@@ -46,8 +46,6 @@ export default function OOTDWidget() {
     onError: () => toast.error('Could not save outfit. Try again.'),
   })
 
-  const outfit = data?.outfit
-
   if (isLoading) {
     return (
       <div className="card p-6">
