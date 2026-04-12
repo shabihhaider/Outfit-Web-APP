@@ -46,7 +46,7 @@ from engine.models import WardrobeItem
 # enough visual structure (fabric-like texture, human-wearable shapes) that
 # cross-category item-centroid similarities rarely drop below 0.75 for
 # real outfit combinations. Above 0.98 indicates near-identical aesthetic.
-_COHESION_LOW  = 0.55
+_COHESION_LOW  = 0.75
 _COHESION_HIGH = 0.98
 
 

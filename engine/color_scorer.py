@@ -27,8 +27,10 @@ HARMONY_RULES: list[tuple[str, float, float, float]] = [
     ("monochromatic", 0.0, 25.0, 0.90),
     ("analogous", 30.0, 20.0, 0.85),
     ("complementary", 180.0, 25.0, 1.00),  # Strongest harmony
-    ("split_comp_left", 150.0, 20.0, 0.80),
-    ("split_comp_right", 210.0, 20.0, 0.80),
+    # Split-complementary: colours ~150° apart on the wheel.
+    # hue_distance() returns [0, 180], so 210° maps to 150° — both arms
+    # of split-complementary are captured by a single 150° rule.
+    ("split_complementary", 150.0, 20.0, 0.80),
     ("triadic_60", 60.0, 20.0, 0.75),
     ("triadic_120", 120.0, 20.0, 0.75),
 ]
