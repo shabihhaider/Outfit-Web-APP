@@ -178,14 +178,15 @@ def _log_history(user_id: int, occasion: str, temp_celsius: float, outfits: list
                 temperature_used = temp_celsius,
                 item_ids         = json.dumps([item.item_id for item in outfit.items]),
                 final_score      = outfit.final_score,
-                confidence       = outfit.confidence.value,
-                template         = outfit.template_id.value,
+                confidence       = getattr(outfit.confidence, 'value', str(outfit.confidence)),
+                template         = getattr(outfit.template_id, 'value', str(outfit.template_id)) if outfit.template_id else '',
             )
             db.session.add(entry)
         db.session.commit()
+        logger.info("Logged %d outfit(s) to history for user %s", len(outfits), user_id)
     except Exception as exc:
         db.session.rollback()
-        logger.error("Failed to log outfit history: %s", exc)
+        logger.error("Failed to log outfit history: %s", exc, exc_info=True)
 
 
 # ─── POST /recommendations ────────────────────────────────────────────────────
@@ -418,41 +419,41 @@ def outfit_of_the_day():
     # 6. Prefer outfits that avoid recently worn items
     filename_map = {item.id: item.image_filename for item in items_db}
 
-    best_outfit = None
-    for outfit in outfits:
-        outfit_item_ids = {item.item_id for item in outfit.items}
-        if not outfit_item_ids & recently_worn_ids:
-            best_outfit = outfit
-            break
-    if best_outfit is None:
-        best_outfit = outfits[0]  # fallback to top-scored
+    # 6b. Sort: fresh outfits first, then by score
+    def _outfit_sort_key(o):
+        ids = {item.item_id for item in o.items}
+        is_fresh = not bool(ids & recently_worn_ids)
+        return (int(is_fresh), o.final_score)
 
-    # 7. Format the single outfit
-    outfit_items = []
-    for eng_item in best_outfit.items:
-        img_filename = filename_map.get(eng_item.item_id, "")
-        outfit_items.append({
-            "id":        eng_item.item_id,
-            "category":  eng_item.category.value,
-            "image_url": _img_url(img_filename),
-        })
+    outfits_sorted = sorted(outfits, key=_outfit_sort_key, reverse=True)
+    top_outfits = outfits_sorted[:3]
 
-    outfit_item_ids = {item.item_id for item in best_outfit.items}
-    is_fresh = not bool(outfit_item_ids & recently_worn_ids)
-
-    return jsonify({
-        "outfit": {
-            "items":            outfit_items,
-            "final_score":      round(best_outfit.final_score, 4),
-            "confidence":       best_outfit.confidence.value if hasattr(best_outfit.confidence, 'value') else best_outfit.confidence,
-            "model2_score":     round(best_outfit.model2_score, 4),
-            "color_score":      round(best_outfit.color_score, 4),
-            "weather_score":    round(best_outfit.weather_score, 4),
-            "cohesion_score":   round(best_outfit.cohesion_score, 4),
+    def _fmt_outfit(o):
+        items_fmt = []
+        for eng_item in o.items:
+            img_filename = filename_map.get(eng_item.item_id, "")
+            items_fmt.append({
+                "id":        eng_item.item_id,
+                "category":  eng_item.category.value,
+                "image_url": _img_url(img_filename),
+            })
+        ids = {item.item_id for item in o.items}
+        return {
+            "items":            items_fmt,
+            "final_score":      round(o.final_score, 4),
+            "confidence":       getattr(o.confidence, 'value', str(o.confidence)),
+            "model2_score":     round(o.model2_score, 4),
+            "color_score":      round(o.color_score, 4),
+            "weather_score":    round(o.weather_score, 4),
+            "cohesion_score":   round(o.cohesion_score, 4),
             "occasion":         occasion,
             "temperature_used": round(temp_celsius, 1),
-            "is_fresh":         is_fresh,
-        },
+            "is_fresh":         not bool(ids & recently_worn_ids),
+        }
+
+    return jsonify({
+        "outfit":   _fmt_outfit(top_outfits[0]),
+        "outfits":  [_fmt_outfit(o) for o in top_outfits],
         "stats": {
             "preferred_occasion":  occasion,
             "items_available":     len(items_db),
