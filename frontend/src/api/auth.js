@@ -26,3 +26,9 @@ export const deleteAccount = (data) =>
 
 export const changePassword = (data) =>
   api.post('/auth/change-password', data).then(r => r.data)
+
+export const forgotPassword = (data) =>
+  api.post('/auth/forgot-password', data).then(r => r.data)
+
+export const resetPassword = (data) =>
+  api.post('/auth/reset-password', data).then(r => r.data)

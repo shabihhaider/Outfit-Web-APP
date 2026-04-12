@@ -6,7 +6,11 @@ Authentication endpoints: register, login, refresh, consent, privacy.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+import os
+import secrets
+from datetime import datetime, timezone, timedelta
+
+import requests as _requests
 
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import (
@@ -18,7 +22,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.extensions import db, bcrypt, limiter
-from app.models_db import User, UserConsent, WardrobeItemDB, OutfitHistory, SavedOutfit, OutfitFeedback
+from app.models_db import User, UserConsent, WardrobeItemDB, OutfitHistory, SavedOutfit, OutfitFeedback, PasswordResetToken
 from app.audit import log_action
 from app.storage import get_public_url as _img_url
 
@@ -402,3 +406,130 @@ def change_password():
 
     log_action("password_changed", user_id=user_id)
     return jsonify({"message": "Password changed successfully."}), 200
+
+
+# ── Password reset ─────────────────────────────────────────────────────────────
+
+_RESET_TTL_HOURS = 1
+
+
+def _send_reset_email(to_email: str, reset_url: str) -> bool:
+    """Send password reset email via Resend API. Returns True on success."""
+    api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    from_addr = os.environ.get("RESEND_FROM_EMAIL", "OutfitAI <noreply@drssl.app>").strip()
+    if not api_key:
+        current_app.logger.warning("RESEND_API_KEY not set — password reset email not sent")
+        return False
+
+    payload = {
+        "from": from_addr,
+        "to": [to_email],
+        "subject": "Reset your OutfitAI password",
+        "html": f"""
+<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+  <h2 style="color:#1a1a1a">Reset your password</h2>
+  <p style="color:#555">We received a request to reset your OutfitAI password.
+     Click the button below — this link expires in {_RESET_TTL_HOURS} hour.</p>
+  <a href="{reset_url}"
+     style="display:inline-block;margin:24px 0;padding:12px 28px;
+            background:#1a1a1a;color:#fff;text-decoration:none;
+            border-radius:8px;font-weight:600">
+    Reset Password
+  </a>
+  <p style="color:#999;font-size:12px">
+    If you didn't request this, you can safely ignore this email.
+    Your password will not change.
+  </p>
+</div>
+""",
+    }
+    try:
+        resp = _requests.post(
+            "https://api.resend.com/emails",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json=payload,
+            timeout=10,
+        )
+        if not resp.ok:
+            current_app.logger.warning("Resend API error %d: %s", resp.status_code, resp.text[:200])
+        return resp.ok
+    except Exception as exc:  # nosec B110
+        current_app.logger.warning("Resend request failed: %s", exc)
+        return False
+
+
+@auth_bp.route("/forgot-password", methods=["POST"])
+@limiter.limit("3/minute")
+def forgot_password():
+    """
+    POST /auth/forgot-password
+    Body: { "email": "..." }
+    Generates a one-time token and sends a reset link via email.
+    Always returns 200 to avoid email enumeration.
+    """
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email", "")).strip().lower()
+
+    if not email:
+        return jsonify({"error": "email is required."}), 422
+
+    user = User.query.filter_by(email=email).first()
+    if user:
+        # Invalidate any existing unused tokens for this user
+        PasswordResetToken.query.filter_by(user_id=user.id, used=False).delete()
+
+        token = secrets.token_urlsafe(32)
+        expires = datetime.now(timezone.utc) + timedelta(hours=_RESET_TTL_HOURS)
+        db.session.add(PasswordResetToken(user_id=user.id, token=token, expires_at=expires))
+        db.session.commit()
+
+        frontend_url = os.environ.get("FRONTEND_URL", "https://drssl.app").rstrip("/")
+        reset_url = f"{frontend_url}/reset-password?token={token}"
+        _send_reset_email(user.email, reset_url)
+        log_action("forgot_password", user_id=user.id, detail=f"email={email}")
+
+    # Always 200 — don't reveal whether email exists
+    return jsonify({"message": "If that email is registered, a reset link has been sent."}), 200
+
+
+@auth_bp.route("/reset-password", methods=["POST"])
+@limiter.limit("5/minute")
+def reset_password():
+    """
+    POST /auth/reset-password
+    Body: { "token": "...", "password": "..." }
+    Validates the token and updates the user's password.
+    """
+    data = request.get_json(silent=True) or {}
+    token_value = str(data.get("token", "")).strip()
+    new_password = str(data.get("password", ""))
+
+    if not token_value or not new_password:
+        return jsonify({"error": "token and password are required."}), 422
+    if len(new_password) < 8:
+        return jsonify({"error": "Password must be at least 8 characters."}), 422
+
+    record = PasswordResetToken.query.filter_by(token=token_value, used=False).first()
+
+    if not record:
+        return jsonify({"error": "Invalid or expired reset link."}), 400
+
+    now = datetime.now(timezone.utc)
+    expires = record.expires_at
+    # Make expires_at timezone-aware if stored as naive datetime
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+
+    if now > expires:
+        return jsonify({"error": "Reset link has expired. Please request a new one."}), 400
+
+    user = db.session.get(User, record.user_id)
+    if not user:
+        return jsonify({"error": "Invalid or expired reset link."}), 400
+
+    user.password_hash = bcrypt.generate_password_hash(new_password).decode("utf-8")
+    record.used = True
+    db.session.commit()
+
+    log_action("password_reset", user_id=user.id)
+    return jsonify({"message": "Password reset successfully. You can now log in."}), 200

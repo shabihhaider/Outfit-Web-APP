@@ -528,3 +528,17 @@ class UserConsent(db.Model):
             "granted_at": self.granted_at.isoformat() if self.granted_at else None,
             "revoked_at": self.revoked_at.isoformat() if self.revoked_at else None,
         }
+
+
+# ── Password Reset ────────────────────────────────────────────────────────────
+
+class PasswordResetToken(db.Model):
+    """One-time token for password reset emails. Expires in 1 hour."""
+    __tablename__ = "password_reset_tokens"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token      = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used       = db.Column(db.Boolean, nullable=False, default=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))

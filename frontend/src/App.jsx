@@ -18,6 +18,8 @@ import SocialFeedPage from './pages/SocialFeedPage.jsx'
 import PublicProfilePage from './pages/PublicProfilePage.jsx'
 import ProfileSettingsPage from './pages/ProfileSettingsPage.jsx'
 import OnboardingFlow from './components/onboarding/OnboardingFlow.jsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 
 function Layout({ children }) {
   return (
@@ -48,6 +50,8 @@ export default function App() {
       <Route path="/register" element={
         isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterPage />
       } />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Onboarding — protected but no Navbar */}
       <Route path="/onboarding" element={
