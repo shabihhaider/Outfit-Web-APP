@@ -147,9 +147,17 @@ export default function WardrobeCard({ item, onDelete }) {
 
         {/* Info */}
         <div className="p-3">
-          <div className="flex items-center gap-1.5 flex-wrap mb-2">
+          <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
             <span className={`badge-${item.category}`}>{item.category}</span>
             <span className={`badge-${item.formality}`}>{item.formality}</span>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-[10px] text-brand-400 dark:text-brand-500 hover:text-accent-600 dark:hover:text-accent-400 underline decoration-dotted transition-colors ml-auto"
+              >
+                Fix?
+              </button>
+            )}
           </div>
 
           {item.model_confidence != null && (

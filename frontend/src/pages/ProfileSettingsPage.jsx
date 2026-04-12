@@ -72,7 +72,7 @@ function AccountTab({ profile, qc, updateUser }) {
     name:     profile?.name     ?? '',
     username: profile?.username ?? '',
     bio:      profile?.bio      ?? '',
-    gender:   profile?.gender   ?? 'unisex',
+    gender:   profile?.gender   || 'unisex',
     is_public: profile?.is_public ?? true,
   })
   const [saved, setSaved] = useState(false)
