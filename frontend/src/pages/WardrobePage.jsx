@@ -57,6 +57,7 @@ export default function WardrobePage() {
                 key={cat}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => setFilter(cat)}
+                style={{ touchAction: 'manipulation' }}
                 className={`relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                   filter === cat
                     ? 'text-brand-900 dark:text-brand-100'

@@ -43,7 +43,7 @@ export default function DashboardPage() {
           <p className="label-xs mb-2">Dashboard</p>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-brand-900 dark:text-brand-100 leading-[1.1] tracking-tight">
             {getGreeting()},<br />
-            <span className="text-accent-500 italic">{user?.name?.split(' ')[0] || 'there'}</span>
+            <span className="text-accent-500 italic">{user?.name || 'there'}</span>
           </h1>
         </motion.div>
 

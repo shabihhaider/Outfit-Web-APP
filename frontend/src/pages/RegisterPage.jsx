@@ -4,12 +4,13 @@ import { motion } from 'framer-motion'
 import { register, login } from '../api/auth.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
-import { FiArrowRight, FiUser, FiMail, FiLock } from 'react-icons/fi'
+import { FiArrowRight, FiUser, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
 
 const GENDERS = ['men', 'women', 'unisex']
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '', gender: '' })
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { loginUser } = useAuth()
@@ -75,8 +76,8 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Right: form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-brand-50 dark:bg-brand-950">
+      {/* Right: form — overflow-y-auto so short viewports can scroll */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center p-6 sm:p-8 py-12 bg-brand-50 dark:bg-brand-950">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -129,7 +130,15 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-brand-600 dark:text-brand-400 mb-1.5">Password</label>
               <div className="relative">
                 <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" size={16} />
-                <input type="password" value={form.password} onChange={update('password')} className="input-field pl-10" placeholder="Min. 8 characters" required autoComplete="new-password" />
+                <input type={showPassword ? 'text' : 'password'} value={form.password} onChange={update('password')} className="input-field pl-10 pr-10" placeholder="Min. 8 characters" required autoComplete="new-password" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-600 dark:hover:text-brand-200"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                </button>
               </div>
             </div>
             <div>

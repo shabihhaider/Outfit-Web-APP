@@ -14,7 +14,7 @@ export default function UploadModal({ open, onClose }) {
   const defaultGender = user?.gender || ''
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
-  const [formality, setFormality] = useState('')
+  const [formality, setFormality] = useState('casual')
   const [gender, setGender] = useState(defaultGender)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -31,7 +31,7 @@ export default function UploadModal({ open, onClose }) {
       setUploadData(data)
       setFile(null)
       setPreview(null)
-      setFormality('')
+      setFormality('casual')
       setGender(defaultGender)
       setTimeout(() => {
         setSuccess('');
@@ -77,7 +77,7 @@ export default function UploadModal({ open, onClose }) {
   function handleClose() {
     setFile(null)
     setPreview(null)
-    setFormality('')
+    setFormality('casual')
     setGender(defaultGender)
     setError('')
     setSuccess('')
@@ -93,7 +93,7 @@ export default function UploadModal({ open, onClose }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-950/40 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-950/60 backdrop-blur-md"
         onClick={handleClose}
       >
         <motion.div
@@ -231,7 +231,11 @@ export default function UploadModal({ open, onClose }) {
                   </div>
                 )}
 
-                <button type="submit" disabled={mutation.isPending} className="btn-primary w-full flex flex-col items-center justify-center gap-1 py-3 h-auto min-h-[52px]">
+                <div className="flex gap-2">
+                <button type="button" onClick={handleClose} disabled={mutation.isPending} className="btn-secondary flex-1 py-3">
+                  Cancel
+                </button>
+                <button type="submit" disabled={mutation.isPending} className="btn-primary flex-1 flex flex-col items-center justify-center gap-1 py-3 h-auto min-h-[52px]">
                   {mutation.isPending ? (
                     <>
                       <div className="flex items-center gap-2">
@@ -247,6 +251,7 @@ export default function UploadModal({ open, onClose }) {
                     </div>
                   )}
                 </button>
+                </div>
               </form>
             )}
           </div>

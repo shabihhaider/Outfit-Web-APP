@@ -45,12 +45,12 @@ export default function SavedOutfitsPage() {
           className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6"
         >
           <div>
-            <p className="label-xs mb-1">Curation Gallery</p>
+            <p className="label-xs mb-1">Saved Outfits</p>
             <h1 className="font-display text-3xl sm:text-4xl lg:text-6xl font-bold text-brand-900 dark:text-brand-100 tracking-tight leading-tight">
-              Saved Archives
+              Your Looks
             </h1>
             <p className="text-brand-500 dark:text-brand-400 mt-3 text-lg font-medium italic">
-              {isLoading ? 'Cataloging collection...' : `Discovering ${outfits.length} high-fidelity compositions.`}
+              {isLoading ? 'Loading your saved outfits...' : `${outfits.length} saved outfit${outfits.length !== 1 ? 's' : ''}`}
             </p>
           </div>
           
@@ -90,8 +90,8 @@ export default function SavedOutfitsPage() {
         {!isLoading && !error && outfits.length === 0 && (
           <EmptyState
             icon="🗃️"
-            title="Archival Vault Empty"
-            description="Preserve your preferred recommendations to build your personal style archive."
+            title="No saved outfits yet"
+            description="Save outfits you love from recommendations to find them here."
             action={{ label: 'Generate Looks', icon: FiStar, onClick: () => navigate('/recommendations') }}
           />
         )}

@@ -10,11 +10,14 @@ export default function ConsentBanner() {
   const qc = useQueryClient()
   const [dismissed, setDismissed] = useState(false)
 
+  const [pendingAction, setPendingAction] = useState(null) // 'accept' | 'decline'
+
   const { data } = useQuery({
     queryKey: ['user-consent'],
     queryFn: getConsent,
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
+    staleTime: Infinity,   // decision is permanent for session; don't re-fetch on navigation
+    gcTime: Infinity,
   })
 
   const mutation = useMutation({
@@ -22,25 +25,32 @@ export default function ConsentBanner() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['user-consent'] })
       setDismissed(true)
+      setPendingAction(null)
     },
+    onError: () => setPendingAction(null),
   })
 
   // Don't show if not authenticated, already dismissed, or consent already set
   if (!isAuthenticated || dismissed || !data?.consents) return null
 
   const consents = data.consents
-  const hasDecided = Object.values(consents).some(c => c.granted || c.revoked_at)
+  // hasDecided: any consent was explicitly set (granted true OR false) or previously revoked
+  const hasDecided = Object.values(consents).some(
+    c => c.granted === true || c.granted === false || c.revoked_at
+  )
   if (hasDecided) return null
 
   function handleAcceptAll() {
     const payload = {}
     for (const key of Object.keys(consents)) payload[key] = true
+    setPendingAction('accept')
     mutation.mutate(payload)
   }
 
   function handleDeclineAll() {
     const payload = {}
     for (const key of Object.keys(consents)) payload[key] = false
+    setPendingAction('decline')
     mutation.mutate(payload)
   }
 
@@ -80,14 +90,14 @@ export default function ConsentBanner() {
               disabled={mutation.isPending}
               className="flex-1 h-9 rounded-xl border border-brand-200 dark:border-brand-700 text-sm font-medium text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-800 transition-colors disabled:opacity-50"
             >
-              Decline
+              {pendingAction === 'decline' ? 'Saving...' : 'Decline'}
             </button>
             <button
               onClick={handleAcceptAll}
               disabled={mutation.isPending}
               className="flex-1 h-9 rounded-xl bg-accent-500 text-white text-sm font-medium hover:bg-accent-600 transition-colors disabled:opacity-50"
             >
-              {mutation.isPending ? 'Saving...' : 'Accept All'}
+              {pendingAction === 'accept' ? 'Saving...' : 'Accept All'}
             </button>
           </div>
         </div>

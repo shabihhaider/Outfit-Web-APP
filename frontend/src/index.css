@@ -8,6 +8,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
+    @apply bg-brand-50 dark:bg-brand-950;
   }
 
   body {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -12,6 +12,13 @@ export default function OnboardingFlow() {
   const [uploadOpen, setUploadOpen] = useState(false)
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  // Issue 20: redirect already-onboarded users back to dashboard
+  useEffect(() => {
+    if (localStorage.getItem('onboarding_done') === '1') {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [navigate])
 
   const { data } = useQuery({
     queryKey: ['wardrobe'],
@@ -59,7 +66,7 @@ export default function OnboardingFlow() {
                   </svg>
                 </div>
                 <h2 className="font-display text-3xl font-bold text-brand-900 dark:text-brand-100 mb-3">
-                  Welcome, {user?.name?.split(' ')[0]}!
+                  Welcome, {user?.name}!
                 </h2>
                 <p className="text-brand-500 dark:text-brand-400 mb-8 leading-relaxed">
                   Let&apos;s set up your wardrobe so AI can recommend outfits tailored to your style.
@@ -109,7 +116,7 @@ export default function OnboardingFlow() {
                   </button>
                 )}
 
-                <button onClick={finish} className="w-full text-center text-sm text-brand-400 hover:text-brand-600 dark:hover:text-brand-300 mt-4 py-2 transition-colors">
+                <button onClick={() => setStep(3)} className="w-full text-center text-sm text-brand-400 hover:text-brand-600 dark:hover:text-brand-300 mt-4 py-2 transition-colors">
                   Skip for now
                 </button>
               </motion.div>

@@ -4,11 +4,12 @@ import { motion } from 'framer-motion'
 import { login } from '../api/auth.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
-import { FiArrowRight, FiMail, FiLock } from 'react-icons/fi'
+import { FiArrowRight, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { loginUser } = useAuth()
@@ -75,8 +76,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right: form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-brand-50 dark:bg-brand-950">
+      {/* Right: form — overflow-y-auto so short viewports can scroll */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center p-6 sm:p-8 py-12 bg-brand-50 dark:bg-brand-950">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -134,14 +135,22 @@ export default function LoginPage() {
               <div className="relative">
                 <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" size={16} />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="input-field pl-10"
+                  className="input-field pl-10 pr-10"
                   placeholder="Enter your password"
                   required
                   autoComplete="current-password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-600 dark:hover:text-brand-200"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                </button>
               </div>
             </div>
             <button

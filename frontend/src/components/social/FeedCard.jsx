@@ -145,9 +145,12 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
             </div>
           </div>
 
-          {/* Caption */}
+          {/* Caption — click to open detail view */}
           {post.caption && (
-            <p className="text-sm text-brand-700 dark:text-brand-300 mb-2 leading-snug line-clamp-2">
+            <p
+              className="text-sm text-brand-700 dark:text-brand-300 mb-2 leading-snug line-clamp-2 cursor-pointer hover:text-brand-900 dark:hover:text-brand-100 transition-colors"
+              onClick={() => onPostClick?.(post)}
+            >
               {post.caption}
             </p>
           )}

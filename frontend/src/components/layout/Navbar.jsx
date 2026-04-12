@@ -32,6 +32,7 @@ export default function Navbar() {
   useEffect(() => { setAvatarError(false) }, [user?.avatar_url])
 
   function handleLogout() {
+    if (!window.confirm('Log out of OutfitAI?')) return
     logoutUser()
     navigate('/login')
   }
@@ -61,7 +62,7 @@ export default function Navbar() {
                   to={link.to}
                   title={link.label}
                   className={({ isActive }) =>
-                    `relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 ${isActive
+                    `relative group flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 ${isActive
                       ? 'text-brand-900 dark:text-brand-100'
                       : 'text-brand-400 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-200'
                     }`
@@ -77,6 +78,9 @@ export default function Navbar() {
                           transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
                         />
                       )}
+                      <span className="pointer-events-none absolute top-full mt-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-900 dark:bg-brand-100 text-white dark:text-brand-900 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                        {link.label}
+                      </span>
                     </>
                   )}
                 </NavLink>

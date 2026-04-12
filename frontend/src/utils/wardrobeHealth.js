@@ -6,11 +6,11 @@ export function getWardrobeHealth(items = []) {
 
   const gaps = []
   if (counts.top === 0 && counts.dress === 0 && counts.jumpsuit === 0)
-    gaps.push('No tops, dresses or jumpsuits — cannot form any outfit')
+    gaps.push('Add a top, dress, or jumpsuit to start building outfits')
   if (counts.bottom === 0 && counts.dress === 0 && counts.jumpsuit === 0)
-    gaps.push('No bottoms, dresses or jumpsuits — cannot form any outfit')
+    gaps.push('Add a bottom, dress, or jumpsuit to complete your wardrobe')
   if (counts.shoes === 0)
-    gaps.push('No shoes — outfit templates requiring shoes will be skipped')
+    gaps.push('Add a pair of shoes to unlock more outfit combinations')
 
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
   const canRecommend = gaps.length === 0 || total >= 2

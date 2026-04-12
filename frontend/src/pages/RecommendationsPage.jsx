@@ -203,7 +203,7 @@ export default function RecommendationsPage() {
             </>
           )}
 
-          {!mutation.isPending && !results && (
+          {!mutation.isPending && !results && !mutation.isError && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-16 h-16 rounded-2xl bg-brand-100/60 dark:bg-brand-800/30 flex items-center justify-center text-3xl mb-4">
                 <FiZap className="text-brand-300 dark:text-brand-600" size={28} />
