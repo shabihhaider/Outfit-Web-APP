@@ -158,7 +158,7 @@ export default function OutfitCard({ outfit, occasion }) {
                 className="overflow-hidden"
               >
                 <div className="pt-2 pb-4 border-t border-brand-100/60 dark:border-brand-800/40">
-                  <WhyThisOutfit outfit={outfit} />
+                  <WhyThisOutfit outfit={outfit} defaultOpen={true} />
                 </div>
               </motion.div>
             )}

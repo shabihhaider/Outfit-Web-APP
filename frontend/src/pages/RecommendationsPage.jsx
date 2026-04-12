@@ -131,7 +131,7 @@ export default function RecommendationsPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-accent-700 dark:text-accent-400">Building outfit around:</p>
-            <p className="text-xs text-accent-600 dark:text-accent-500 capitalize">{anchorItem.category} \u00B7 {anchorItem.formality}</p>
+            <p className="text-xs text-accent-600 dark:text-accent-500 capitalize">{anchorItem.category} · {anchorItem.formality}</p>
           </div>
         </div>
       )}

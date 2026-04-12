@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FiChevronDown } from 'react-icons/fi'
 import { buildWhyText, scoreToPercent } from '../../utils/formatters.js'
 
-export default function WhyThisOutfit({ outfit }) {
-  const [open, setOpen] = useState(false)
+export default function WhyThisOutfit({ outfit, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
   const lines = buildWhyText(outfit)
 
   return (
