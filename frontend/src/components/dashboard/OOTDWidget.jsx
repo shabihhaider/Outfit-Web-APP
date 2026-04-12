@@ -11,6 +11,7 @@ import { resolveUrl } from '../../utils/resolveUrl.js'
 
 export default function OOTDWidget() {
   const [saved, setSaved] = useState(false)
+  const [outfitIndex, setOutfitIndex] = useState(0)
   const queryClient = useQueryClient()
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -22,11 +23,13 @@ export default function OOTDWidget() {
 
   const saveMutation = useMutation({
     mutationFn: () => {
-      const outfit = data?.outfit
+      const outfit = allOutfits[outfitIndex] ?? data?.outfit
       if (!outfit) return Promise.reject(new Error('No outfit to save'))
       const items = outfit.items?.map(i => i.id) ?? []
-      const cats = outfit.items?.map(i => i.category).join('+') ?? 'outfit'
-      const name = `OOTD ${outfit.occasion} ${cats} ${Date.now()}`
+      const cats = outfit.items?.map(i => i.category).map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(' + ') ?? 'Outfit'
+      const now = new Date()
+      const dateStr = now.toLocaleString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      const name = `${outfit.occasion.charAt(0).toUpperCase() + outfit.occasion.slice(1)} ${cats} · ${dateStr}`
       return saveOutfit({
         name,
         occasion: outfit.occasion,
@@ -68,6 +71,9 @@ export default function OOTDWidget() {
       </div>
     )
   }
+
+  const allOutfits = data?.outfits ?? (data?.outfit ? [data.outfit] : [])
+  const outfit = allOutfits[outfitIndex] ?? data?.outfit
 
   if (!outfit) {
     return (
@@ -179,7 +185,16 @@ export default function OOTDWidget() {
           {saved ? 'Saved' : 'Save outfit'}
         </button>
         <button
-          onClick={() => { setSaved(false); refetch() }}
+          onClick={() => {
+            setSaved(false)
+            const next = outfitIndex + 1
+            if (next < allOutfits.length) {
+              setOutfitIndex(next)
+            } else {
+              setOutfitIndex(0)
+              refetch()
+            }
+          }}
           className="text-sm font-medium px-4 py-2.5 rounded-xl btn-secondary flex items-center justify-center gap-2"
         >
           <FiRefreshCw size={14} />
