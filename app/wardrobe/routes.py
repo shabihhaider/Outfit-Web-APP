@@ -219,14 +219,15 @@ def upload_item():
     log_action("upload_item", user_id=user_id, detail=f"item_id={item.id} category={category}")
 
     # ── 9. Upload to Supabase Storage ────────────────────────────────────────
+    actual_image_url = None
     try:
         from app.storage import upload_file_from_path
-        upload_file_from_path(save_path, filename)
+        actual_image_url = upload_file_from_path(save_path, filename)
     except Exception as exc:
         logger.warning("Supabase upload failed for %s: %s", filename, exc)
 
     # ── 10. Return with upload guidance ───────────────────────────────────────
-    return jsonify({**item.to_dict(), "tips": UPLOAD_TIPS, "bg_removed": bg_removed}), 201
+    return jsonify({**item.to_dict(image_url=actual_image_url), "tips": UPLOAD_TIPS, "bg_removed": bg_removed}), 201
 
 
 # ─── GET /wardrobe/items ──────────────────────────────────────────────────────
