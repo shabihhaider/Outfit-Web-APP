@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
             <h2 className="font-display text-2xl font-bold text-brand-900 dark:text-brand-100 mb-2">Check your email</h2>
             <p className="text-brand-500 dark:text-brand-400 text-sm leading-relaxed">
               If <span className="font-medium text-brand-700 dark:text-brand-300">{email}</span> is registered,
-              you'll receive a reset link shortly. Check your spam folder if it doesn't arrive.
+              you&apos;ll receive a reset link shortly. Check your spam folder if it doesn&apos;t arrive.
             </p>
             <Link to="/login" className="btn-primary inline-flex items-center justify-center mt-6 px-8 py-2.5">
               Return to login
@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
               Forgot password?
             </h2>
             <p className="text-brand-500 dark:text-brand-400 mb-8">
-              Enter your email and we'll send you a reset link.
+              Enter your email and we&apos;ll send you a reset link.
             </p>
 
             {error && (
