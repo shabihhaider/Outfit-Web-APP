@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -29,6 +29,16 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
   const [bookmarked,  setBookmarked] = useState(post?.is_bookmarked ?? false)
   const [following,   setFollowing]  = useState(post?.is_following_author ?? false)
   const [imgError,    setImgError]   = useState(false)
+
+  // Sync like/save/follow state from fresh API data when fullPost resolves
+  useEffect(() => {
+    if (fullPost) {
+      setLiked(fullPost.is_liked ?? false)
+      setLikeCount(fullPost.like_count ?? 0)
+      setBookmarked(fullPost.is_bookmarked ?? false)
+      setFollowing(fullPost.is_following_author ?? false)
+    }
+  }, [fullPost])
   const [tryOnOpen,   setTryOnOpen]  = useState(false)
 
   const isOwn = user?.id === p?.user_id

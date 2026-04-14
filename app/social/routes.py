@@ -1086,48 +1086,74 @@ def list_vibes():
 
 @social_bp.route("/vibes/trending", methods=["GET"])
 def trending_vibes():
+    """
+    Return trending vibe tags ordered by a weighted engagement score:
+        score = posts × 1  +  likes × 2  +  remixes × 3
+
+    Weights rationale:
+      - Post   (1pt): creation signal — author thought it worth sharing
+      - Like   (2pt): passive engagement — viewer approval
+      - Remix  (3pt): highest intent — viewer adapted the look for themselves
+
+    Window: 7 days (weekly fashion cycle). Falls back to all-time if no
+    activity in the last 7 days.
+    """
     _ensure_vibes_seeded()
     limit = min(int(request.args.get("limit", 5)), 10)
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+    cutoff_7d = datetime.now(timezone.utc) - timedelta(days=7)
 
-    results = (
-        db.session.query(
-            VibeTag.id,
-            VibeTag.slug,
-            VibeTag.label,
-            VibeTag.region,
-            func.count(post_vibes.c.post_id).label("post_count"),
-        )
-        .join(post_vibes, VibeTag.id == post_vibes.c.vibe_id)
-        .join(SharedOutfit, post_vibes.c.post_id == SharedOutfit.id)
+    # Correlated subqueries: count likes / remixes per post in the 7-day window
+    like_subq = (
+        db.session.query(func.count(OutfitLike.id))
         .filter(
-            SharedOutfit.created_at >= cutoff,
-            SharedOutfit.visibility == "public",
+            OutfitLike.shared_outfit_id == SharedOutfit.id,
+            OutfitLike.created_at >= cutoff_7d,
         )
-        .group_by(VibeTag.id, VibeTag.slug, VibeTag.label, VibeTag.region)
-        .order_by(func.count(post_vibes.c.post_id).desc())
-        .limit(limit)
-        .all()
+        .correlate(SharedOutfit)
+        .scalar_subquery()
+    )
+    remix_subq = (
+        db.session.query(func.count(RemixLog.id))
+        .filter(
+            RemixLog.source_shared_outfit_id == SharedOutfit.id,
+            RemixLog.created_at >= cutoff_7d,
+        )
+        .correlate(SharedOutfit)
+        .scalar_subquery()
     )
 
-    # Fall back to most-used all-time if nothing posted in last 24h
-    if not results:
-        results = (
+    def _trending_query(time_filter=True):
+        q = (
             db.session.query(
-                VibeTag.id,
                 VibeTag.slug,
                 VibeTag.label,
                 VibeTag.region,
                 func.count(post_vibes.c.post_id).label("post_count"),
+                func.sum(1 + like_subq * 2 + remix_subq * 3).label("score"),
             )
             .join(post_vibes, VibeTag.id == post_vibes.c.vibe_id)
+            .join(SharedOutfit, post_vibes.c.post_id == SharedOutfit.id)
+            .filter(SharedOutfit.visibility == "public")
             .group_by(VibeTag.id, VibeTag.slug, VibeTag.label, VibeTag.region)
-            .order_by(func.count(post_vibes.c.post_id).desc())
+            .order_by(func.sum(1 + like_subq * 2 + remix_subq * 3).desc())
             .limit(limit)
-            .all()
         )
+        if time_filter:
+            q = q.filter(SharedOutfit.created_at >= cutoff_7d)
+        return q.all()
+
+    results = _trending_query(time_filter=True)
+    if not results:
+        # Fallback: all-time engagement (no recency filter)
+        results = _trending_query(time_filter=False)
 
     return jsonify([
-        {"slug": r.slug, "label": r.label, "region": r.region, "post_count": r.post_count}
+        {
+            "slug":       r.slug,
+            "label":      r.label,
+            "region":     r.region,
+            "post_count": r.post_count,
+            "score":      int(r.score or 0),
+        }
         for r in results
     ]), 200
