@@ -86,7 +86,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-accent-600 dark:text-accent-400 uppercase tracking-wider mb-0.5">
-                Today's Planned Look
+                Today&apos;s Planned Look
               </p>
               <p className="text-sm font-medium text-brand-700 dark:text-brand-200 capitalize truncate">
                 {todayPlan.occasion ?? 'Outfit'} ensemble

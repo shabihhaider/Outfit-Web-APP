@@ -39,11 +39,6 @@ export default function NotificationsPanel({ open, onClose }) {
   const notifications = data?.notifications ?? []
   const unread = data?.unread_count ?? 0
 
-  function handleOpen() {
-    if (unread > 0) markRead.mutate()
-    qc.invalidateQueries({ queryKey: ['notifications'] })
-  }
-
   // Mark read when panel opens
   if (open && unread > 0 && !markRead.isPending && !markRead.isSuccess) {
     markRead.mutate()

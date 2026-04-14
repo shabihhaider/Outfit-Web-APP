@@ -21,6 +21,17 @@ function formatWeekLabel(weekStart) {
     : `${startM} ${weekStart.getDate()} – ${endM} ${end.getDate()}, ${year}`
 }
 
+// Exported for CalendarPage — not a component, lives here to avoid a separate utils file.
+// eslint-disable-next-line react-refresh/only-export-components
+export function getWeekStart(d) {
+  const date = new Date(d)
+  date.setHours(0, 0, 0, 0)
+  const day = date.getDay() // 0=Sun, 1=Mon…
+  const diff = day === 0 ? -6 : 1 - day  // roll back to Monday
+  date.setDate(date.getDate() + diff)
+  return date
+}
+
 export default function CalendarNav({
   year, month, onChange,
   view = 'month', onViewChange,
@@ -114,13 +125,4 @@ export default function CalendarNav({
       </button>
     </div>
   )
-}
-
-export function getWeekStart(d) {
-  const date = new Date(d)
-  date.setHours(0, 0, 0, 0)
-  const day = date.getDay() // 0=Sun, 1=Mon…
-  const diff = day === 0 ? -6 : 1 - day  // roll back to Monday
-  date.setDate(date.getDate() + diff)
-  return date
 }

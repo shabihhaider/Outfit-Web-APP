@@ -1239,13 +1239,15 @@ def trending_vibes():
             .join(post_vibes, VibeTag.id == post_vibes.c.vibe_id)
             .join(SharedOutfit, post_vibes.c.post_id == SharedOutfit.id)
             .filter(SharedOutfit.visibility == "public")
-            .group_by(VibeTag.id, VibeTag.slug, VibeTag.label, VibeTag.region)
-            .order_by(func.sum(1 + like_subq * 2 + remix_subq * 3).desc())
-            .limit(limit)
         )
         if time_filter:
             q = q.filter(SharedOutfit.created_at >= cutoff_7d)
-        return q.all()
+        return (
+            q.group_by(VibeTag.id, VibeTag.slug, VibeTag.label, VibeTag.region)
+            .order_by(func.sum(1 + like_subq * 2 + remix_subq * 3).desc())
+            .limit(limit)
+            .all()
+        )
 
     results = _trending_query(time_filter=True)
     if not results:
