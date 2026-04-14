@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion'
-import { FiSun, FiBriefcase, FiHeart } from 'react-icons/fi'
+import { FiSun, FiBriefcase } from 'react-icons/fi'
 
 const OCCASIONS = [
   { value: 'casual',  label: 'Casual',  desc: 'Everyday', icon: FiSun },
   { value: 'formal',  label: 'Formal',  desc: 'Professional', icon: FiBriefcase },
-  { value: 'wedding', label: 'Wedding', desc: 'Special', icon: FiHeart },
 ]
 
 export default function OccasionPicker({ value, onChange }) {

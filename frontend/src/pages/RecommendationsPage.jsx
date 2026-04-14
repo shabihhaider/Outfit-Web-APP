@@ -175,7 +175,7 @@ export default function RecommendationsPage() {
                 mutation.error?.response?.data?.error ||
                 mutation.error?.response?.data?.message ||
                 (mutation.error?.response?.status === 422 && occasion !== 'casual'
-                  ? `Not enough ${occasion} items in your wardrobe. Go to Wardrobe and edit item formality to tag some as "${occasion === 'wedding' ? 'formal' : occasion}" or "both".`
+                  ? `Not enough ${occasion} items in your wardrobe. Go to Wardrobe and edit item formality to tag some as "${occasion}" or "both".`
                   : 'Could not get recommendations. Make sure your wardrobe has enough items.')
               }
             />

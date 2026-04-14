@@ -25,12 +25,6 @@ class TestOccasionFilter:
         assert casual_item not in result
         assert formal_item in result
 
-    def test_wedding_occasion_removes_casual_items(self, casual_item, formal_item):
-        from engine.occasion_filter import filter_by_occasion
-        items = [casual_item, formal_item]
-        result = filter_by_occasion(items, Occasion.WEDDING)
-        assert casual_item not in result
-        assert formal_item in result
 
     def test_both_formality_kept_in_formal(self):
         from engine.occasion_filter import filter_by_occasion

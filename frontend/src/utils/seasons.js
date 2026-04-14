@@ -14,12 +14,12 @@ const SEASONS = [
     daysWarning: [],
   },
   {
-    key:    'wedding',
+    key:    'festive',
     start:  [10, 1],
     end:    [12, 31],
-    label:  'Wedding Season',
+    label:  'Festive Season',
     vibe:   'desi-formal',
-    emoji:  '💍',
+    emoji:  '✨',
     daysWarning: [],
   },
 ]

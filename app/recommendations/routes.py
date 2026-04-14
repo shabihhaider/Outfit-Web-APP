@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 recommendations_bp = Blueprint("recommendations", __name__)
 
-VALID_OCCASIONS = {"casual", "formal", "wedding"}
+VALID_OCCASIONS = {"casual", "formal"}
 
 
 # ─── Private helpers ──────────────────────────────────────────────────────────

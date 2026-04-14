@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import { FiX, FiCheck, FiTrash2, FiSun, FiBriefcase, FiHeart } from 'react-icons/fi'
+import { FiX, FiCheck, FiTrash2, FiSun, FiBriefcase } from 'react-icons/fi'
 import { getSaved } from '../../api/outfits.js'
 import { getItems } from '../../api/wardrobe.js'
 import { createPlan, updatePlan, deletePlan } from '../../api/calendar.js'
@@ -12,7 +12,6 @@ import { resolveUrl } from '../../utils/resolveUrl.js'
 const OCCASIONS = [
   { val: 'casual', label: 'Casual', Icon: FiSun },
   { val: 'formal', label: 'Formal', Icon: FiBriefcase },
-  { val: 'wedding', label: 'Wedding', Icon: FiHeart },
 ]
 
 function formatDateDisplay(dateStr) {

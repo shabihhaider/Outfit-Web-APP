@@ -331,8 +331,8 @@ function ModalMosaic({ images, occasion, score }) {
 const OCC_STYLES = {
   casual:  { grad: 'from-sky-500/30 via-blue-400/15 to-indigo-400/10',       accent: 'text-sky-400',     icon: '👕' },
   formal:  { grad: 'from-violet-500/30 via-purple-400/15 to-fuchsia-400/10', accent: 'text-violet-400',  icon: '👔' },
-  wedding: { grad: 'from-rose-500/30 via-pink-400/15 to-red-400/10',         accent: 'text-rose-400',    icon: '🌸' },
 }
+
 
 function ModalPlaceholder({ outfit }) {
   const occ   = outfit?.occasion?.toLowerCase() || 'casual'

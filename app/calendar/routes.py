@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 calendar_bp = Blueprint("calendar", __name__)
 
-VALID_OCCASIONS = {"casual", "formal", "wedding"}
+VALID_OCCASIONS = {"casual", "formal"}
 
 
 def _fetch_plan_items(item_ids: list[int]) -> list[dict]:

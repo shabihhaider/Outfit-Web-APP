@@ -10,8 +10,8 @@ function toDateStr(d) {
 const OCC_COLORS = {
   casual:  'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
   formal:  'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
-  wedding: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
 }
+
 
 export default function CalendarWeekView({ weekStart, plans, onDayClick }) {
   const today = toDateStr(new Date())
@@ -96,7 +96,7 @@ export default function CalendarWeekView({ weekStart, plans, onDayClick }) {
                     </div>
                   ) : (
                     <div className="aspect-square rounded-xl bg-gradient-to-br from-brand-100 to-brand-200 dark:from-brand-800 dark:to-brand-700 flex items-center justify-center text-2xl opacity-60">
-                      {plan.occasion === 'formal' ? '👔' : plan.occasion === 'wedding' ? '🌸' : '👕'}
+                      {plan.occasion === 'formal' ? '👔' : '👕'}
                     </div>
                   )}
 

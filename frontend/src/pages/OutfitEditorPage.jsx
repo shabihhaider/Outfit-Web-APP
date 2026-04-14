@@ -22,7 +22,6 @@ const CATEGORIES = ['all', 'top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsu
 const OCCASIONS = [
   { value: 'casual', label: 'Casual' },
   { value: 'formal', label: 'Formal' },
-  { value: 'wedding', label: 'Wedding' }
 ]
 
 export default function OutfitEditorPage() {

@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 outfits_bp = Blueprint("outfits", __name__)
 
-VALID_OCCASIONS    = {"casual", "formal", "wedding"}
+VALID_OCCASIONS    = {"casual", "formal"}
 VALID_CONFIDENCES  = {"high", "medium", "low"}
 VALID_RATINGS      = {1, -1}
 

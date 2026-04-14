@@ -38,7 +38,6 @@ class Gender(str, Enum):
 class Occasion(str, Enum):
     CASUAL = "casual"
     FORMAL = "formal"
-    WEDDING = "wedding"
 
 
 class Confidence(str, Enum):

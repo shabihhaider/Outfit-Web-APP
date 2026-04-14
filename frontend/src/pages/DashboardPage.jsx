@@ -78,7 +78,7 @@ export default function DashboardPage() {
                     <img src={resolveUrl(item.image_url)} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-lg opacity-30">
-                      {todayPlan.occasion === 'formal' ? '👔' : todayPlan.occasion === 'wedding' ? '🌸' : '👕'}
+                      {todayPlan.occasion === 'formal' ? '👔' : '👕'}
                     </div>
                   )}
                 </div>
