@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
+import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiHome, FiGrid, FiStar, FiCalendar, FiBookmark, FiClock, FiLogOut, FiEdit3, FiMenu, FiX, FiUsers, FiSettings } from 'react-icons/fi'
+import { FiHome, FiGrid, FiStar, FiCalendar, FiBookmark, FiClock, FiLogOut, FiEdit3, FiMenu, FiX, FiUsers, FiSettings, FiBell } from 'react-icons/fi'
 import ThemeToggle from '../ui/ThemeToggle.jsx'
+import NotificationsPanel from '../ui/NotificationsPanel.jsx'
+import { getNotificationCount } from '../../api/notifications.js'
 import { resolveUrl } from '../../utils/resolveUrl.js'
 
 const NAV_LINKS = [
@@ -22,6 +25,15 @@ export default function Navbar() {
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [avatarError, setAvatarError] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+
+  const { data: countData } = useQuery({
+    queryKey: ['notifications-count'],
+    queryFn:  getNotificationCount,
+    refetchInterval: 60 * 1000,
+    staleTime: 30 * 1000,
+  })
+  const unreadCount = countData?.unread_count ?? 0
 
   const location = useLocation()
 
@@ -89,6 +101,20 @@ export default function Navbar() {
 
             {/* Right side */}
             <div className="flex items-center gap-1">
+              {/* Bell */}
+              <button
+                onClick={() => setNotifOpen(o => !o)}
+                className="relative flex items-center justify-center w-9 h-9 rounded-xl text-brand-400 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-200 transition-colors hover:bg-brand-100/60 dark:hover:bg-brand-800/30"
+                title="Notifications"
+              >
+                <FiBell size={17} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[14px] h-3.5 flex items-center justify-center bg-accent-500 text-white text-[9px] font-bold rounded-full px-0.5 leading-none">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
               <ThemeToggle />
 
               {/* Avatar / Settings */}
@@ -132,6 +158,8 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      <NotificationsPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
 
       {/* Mobile slide-down menu */}
       <AnimatePresence>

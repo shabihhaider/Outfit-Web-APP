@@ -57,7 +57,7 @@ from sqlalchemy import case, func
 
 from app.extensions import db, limiter
 from app.models_db import (
-    Follow, OutfitLike, PostBookmark, RemixLog,
+    Follow, Notification, OutfitLike, PostBookmark, RemixLog,
     SavedOutfit, SharedOutfit, User, VibeTag, WardrobeItemDB,
     post_vibes,
 )
@@ -116,6 +116,32 @@ VIBE_SEED = [
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _queue_notification(
+    recipient_id: int,
+    actor_id: int,
+    notif_type: str,
+    post_id: int | None,
+    message: str,
+) -> None:
+    """Add a Notification to the session (no commit). Deduplicates within 1 hour."""
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
+    exists = Notification.query.filter(
+        Notification.user_id == recipient_id,
+        Notification.actor_id == actor_id,
+        Notification.type == notif_type,
+        Notification.post_id == post_id,
+        Notification.created_at >= cutoff,
+    ).first()
+    if not exists:
+        db.session.add(Notification(
+            user_id=recipient_id,
+            actor_id=actor_id,
+            type=notif_type,
+            post_id=post_id,
+            message=message,
+        ))
+
 
 def _ensure_vibes_seeded() -> None:
     """Idempotently seed the vibe_tags reference table if empty."""
@@ -527,6 +553,15 @@ def follow_user(target_id: int):
     db.session.add(Follow(follower_id=follower_id, following_id=target_id))
     User.query.filter_by(id=follower_id).update({"following_count": User.following_count + 1})
     User.query.filter_by(id=target_id).update({"follower_count": User.follower_count + 1})
+    actor = db.session.get(User, follower_id)
+    actor_handle = f"@{actor.username}" if actor and actor.username else f"user_{follower_id}"
+    _queue_notification(
+        recipient_id=target_id,
+        actor_id=follower_id,
+        notif_type="follow",
+        post_id=None,
+        message=f"{actor_handle} started following you",
+    )
     db.session.commit()
 
     db.session.refresh(target)
@@ -933,6 +968,15 @@ def toggle_like(post_id: int):
         SharedOutfit.query.filter_by(id=post_id).update(
             {"like_count": SharedOutfit.like_count + 1}
         )
+        actor = db.session.get(User, user_id)
+        actor_handle = f"@{actor.username}" if actor and actor.username else f"user_{user_id}"
+        _queue_notification(
+            recipient_id=post.user_id,
+            actor_id=user_id,
+            notif_type="like",
+            post_id=post_id,
+            message=f"{actor_handle} liked your outfit",
+        )
         db.session.commit()
         db.session.refresh(post)
         return jsonify({"liked": True, "like_count": post.like_count}), 200
@@ -1043,6 +1087,15 @@ def remix_post(post_id: int):
     ))
     SharedOutfit.query.filter_by(id=post_id).update(
         {"remix_count": SharedOutfit.remix_count + 1}
+    )
+    actor = db.session.get(User, user_id)
+    actor_handle = f"@{actor.username}" if actor and actor.username else f"user_{user_id}"
+    _queue_notification(
+        recipient_id=post.user_id,
+        actor_id=user_id,
+        notif_type="remix",
+        post_id=post_id,
+        message=f"{actor_handle} remixed your outfit",
     )
     db.session.commit()
 
@@ -1209,3 +1262,58 @@ def trending_vibes():
         }
         for r in results
     ]), 200
+
+
+# ── Notifications ─────────────────────────────────────────────────────────────
+
+@social_bp.route("/notifications", methods=["GET"])
+@jwt_required()
+def get_notifications():
+    """GET /social/notifications?limit=20 — paginated, unread first."""
+    user_id = int(get_jwt_identity())
+    limit = min(int(request.args.get("limit", 20)), 50)
+    cursor = request.args.get("cursor")
+
+    q = (
+        Notification.query
+        .filter_by(user_id=user_id)
+        .order_by(Notification.read.asc(), Notification.created_at.desc())
+    )
+    if cursor:
+        try:
+            cutoff_dt = datetime.fromisoformat(cursor)
+            q = q.filter(Notification.created_at < cutoff_dt)
+        except ValueError:
+            pass
+
+    rows = q.limit(limit + 1).all()
+    has_more = len(rows) > limit
+    rows = rows[:limit]
+
+    unread_count = Notification.query.filter_by(user_id=user_id, read=False).count()
+
+    return jsonify({
+        "notifications": [n.to_dict() for n in rows],
+        "unread_count":  unread_count,
+        "has_more":      has_more,
+    }), 200
+
+
+@social_bp.route("/notifications/count", methods=["GET"])
+@jwt_required()
+def get_notification_count():
+    """GET /social/notifications/count — fast unread badge count."""
+    user_id = int(get_jwt_identity())
+    count = Notification.query.filter_by(user_id=user_id, read=False).count()
+    return jsonify({"unread_count": count}), 200
+
+
+@social_bp.route("/notifications/read-all", methods=["POST"])
+@jwt_required()
+@limiter.limit("10/minute")
+def mark_notifications_read():
+    """POST /social/notifications/read-all — mark all unread as read."""
+    user_id = int(get_jwt_identity())
+    Notification.query.filter_by(user_id=user_id, read=False).update({"read": True})
+    db.session.commit()
+    return jsonify({"message": "All notifications marked as read."}), 200

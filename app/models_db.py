@@ -532,6 +532,37 @@ class UserConsent(db.Model):
 
 # ── Password Reset ────────────────────────────────────────────────────────────
 
+class Notification(db.Model):
+    """In-app notification for social events (like / follow / remix)."""
+    __tablename__ = "notifications"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"),   nullable=False, index=True)
+    type       = db.Column(db.String(30), nullable=False)   # 'like' | 'follow' | 'remix'
+    actor_id   = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"),  nullable=True)
+    post_id    = db.Column(db.Integer, db.ForeignKey("shared_outfits.id", ondelete="SET NULL"), nullable=True)
+    message    = db.Column(db.String(200), nullable=False)
+    read       = db.Column(db.Boolean, nullable=False, default=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    actor = db.relationship("User", foreign_keys=[actor_id], lazy="joined")
+
+    def to_dict(self) -> dict:
+        return {
+            "id":         self.id,
+            "type":       self.type,
+            "actor":      {
+                "id":         self.actor.id,
+                "username":   self.actor.username or f"user_{self.actor.id}",
+                "avatar_url": _image_url(self.actor.avatar_filename),
+            } if self.actor else None,
+            "post_id":    self.post_id,
+            "message":    self.message,
+            "read":       self.read,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 class PasswordResetToken(db.Model):
     """One-time token for password reset emails. Expires in 1 hour."""
     __tablename__ = "password_reset_tokens"

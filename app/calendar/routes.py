@@ -61,6 +61,23 @@ def _plan_to_response(plan: OutfitPlan) -> dict:
     return d
 
 
+# ─── GET /calendar/plans/today ──────────────────────────────────────────────
+
+@calendar_bp.route("/plans/today", methods=["GET"])
+@jwt_required()
+def get_today_plan():
+    """
+    GET /calendar/plans/today
+    Returns the outfit plan for today, or {plan: null} if none.
+    """
+    user_id = int(get_jwt_identity())
+    today = date.today()
+    plan = OutfitPlan.query.filter_by(user_id=user_id, plan_date=today).first()
+    if plan is None:
+        return jsonify({"plan": None}), 200
+    return jsonify({"plan": _plan_to_response(plan)}), 200
+
+
 # ─── GET /calendar/plans ────────────────────────────────────────────────────
 
 @calendar_bp.route("/plans", methods=["GET"])

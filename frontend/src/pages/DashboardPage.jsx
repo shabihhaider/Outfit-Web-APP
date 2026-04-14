@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FiCamera, FiStar, FiBookmark, FiAlertTriangle, FiCheckCircle, FiGrid, FiArrowRight } from 'react-icons/fi'
+import { FiCamera, FiStar, FiBookmark, FiAlertTriangle, FiCheckCircle, FiGrid, FiArrowRight, FiCalendar } from 'react-icons/fi'
 import { getItems } from '../api/wardrobe.js'
 import { getHistory } from '../api/outfits.js'
+import { getTodayPlan } from '../api/notifications.js'
 import { useAuth } from '../context/AuthContext.jsx'
 import { getGreeting, formatDate, scoreToPercent, pluralizeCategory } from '../utils/formatters.js'
 import { getWardrobeHealth } from '../utils/wardrobeHealth.js'
@@ -12,6 +13,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import OOTDWidget from '../components/dashboard/OOTDWidget.jsx'
 import WardrobeStats from '../components/dashboard/WardrobeStats.jsx'
 import StyleDNACard from '../components/social/StyleDNACard.jsx'
+import { resolveUrl } from '../utils/resolveUrl.js'
 // import EidPlannerWidget from '../components/social/EidPlannerWidget.jsx'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } }
@@ -30,6 +32,13 @@ export default function DashboardPage() {
     queryKey: ['history'],
     queryFn: getHistory,
   })
+
+  const { data: todayData } = useQuery({
+    queryKey: ['today-plan'],
+    queryFn: getTodayPlan,
+    staleTime: 5 * 60 * 1000,
+  })
+  const todayPlan = todayData?.plan ?? null
 
   const items = wardrobeData?.items ?? []
   const health = getWardrobeHealth(items)
@@ -51,6 +60,47 @@ export default function DashboardPage() {
         <motion.div variants={fadeUp} className="mb-8">
           <OOTDWidget />
         </motion.div>
+
+        {/* Today's Look banner */}
+        {todayPlan && (
+          <motion.div
+            variants={fadeUp}
+            className="mb-8 flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-accent-50 to-violet-50 dark:from-accent-900/20 dark:to-violet-900/15 border border-accent-200/60 dark:border-accent-700/30"
+          >
+            {/* Thumbnails */}
+            <div className="flex -space-x-2 flex-shrink-0">
+              {(todayPlan.items ?? []).slice(0, 3).map((item, i) => (
+                <div
+                  key={i}
+                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-brand-900 bg-brand-100 dark:bg-brand-800"
+                >
+                  {item.image_url ? (
+                    <img src={resolveUrl(item.image_url)} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-lg opacity-30">
+                      {todayPlan.occasion === 'formal' ? '👔' : todayPlan.occasion === 'wedding' ? '🌸' : '👕'}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-accent-600 dark:text-accent-400 uppercase tracking-wider mb-0.5">
+                Today's Planned Look
+              </p>
+              <p className="text-sm font-medium text-brand-700 dark:text-brand-200 capitalize truncate">
+                {todayPlan.occasion ?? 'Outfit'} ensemble
+                {todayPlan.notes ? ` · ${todayPlan.notes}` : ''}
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/calendar')}
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-accent-600 dark:text-accent-400 hover:underline"
+            >
+              <FiCalendar size={13} /> View Calendar
+            </button>
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Wardrobe Health */}
