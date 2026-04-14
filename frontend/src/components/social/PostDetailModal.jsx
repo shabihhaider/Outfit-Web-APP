@@ -231,7 +231,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-brand-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
                   >
                     <FiRefreshCw size={15} />
-                    <span>Remix</span>
+                    <span>{p?.remix_count > 0 ? p.remix_count : 'Remix'}</span>
                   </button>
                 )}
 

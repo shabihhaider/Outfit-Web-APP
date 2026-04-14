@@ -555,13 +555,16 @@ def follow_user(target_id: int):
     User.query.filter_by(id=target_id).update({"follower_count": User.follower_count + 1})
     actor = db.session.get(User, follower_id)
     actor_handle = f"@{actor.username}" if actor and actor.username else f"user_{follower_id}"
-    _queue_notification(
-        recipient_id=target_id,
-        actor_id=follower_id,
-        notif_type="follow",
-        post_id=None,
-        message=f"{actor_handle} started following you",
-    )
+    try:
+        _queue_notification(
+            recipient_id=target_id,
+            actor_id=follower_id,
+            notif_type="follow",
+            post_id=None,
+            message=f"{actor_handle} started following you",
+        )
+    except Exception as exc:
+        logger.warning("Notification failed for follow %s→%s: %s", follower_id, target_id, exc)
     db.session.commit()
 
     db.session.refresh(target)
@@ -970,13 +973,16 @@ def toggle_like(post_id: int):
         )
         actor = db.session.get(User, user_id)
         actor_handle = f"@{actor.username}" if actor and actor.username else f"user_{user_id}"
-        _queue_notification(
-            recipient_id=post.user_id,
-            actor_id=user_id,
-            notif_type="like",
-            post_id=post_id,
-            message=f"{actor_handle} liked your outfit",
-        )
+        try:
+            _queue_notification(
+                recipient_id=post.user_id,
+                actor_id=user_id,
+                notif_type="like",
+                post_id=post_id,
+                message=f"{actor_handle} liked your outfit",
+            )
+        except Exception as exc:
+            logger.warning("Notification failed for like user %s post %s: %s", user_id, post_id, exc)
         db.session.commit()
         db.session.refresh(post)
         return jsonify({"liked": True, "like_count": post.like_count}), 200
@@ -1090,13 +1096,16 @@ def remix_post(post_id: int):
     )
     actor = db.session.get(User, user_id)
     actor_handle = f"@{actor.username}" if actor and actor.username else f"user_{user_id}"
-    _queue_notification(
-        recipient_id=post.user_id,
-        actor_id=user_id,
-        notif_type="remix",
-        post_id=post_id,
-        message=f"{actor_handle} remixed your outfit",
-    )
+    try:
+        _queue_notification(
+            recipient_id=post.user_id,
+            actor_id=user_id,
+            notif_type="remix",
+            post_id=post_id,
+            message=f"{actor_handle} remixed your outfit",
+        )
+    except Exception as exc:
+        logger.warning("Notification failed for remix user %s post %s: %s", user_id, post_id, exc)
     db.session.commit()
 
     # Serialise matches with source item info

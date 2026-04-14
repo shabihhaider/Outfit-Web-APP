@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { getPlans, getPlansByRange } from '../api/calendar.js'
+import { getPlans } from '../api/calendar.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import CalendarNav, { getWeekStart } from '../components/calendar/CalendarNav.jsx'
 import CalendarGrid from '../components/calendar/CalendarGrid.jsx'
@@ -25,30 +25,32 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedPlan, setSelectedPlan] = useState(null)
 
-  const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
-  const weekStartStr = toDateStr(weekStart)
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekEnd.getDate() + 6)
-  const weekEndStr = toDateStr(weekEnd)
+  // When navigating weeks, keep the month query in sync with the visible week
+  useEffect(() => {
+    if (view === 'week') {
+      setYear(weekStart.getFullYear())
+      setMonth(weekStart.getMonth())
+    }
+  }, [view, weekStart])
 
-  // Month query
-  const { data: monthData, isLoading: monthLoading, error: monthError, refetch: monthRefetch } = useQuery({
+  const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
+
+  // Single month query — always enabled so data is ready when switching views
+  const { data: monthData, isLoading, error, refetch } = useQuery({
     queryKey: ['calendar', monthStr],
     queryFn: () => getPlans(monthStr),
-    enabled: view === 'month',
   })
 
-  // Week query
-  const { data: weekData, isLoading: weekLoading, error: weekError, refetch: weekRefetch } = useQuery({
-    queryKey: ['calendar-week', weekStartStr],
-    queryFn: () => getPlansByRange(weekStartStr, weekEndStr),
-    enabled: view === 'week',
-  })
+  const allPlans = monthData?.plans ?? []
 
-  const plans     = view === 'week' ? (weekData?.plans ?? []) : (monthData?.plans ?? [])
-  const isLoading = view === 'week' ? weekLoading : monthLoading
-  const error     = view === 'week' ? weekError   : monthError
-  const refetch   = view === 'week' ? weekRefetch : monthRefetch
+  // For week view: filter month plans to the 7-day window client-side
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 6)
+  const weekStartStr = toDateStr(weekStart)
+  const weekEndStr   = toDateStr(weekEnd)
+  const weekPlans = allPlans.filter(p => p.plan_date >= weekStartStr && p.plan_date <= weekEndStr)
+
+  const plans = view === 'week' ? weekPlans : allPlans
 
   function handleMonthChange(newYear, newMonth) {
     setYear(newYear)

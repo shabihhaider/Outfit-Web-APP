@@ -5,14 +5,13 @@ import { motion } from 'framer-motion'
 import { FiArrowLeft, FiRefreshCw } from 'react-icons/fi'
 import { getPublicProfile, getCompatibility } from '../api/social.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import { resolveUrl } from '../utils/resolveUrl.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import FeedCard from '../components/social/FeedCard.jsx'
 import FollowButton from '../components/social/FollowButton.jsx'
 import RemixResultModal from '../components/social/RemixResultModal.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
-
-const BASE = import.meta.env.VITE_API_URL || ''
 
 export default function PublicProfilePage() {
   const { username }   = useParams()
@@ -64,8 +63,12 @@ export default function PublicProfilePage() {
         >
           <div className="flex flex-col sm:flex-row sm:items-start gap-6">
             {/* Avatar */}
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-200 to-accent-200 dark:from-brand-700 dark:to-accent-800 flex items-center justify-center text-3xl font-bold text-brand-700 dark:text-brand-200 flex-shrink-0">
-              {(profile.name?.[0] || profile.username?.[0] || '?').toUpperCase()}
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-200 to-accent-200 dark:from-brand-700 dark:to-accent-800 flex items-center justify-center text-3xl font-bold text-brand-700 dark:text-brand-200 flex-shrink-0 overflow-hidden">
+              {profile.avatar_url ? (
+                <img src={resolveUrl(profile.avatar_url)} alt="" className="w-full h-full object-cover" />
+              ) : (
+                (profile.name?.[0] || profile.username?.[0] || '?').toUpperCase()
+              )}
             </div>
 
             <div className="flex-1">
