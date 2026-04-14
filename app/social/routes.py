@@ -54,6 +54,7 @@ from datetime import datetime, timedelta, timezone
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from sqlalchemy import case, func
+from sqlalchemy.orm import joinedload
 
 from app.extensions import db, limiter
 from app.models_db import (
@@ -168,24 +169,47 @@ def _upload_dir() -> str:
     return current_app.config.get("UPLOAD_FOLDER", os.path.join(os.getcwd(), "uploads"))
 
 
-def _post_to_dict(post: SharedOutfit, viewer_id: int | None) -> dict:
-    """Serialise a SharedOutfit with like/bookmark status for the given viewer."""
+def _post_to_dict(
+    post: SharedOutfit,
+    viewer_id: int | None,
+    liked_set: set | None = None,
+    bookmarked_set: set | None = None,
+    following_set: set | None = None,
+    item_map: dict | None = None,
+) -> dict:
+    """Serialise a SharedOutfit with like/bookmark status for the given viewer.
+
+    Pass pre-fetched sets from the feed loop (liked_set, bookmarked_set,
+    following_set, item_map) to avoid N+1 queries.  Falls back to per-post
+    queries when called from single-post endpoints where sets are not provided.
+    """
     d = post.to_dict(viewer_id=viewer_id)
 
     if viewer_id is not None:
-        liked = OutfitLike.query.filter_by(
-            user_id=viewer_id, shared_outfit_id=post.id
-        ).first() is not None
-        bookmarked = PostBookmark.query.filter_by(
-            user_id=viewer_id, shared_outfit_id=post.id
-        ).first() is not None
-        is_following_author = (
-            post.user_id != viewer_id and
-            Follow.query.filter_by(follower_id=viewer_id, following_id=post.user_id).first() is not None
-        )
-        d["is_liked"] = liked
-        d["is_bookmarked"] = bookmarked
-        d["is_following_author"] = is_following_author
+        # Use pre-fetched sets when available (feed bulk-load path)
+        if liked_set is not None:
+            d["is_liked"] = post.id in liked_set
+        else:
+            d["is_liked"] = OutfitLike.query.filter_by(
+                user_id=viewer_id, shared_outfit_id=post.id
+            ).first() is not None
+
+        if bookmarked_set is not None:
+            d["is_bookmarked"] = post.id in bookmarked_set
+        else:
+            d["is_bookmarked"] = PostBookmark.query.filter_by(
+                user_id=viewer_id, shared_outfit_id=post.id
+            ).first() is not None
+
+        if following_set is not None:
+            d["is_following_author"] = post.user_id != viewer_id and post.user_id in following_set
+        else:
+            d["is_following_author"] = (
+                post.user_id != viewer_id and
+                Follow.query.filter_by(
+                    follower_id=viewer_id, following_id=post.user_id
+                ).first() is not None
+            )
     else:
         d["is_liked"] = False
         d["is_bookmarked"] = False
@@ -198,14 +222,23 @@ def _post_to_dict(post: SharedOutfit, viewer_id: int | None) -> dict:
             item_ids = json.loads(so.item_ids) if so.item_ids else []
         except (json.JSONDecodeError, TypeError):
             item_ids = []
-        # Fetch up to 6 item images so the feed card can render a grid when preview_url is null
-        thumb_items = WardrobeItemDB.query.filter(WardrobeItemDB.id.in_(item_ids[:6])).all()
-        thumb_map = {i.id: i for i in thumb_items}
-        item_images = [
-            _img_url(thumb_map[iid].image_filename)
-            for iid in item_ids[:6]
-            if iid in thumb_map and thumb_map[iid].image_filename
-        ]
+
+        if item_map is not None:
+            # Use pre-fetched item map (feed bulk-load path)
+            item_images = [
+                _img_url(item_map[iid].image_filename)
+                for iid in item_ids[:6]
+                if iid in item_map and item_map[iid].image_filename
+            ]
+        else:
+            thumb_items = WardrobeItemDB.query.filter(WardrobeItemDB.id.in_(item_ids[:6])).all()
+            thumb_map = {i.id: i for i in thumb_items}
+            item_images = [
+                _img_url(thumb_map[iid].image_filename)
+                for iid in item_ids[:6]
+                if iid in thumb_map and thumb_map[iid].image_filename
+            ]
+
         d["outfit"] = {
             "id": so.id,
             "name": so.name,
@@ -877,10 +910,9 @@ def get_feed():
             SharedOutfit.visibility.in_(["public", "followers"]),
         )
     else:
-        # Discover — all public posts, not your own
+        # Discover — all public posts (including own so solo users see content)
         q = SharedOutfit.query.filter(
             SharedOutfit.visibility == "public",
-            SharedOutfit.user_id != user_id,
         )
 
     # Vibe filter
@@ -901,6 +933,9 @@ def get_feed():
         )
 
     q = q.order_by(SharedOutfit.created_at.desc(), SharedOutfit.id.desc())
+
+    # Eager-load saved_outfit so _post_to_dict doesn't trigger N lazy loads
+    q = q.options(joinedload(SharedOutfit.saved_outfit))
 
     # Fetch extra for has_more
     raw = q.limit(limit + 1).all()
@@ -923,7 +958,53 @@ def get_feed():
             )
         raw.sort(key=_score, reverse=True)
 
-    posts = [_post_to_dict(p, user_id) for p in raw]
+    # ── Batch pre-fetch viewer-specific data (3N → 3 queries) ─────────────────
+    liked_set: set = set()
+    bookmarked_set: set = set()
+    following_set: set = set()
+    item_map: dict = {}
+
+    if raw:
+        post_ids = [p.id for p in raw]
+        author_ids = {p.user_id for p in raw}
+
+        liked_set = {
+            r.shared_outfit_id
+            for r in OutfitLike.query.filter(
+                OutfitLike.user_id == user_id,
+                OutfitLike.shared_outfit_id.in_(post_ids),
+            ).all()
+        }
+        bookmarked_set = {
+            r.shared_outfit_id
+            for r in PostBookmark.query.filter(
+                PostBookmark.user_id == user_id,
+                PostBookmark.shared_outfit_id.in_(post_ids),
+            ).all()
+        }
+        following_set = {
+            r.following_id
+            for r in Follow.query.filter(
+                Follow.follower_id == user_id,
+                Follow.following_id.in_(author_ids),
+            ).all()
+        }
+        # Batch-load all wardrobe item thumbnails needed across all posts
+        all_item_ids: set = set()
+        for p in raw:
+            if p.saved_outfit and p.saved_outfit.item_ids:
+                try:
+                    all_item_ids.update(json.loads(p.saved_outfit.item_ids)[:6])
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        if all_item_ids:
+            items = WardrobeItemDB.query.filter(WardrobeItemDB.id.in_(all_item_ids)).all()
+            item_map = {i.id: i for i in items}
+
+    posts = [
+        _post_to_dict(p, user_id, liked_set, bookmarked_set, following_set, item_map)
+        for p in raw
+    ]
 
     next_cursor = None
     if has_more and raw:
