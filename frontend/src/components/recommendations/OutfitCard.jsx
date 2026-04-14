@@ -88,7 +88,9 @@ export default function OutfitCard({ outfit, occasion }) {
             </div>
             <div className="flex items-baseline gap-2">
               <span className="data-value text-4xl leading-none">{pct}%</span>
-              <span className="font-display text-lg font-medium text-brand-400 dark:text-brand-500 italic">Match</span>
+              <span className={`font-display text-lg font-medium italic ${pct >= 75 ? 'text-emerald-500' : pct >= 55 ? 'text-emerald-500/70' : pct >= 40 ? 'text-amber-500' : 'text-red-400'}`}>
+                {pct >= 75 ? 'Great Match' : pct >= 55 ? 'Good Match' : pct >= 40 ? 'Fair Match' : 'Weak Match'}
+              </span>
             </div>
           </div>
           

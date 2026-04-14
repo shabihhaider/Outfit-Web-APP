@@ -32,6 +32,15 @@ export function buildWhyText(outfit) {
       lines.push('🪡 Diverse aesthetic mix')
   }
 
+  if (outfit.synergy_score != null) {
+    if (outfit.synergy_score >= 0.85)
+      lines.push('🤝 Classic fashion pairing — these items belong together')
+    else if (outfit.synergy_score >= 0.65)
+      lines.push('🤝 Good outfit synergy')
+    else if (outfit.synergy_score > 0.5)
+      lines.push('🤝 Some style synergy detected')
+  }
+
   return lines
 }
 

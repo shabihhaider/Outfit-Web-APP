@@ -39,6 +39,7 @@ def _make_outfit_candidate(
         color_score    = 0.90,
         weather_score  = 0.85,
         cohesion_score = 0.80,
+        synergy_score  = 0.50,
         confidence     = "high",
     )
 
@@ -214,6 +215,7 @@ class TestRecommendations:
             color_score    = 0.40,
             weather_score  = 0.35,
             cohesion_score = 0.40,
+            synergy_score  = 0.30,
             confidence     = "low",
         )
         flask_app.pipeline.recommend.return_value = [low_conf_outfit]

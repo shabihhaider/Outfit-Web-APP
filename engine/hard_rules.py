@@ -34,6 +34,10 @@ BLOCKED_SUBCATEGORY_PAIRS: frozenset[frozenset] = frozenset({
     frozenset({"shoes:heels",       "bottom:leggings"}),   # heels + leggings
     frozenset({"shoes:chappal",     "outwear:blazer"}),    # chappal + blazer
     frozenset({"shoes:chappal",     "outwear:sherwani"}),  # chappal + sherwani (formal mismatch)
+    # Cross-cultural: Western casual + Eastern traditional
+    frozenset({"top:polo_shirt",    "bottom:shalwar"}),    # polo + shalwar
+    frozenset({"top:casual_tshirt", "bottom:shalwar"}),    # tshirt + shalwar
+    frozenset({"top:hoodie",        "bottom:shalwar"}),    # hoodie + shalwar
 })
 
 

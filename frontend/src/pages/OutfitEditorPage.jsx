@@ -485,8 +485,9 @@ export default function OutfitEditorPage() {
                   </AnimatePresence>
 
                   {isValid && scoreData.breakdown && (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-2">
                       <ScoreStat icon={<FiCpu size={14} />} label="Context" value={scoreData.breakdown.model2_score} />
+                      <ScoreStat icon={<FiZap size={14} />} label="Synergy" value={scoreData.breakdown.synergy_score} />
                       <ScoreStat icon={<FiDroplet size={14} />} label="Chromatic" value={scoreData.breakdown.color_score} />
                       <ScoreStat icon={<FiThermometer size={14} />} label="Climatic" value={scoreData.breakdown.weather_score} />
                     </div>
@@ -552,7 +553,9 @@ export default function OutfitEditorPage() {
                   </svg>
                   <div className="text-center">
                     <div className="data-value text-4xl leading-none">{isValid ? `${pct}%` : '!!'}</div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-brand-400 mt-1">Match</div>
+                    <div className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${pct >= 75 ? 'text-emerald-500' : pct >= 55 ? 'text-emerald-500/70' : pct >= 40 ? 'text-amber-500' : 'text-red-400'}`}>
+                      {pct >= 75 ? 'Great Match' : pct >= 55 ? 'Good Match' : pct >= 40 ? 'Fair Match' : 'Weak Match'}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-3">
@@ -567,6 +570,7 @@ export default function OutfitEditorPage() {
               {isValid && scoreData.breakdown && (
                 <div className="space-y-4 mb-6">
                   <ScoreStat icon={<FiCpu size={14} />} label="Context" value={scoreData.breakdown.model2_score} delay={0.15} />
+                  <ScoreStat icon={<FiZap size={14} />} label="Synergy" value={scoreData.breakdown.synergy_score} delay={0.20} />
                   <ScoreStat icon={<FiDroplet size={14} />} label="Chromatic" value={scoreData.breakdown.color_score} delay={0.25} />
                   <ScoreStat icon={<FiThermometer size={14} />} label="Climatic" value={scoreData.breakdown.weather_score} delay={0.35} />
                 </div>

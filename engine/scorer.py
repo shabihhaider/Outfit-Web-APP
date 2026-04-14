@@ -2,17 +2,19 @@
 engine/scorer.py
 Gate 3 orchestrator — computes the final weighted score for one outfit.
 
-Score formula (4-component):
-    final = model2_score   × 0.45
-          + color_score    × 0.25
+Score formula (5-component):
+    final = model2_score   × 0.35
+          + color_score    × 0.20
           + weather_score  × 0.15
-          + cohesion_score × 0.15
+          + cohesion_score × 0.10
+          + synergy_score  × 0.20
 
 Components:
-  model2   (0.45) — learned pairwise compatibility from Polyvore outfit data
-  color    (0.25) — Itten hue harmony × saturation consistency (Albers 1963)
+  model2   (0.35) — learned pairwise compatibility from Polyvore outfit data
+  color    (0.20) — Itten hue harmony × saturation consistency (Albers 1963)
   weather  (0.15) — ASHRAE 55 CLO thermal comfort matching
-  cohesion (0.15) — EfficientNet-B0 embedding cosine similarity (visual aesthetic unity)
+  cohesion (0.10) — EfficientNet-B0 embedding cosine similarity (visual aesthetic unity)
+  synergy  (0.20) — knowledge-based fashion pairings (cultural + global outfit grammar)
 
 Model 2 is scored symmetrically (GAP-03 fix): for every pair, both orderings
 are averaged so score(A,B) == score(B,A) regardless of training order.
@@ -29,15 +31,17 @@ from engine.models import (
 from engine.color_scorer import score_outfit_color
 from engine.weather_scorer import score_outfit_weather
 from engine.cohesion_scorer import score_outfit_cohesion
+from engine.style_intelligence import score_outfit_intelligence
 
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 
 WEIGHTS = {
-    "model2":   0.45,
-    "color":    0.25,
+    "model2":   0.35,
+    "color":    0.20,
     "weather":  0.15,
-    "cohesion": 0.15,
+    "cohesion": 0.10,
+    "synergy":  0.20,
 }
 
 THRESHOLD_HIGH   = 0.70
@@ -112,12 +116,14 @@ def score_outfit(
     color_score    = score_outfit_color(outfit)
     weather_score  = score_outfit_weather(outfit, temp_celsius)
     cohesion_score = score_outfit_cohesion(outfit)
+    synergy_score  = score_outfit_intelligence(outfit)
 
     final = (
         model2_score   * WEIGHTS["model2"]
         + color_score   * WEIGHTS["color"]
         + weather_score * WEIGHTS["weather"]
         + cohesion_score * WEIGHTS["cohesion"]
+        + synergy_score * WEIGHTS["synergy"]
     )
 
     confidence = (
@@ -135,6 +141,7 @@ def score_outfit(
         color_score    = color_score,
         weather_score  = weather_score,
         cohesion_score = cohesion_score,
+        synergy_score  = synergy_score,
         final_score    = final,
         confidence     = confidence,
     )

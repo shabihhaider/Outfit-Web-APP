@@ -70,7 +70,7 @@ class TestWeightedScoring:
     def test_final_score_uses_correct_weights(
         self, top_item, bottom_item, shoes_item
     ):
-        """final = model2×0.45 + color×0.25 + weather×0.15 + cohesion×0.15."""
+        """final = model2×0.35 + color×0.20 + weather×0.15 + cohesion×0.10 + synergy×0.20."""
         from engine.scorer import score_outfit
         from unittest.mock import patch
 
@@ -78,14 +78,15 @@ class TestWeightedScoring:
 
         with patch("engine.scorer.score_outfit_color", return_value=0.60), \
              patch("engine.scorer.score_outfit_weather", return_value=0.50), \
-             patch("engine.scorer.score_outfit_cohesion", return_value=0.70):
+             patch("engine.scorer.score_outfit_cohesion", return_value=0.70), \
+             patch("engine.scorer.score_outfit_intelligence", return_value=0.50):
             result = score_outfit(
                 outfit=[top_item, bottom_item, shoes_item],
                 model2=model,
                 temp_celsius=25.0,
             )
 
-        expected = 0.80 * 0.45 + 0.60 * 0.25 + 0.50 * 0.15 + 0.70 * 0.15
+        expected = 0.80 * 0.35 + 0.60 * 0.20 + 0.50 * 0.15 + 0.70 * 0.10 + 0.50 * 0.20
         assert abs(result.final_score - expected) < 1e-4
 
     def test_high_confidence_assigned_correctly(
@@ -97,7 +98,8 @@ class TestWeightedScoring:
 
         model = _mock_model2(0.90)
         with patch("engine.scorer.score_outfit_color", return_value=0.90), \
-             patch("engine.scorer.score_outfit_weather", return_value=0.90):
+             patch("engine.scorer.score_outfit_weather", return_value=0.90), \
+             patch("engine.scorer.score_outfit_intelligence", return_value=0.90):
             result = score_outfit([top_item, bottom_item, shoes_item], model, 25.0)
 
         assert result.confidence == Confidence.HIGH
@@ -111,7 +113,8 @@ class TestWeightedScoring:
 
         model = _mock_model2(0.20)
         with patch("engine.scorer.score_outfit_color", return_value=0.20), \
-             patch("engine.scorer.score_outfit_weather", return_value=0.20):
+             patch("engine.scorer.score_outfit_weather", return_value=0.20), \
+             patch("engine.scorer.score_outfit_intelligence", return_value=0.20):
             result = score_outfit([top_item, bottom_item, shoes_item], model, 25.0)
 
         assert result.confidence == Confidence.LOW
