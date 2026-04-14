@@ -14,12 +14,13 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
   const navigate = useNavigate()
   const qc = useQueryClient()
 
-  // Fetch full post data (includes items)
+  // Fetch full post data (includes items) — staleTime:0 so follow/like state
+  // is always fresh when the modal opens (prevents 409 "already following" on reopen)
   const { data: fullPost } = useQuery({
     queryKey: ['post', post?.id],
     queryFn: () => getPost(post.id),
     enabled: !!post?.id && open,
-    staleTime: 30 * 1000,
+    staleTime: 0,
   })
 
   const p = fullPost ?? post
@@ -66,8 +67,20 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
 
   const followMutation = useMutation({
     mutationFn: () => following ? unfollowUser(p.user_id) : followUser(p.user_id),
-    onMutate:  () => setFollowing(v => !v),
-    onError:   () => setFollowing(v => !v),
+    onMutate: () => {
+      const prev = following
+      setFollowing(v => !v)
+      return { prev }
+    },
+    onError: (err, _vars, ctx) => {
+      // 409 = "Already following" — stale cache showed Follow when we're actually
+      // following already. Keep "Following" rather than reverting to the wrong state.
+      if (err?.response?.status === 409 && !ctx?.prev) {
+        setFollowing(true)
+      } else {
+        setFollowing(ctx?.prev ?? (v => !v))
+      }
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['feed'] }) },
   })
 
