@@ -1,31 +1,54 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { getPlans } from '../api/calendar.js'
+import { getPlans, getPlansByRange } from '../api/calendar.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
-import CalendarNav from '../components/calendar/CalendarNav.jsx'
+import CalendarNav, { getWeekStart } from '../components/calendar/CalendarNav.jsx'
 import CalendarGrid from '../components/calendar/CalendarGrid.jsx'
+import CalendarWeekView from '../components/calendar/CalendarWeekView.jsx'
 import PlanModal from '../components/calendar/PlanModal.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
+
+function toDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 export default function CalendarPage() {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
+  const [view, setView] = useState('month')
+  const [weekStart, setWeekStart] = useState(() => getWeekStart(now))
 
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedPlan, setSelectedPlan] = useState(null)
 
   const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
+  const weekStartStr = toDateStr(weekStart)
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 6)
+  const weekEndStr = toDateStr(weekEnd)
 
-  const { data, isLoading, error, refetch } = useQuery({
+  // Month query
+  const { data: monthData, isLoading: monthLoading, error: monthError, refetch: monthRefetch } = useQuery({
     queryKey: ['calendar', monthStr],
     queryFn: () => getPlans(monthStr),
+    enabled: view === 'month',
   })
 
-  const plans = data?.plans ?? []
+  // Week query
+  const { data: weekData, isLoading: weekLoading, error: weekError, refetch: weekRefetch } = useQuery({
+    queryKey: ['calendar-week', weekStartStr],
+    queryFn: () => getPlansByRange(weekStartStr, weekEndStr),
+    enabled: view === 'week',
+  })
+
+  const plans     = view === 'week' ? (weekData?.plans ?? []) : (monthData?.plans ?? [])
+  const isLoading = view === 'week' ? weekLoading : monthLoading
+  const error     = view === 'week' ? weekError   : monthError
+  const refetch   = view === 'week' ? weekRefetch : monthRefetch
 
   function handleMonthChange(newYear, newMonth) {
     setYear(newYear)
@@ -44,11 +67,16 @@ export default function CalendarPage() {
     setSelectedPlan(null)
   }
 
+  // For PlanModal cache invalidation: use the month of the selected date
+  const selectedMonth = selectedDate
+    ? selectedDate.slice(0, 7)
+    : monthStr
+
   const planCount = plans.length
 
   return (
     <PageWrapper>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-10"
@@ -62,43 +90,61 @@ export default function CalendarPage() {
             <p className="text-brand-500 dark:text-brand-400 mt-3 text-lg font-medium italic">
               {planCount > 0
                 ? `You have ${planCount} ensemble${planCount !== 1 ? 's' : ''} orchestrated for this period.`
+                : view === 'week'
+                ? 'Plan your outfits for the week ahead.'
                 : 'Orchestrate your daily ensembles for the month ahead.'
               }
             </p>
           </div>
-          <CalendarNav year={year} month={month} onChange={handleMonthChange} />
+          <CalendarNav
+            year={year}
+            month={month}
+            onChange={handleMonthChange}
+            view={view}
+            onViewChange={setView}
+            weekStart={weekStart}
+            onWeekChange={setWeekStart}
+          />
         </div>
       </motion.div>
 
       {/* Main Grid Area */}
       <div className="relative">
-         {/* Subtle accent background for the grid area */}
-         <div className="absolute inset-0 bg-brand-50/20 dark:bg-brand-950/5 rounded-[40px] -z-10" />
-         
-         {isLoading && <LoadingSpinner className="py-32" size="lg" />}
-         {error && <ErrorMessage message="An error occurred while retrieving your schedule." onRetry={refetch} />}
+        <div className="absolute inset-0 bg-brand-50/20 dark:bg-brand-950/5 rounded-[40px] -z-10" />
 
-         {!isLoading && !error && (
-           <motion.div
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-             transition={{ duration: 0.8 }}
-           >
-             <CalendarGrid
-               year={year}
-               month={month}
-               plans={plans}
-               onDayClick={handleDayClick}
-             />
-           </motion.div>
-         )}
+        {isLoading && <LoadingSpinner className="py-32" size="lg" />}
+        {error && <ErrorMessage message="An error occurred while retrieving your schedule." onRetry={refetch} />}
+
+        {!isLoading && !error && (
+          <motion.div
+            key={view}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            {view === 'week' ? (
+              <CalendarWeekView
+                weekStart={weekStart}
+                plans={plans}
+                onDayClick={handleDayClick}
+              />
+            ) : (
+              <CalendarGrid
+                year={year}
+                month={month}
+                plans={plans}
+                onDayClick={handleDayClick}
+              />
+            )}
+          </motion.div>
+        )}
       </div>
 
       <PlanModal
         open={modalOpen}
         date={selectedDate}
         existingPlan={selectedPlan}
-        monthStr={monthStr}
+        monthStr={selectedMonth}
         onClose={handleModalClose}
       />
     </PageWrapper>

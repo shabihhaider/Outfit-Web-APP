@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import date
+from datetime import date, timedelta
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -68,35 +68,46 @@ def _plan_to_response(plan: OutfitPlan) -> dict:
 def get_plans():
     """
     GET /calendar/plans?month=YYYY-MM
-    Returns all plans for the specified month.
+    GET /calendar/plans?start=YYYY-MM-DD&end=YYYY-MM-DD  (week view)
+    Returns all plans for the specified period.
     """
     user_id = int(get_jwt_identity())
     month_str = request.args.get("month", "").strip()
+    start_param = request.args.get("start", "").strip()
+    end_param   = request.args.get("end", "").strip()
 
-    if not month_str:
-        return jsonify({"error": "month parameter is required (YYYY-MM)."}), 400
-
-    try:
-        parts = month_str.split("-")
-        year = int(parts[0])
-        month = int(parts[1])
-        if month < 1 or month > 12:
-            raise ValueError
-        start_date = date(year, month, 1)
-        # End date: first day of next month
-        if month == 12:
-            end_date = date(year + 1, 1, 1)
-        else:
-            end_date = date(year, month + 1, 1)
-    except (ValueError, IndexError):
-        return jsonify({"error": "Invalid month format. Use YYYY-MM."}), 400
+    if start_param and end_param:
+        # ── Date-range mode (week view) ──────────────────────────────────────
+        try:
+            start_date = date.fromisoformat(start_param)
+            end_date   = date.fromisoformat(end_param)
+        except ValueError:
+            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+        # end is inclusive → query uses < (end + 1 day)
+        end_excl = end_date + timedelta(days=1)
+        extra = {"start": start_param, "end": end_param}
+    elif month_str:
+        # ── Month mode (existing) ────────────────────────────────────────────
+        try:
+            parts = month_str.split("-")
+            year  = int(parts[0])
+            month = int(parts[1])
+            if month < 1 or month > 12:
+                raise ValueError
+            start_date = date(year, month, 1)
+            end_excl   = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+        except (ValueError, IndexError):
+            return jsonify({"error": "Invalid month format. Use YYYY-MM."}), 400
+        extra = {"month": month_str}
+    else:
+        return jsonify({"error": "Provide month (YYYY-MM) or start+end (YYYY-MM-DD)."}), 400
 
     plans = (
         OutfitPlan.query
         .filter(
             OutfitPlan.user_id == user_id,
             OutfitPlan.plan_date >= start_date,
-            OutfitPlan.plan_date < end_date,
+            OutfitPlan.plan_date < end_excl,
         )
         .order_by(OutfitPlan.plan_date)
         .all()
@@ -105,7 +116,7 @@ def get_plans():
     return jsonify({
         "plans": [_plan_to_response(p) for p in plans],
         "count": len(plans),
-        "month": month_str,
+        **extra,
     }), 200
 
 
