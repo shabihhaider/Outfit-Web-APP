@@ -65,14 +65,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {['bg-accent-400', 'bg-emerald-400', 'bg-sky-400'].map((c, i) => (
-                <div key={i} className={`w-8 h-8 rounded-full ${c} ring-2 ring-brand-900`} />
-              ))}
-            </div>
-            <p className="text-sm text-brand-400">Trusted by fashion-forward users</p>
-          </div>
         </div>
       </div>
 
