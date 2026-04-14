@@ -37,6 +37,9 @@ export const getBookmarks   = (params) => api.get('/social/bookmarks', { params 
 export const remixPost       = (postId) => api.post(`/social/posts/${postId}/remix`).then(r => r.data)
 export const getRemixChain   = (postId) => api.get(`/social/posts/${postId}/remix-chain`).then(r => r.data)
 
+// ── Search ─────────────────────────────────────────────────────────────────
+export const searchUsers = (q) => api.get('/social/users/search', { params: { q } }).then(r => r.data)
+
 // ── Vibes ──────────────────────────────────────────────────────────────────
 export const getVibes        = ()       => api.get('/social/vibes').then(r => r.data)
 export const getTrendingVibes = (params) => api.get('/social/vibes/trending', { params }).then(r => r.data)

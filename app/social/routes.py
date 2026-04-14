@@ -358,6 +358,58 @@ def my_style_dna():
     return jsonify(dna.to_dict()), 200
 
 
+@social_bp.route("/users/search", methods=["GET"])
+@jwt_required()
+def search_users():
+    """
+    GET /social/users/search?q=<query>&limit=10
+
+    LIKE search on username and name. Excludes the requesting user.
+    Returns users ordered by follower_count desc (most established first).
+    Minimum 2 characters required to prevent full-table scans.
+    """
+    current_user_id = int(get_jwt_identity())
+    q = request.args.get("q", "").strip()[:50]
+
+    if len(q) < 2:
+        return jsonify({"users": []}), 200
+
+    limit = min(int(request.args.get("limit", 10)), 20)
+    pattern = f"%{q}%"
+
+    users = (
+        User.query
+        .filter(
+            User.id != current_user_id,
+            User.username.isnot(None),
+            db.or_(
+                User.username.ilike(pattern),
+                User.name.ilike(pattern),
+            )
+        )
+        .order_by(User.follower_count.desc())
+        .limit(limit)
+        .all()
+    )
+
+    # Bulk-check which users the requester already follows
+    following_ids = {
+        r.following_id
+        for r in Follow.query
+        .filter_by(follower_id=current_user_id)
+        .with_entities(Follow.following_id)
+        .all()
+    }
+
+    result = []
+    for u in users:
+        d = u.social_dict()
+        d["is_following"] = u.id in following_ids
+        result.append(d)
+
+    return jsonify({"users": result}), 200
+
+
 @social_bp.route("/users/<username>", methods=["GET"])
 def get_public_profile(username: str):
     """Public profile page — no auth required for public accounts."""
