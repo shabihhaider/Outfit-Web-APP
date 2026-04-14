@@ -131,6 +131,7 @@ def item_db_to_engine(item_db) -> "WardrobeItem":  # noqa: F821
         dominant_hue = item_db.color_hue,               # DB: color_hue → engine: dominant_hue
         dominant_sat = item_db.color_sat,               # DB: color_sat → engine: dominant_sat
         dominant_val = item_db.color_val,               # DB: color_val → engine: dominant_val
+        sub_category = getattr(item_db, "sub_category", None),
     )
 
 

@@ -102,6 +102,7 @@ class WardrobeItem(BaseModel):
     dominant_hue: float = Field(..., ge=0.0, le=360.0)
     dominant_sat: float = Field(..., ge=0.0, le=1.0)
     dominant_val: float = Field(..., ge=0.0, le=1.0)
+    sub_category: Optional[str] = None
 
     @field_validator("embedding")
     @classmethod
@@ -139,6 +140,7 @@ class OutfitCandidate(BaseModel):
     color_score: float = Field(..., ge=0.0, le=1.0)
     weather_score: float = Field(..., ge=0.0, le=1.0)
     cohesion_score: float = Field(..., ge=0.0, le=1.0)
+    synergy_score: float = Field(..., ge=0.0, le=1.0)
     final_score: float = Field(..., ge=0.0, le=1.0)
     confidence: Confidence
 
@@ -162,6 +164,7 @@ class OutfitCandidate(BaseModel):
             "color": round(self.color_score, 3),
             "weather": round(self.weather_score, 3),
             "cohesion": round(self.cohesion_score, 3),
+            "synergy": round(self.synergy_score, 3),
             "final": round(self.final_score, 3),
         }
 

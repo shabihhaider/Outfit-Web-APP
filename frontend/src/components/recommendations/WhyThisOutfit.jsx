@@ -35,10 +35,11 @@ export default function WhyThisOutfit({ outfit, defaultOpen = false }) {
                   {line}
                 </div>
               ))}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
-                <ScoreBar label="Style" value={outfit.model2_score} weight="45%" />
-                <ScoreBar label="Color" value={outfit.color_score} weight="25%" />
-                <ScoreBar label="Cohesion" value={outfit.cohesion_score} weight="15%" />
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-3">
+                <ScoreBar label="Style" value={outfit.model2_score} weight="35%" />
+                <ScoreBar label="Synergy" value={outfit.synergy_score} weight="20%" />
+                <ScoreBar label="Color" value={outfit.color_score} weight="20%" />
+                <ScoreBar label="Cohesion" value={outfit.cohesion_score} weight="10%" />
                 <ScoreBar label="Weather" value={outfit.weather_score} weight="15%" />
               </div>
             </div>

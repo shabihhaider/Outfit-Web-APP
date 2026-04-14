@@ -57,6 +57,7 @@ def _make_outfit(item_ids: list[int], categories: list[Category],
         color_score    = 0.90,
         weather_score  = 0.85,
         cohesion_score = 0.80,
+        synergy_score  = 0.50,
         confidence     = "high",
     )
 

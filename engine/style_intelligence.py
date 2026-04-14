@@ -36,6 +36,20 @@ SYNERGY_BONUSES = {
     frozenset({"top:kameez", "bottom:shalwar"}): 0.50,
     frozenset({"top:kurta", "shoes:chappal"}): 0.40,
     frozenset({"outwear:sherwani", "bottom:shalwar"}): 0.50,
+
+    # ── Fusion (South Asian + Western mix) ────────────────────────────────
+    frozenset({"top:kurta", "bottom:jeans"}): 0.30,
+    frozenset({"top:kurta", "bottom:chinos"}): 0.30,
+    frozenset({"top:kameez", "bottom:jeans"}): 0.25,
+
+    # ── Smart Casual / Modern (Global) ────────────────────────────────────
+    frozenset({"outwear:blazer", "bottom:jeans"}): 0.35,
+    frozenset({"outwear:blazer", "bottom:chinos"}): 0.40,
+    frozenset({"outwear:blazer", "top:casual_tshirt"}): 0.30,  # Modern smart casual
+    frozenset({"top:casual_tshirt", "bottom:shorts"}): 0.30,   # Summer casual
+
+    # ── Athleisure ────────────────────────────────────────────────────────
+    frozenset({"top:hoodie", "bottom:jeans"}): 0.30,
 }
 
 
