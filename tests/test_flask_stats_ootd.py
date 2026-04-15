@@ -55,6 +55,7 @@ def _make_mock_outfit(item_ids, score=0.78, confidence="high"):
     mock.color_score = 0.71
     mock.weather_score = 0.85
     mock.cohesion_score = 0.76
+    mock.synergy_score = 0.75  # Added required synergy_score field
     mock.template_id = OutfitTemplate.B
 
     items = []
@@ -353,3 +354,4 @@ class TestOOTD:
         assert "model2_score" in body["outfit"]
         assert "color_score" in body["outfit"]
         assert "weather_score" in body["outfit"]
+        assert "synergy_score" in body["outfit"]  # Added synergy score validation

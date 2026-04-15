@@ -1,0 +1,147 @@
+% APA 7 (student) research paper
+% Generated from Proposal.pdf scope on 2026-04-15
+
+\documentclass[stu,man]{apa7}
+
+\usepackage[utf8]{inputenc}
+\usepackage{csquotes}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+% Use BibLaTeX for APA references
+\usepackage[style=apa,backend=biber,sortcites=true,sorting=nyt]{biblatex}
+\DeclareLanguageMapping{english}{english-apa}
+\addbibresource{references.bib}
+
+\title{Outfit Recommendation System Based on Weather: \texorpdfstring{\\}{ }An AI-Assisted Virtual Wardrobe with Rule-Based Comfort Scoring}
+
+\authorsnames{Talha Mushtaq \and Fizza Ahmad \and Muhammad Shabih Haider \and Shahzaib Sajid}
+\authorsaffiliations{Department of Computer Science, University of Engineering and Technology Lahore}
+
+\authornote{Supervisor: Ms. Darakhshan Bokhat\\
+Session: 2022--2026}
+
+\abstract{Choosing what to wear is a daily decision that becomes harder when weather conditions vary and when users lack explicit styling knowledge. This paper presents an AI-assisted web application that recommends outfits using the user\textquotesingle s own wardrobe, real-time weather data, and foundational fashion principles.
+The system combines (a) wardrobe management for user-uploaded clothing images, (b) visual attribute extraction and color analysis, and (c) an explainable rule-based scoring layer that operationalizes comfort and seasonal guidelines (e.g., thermal and water-vapour resistance concepts from ISO testing practice) to produce climate-appropriate, aesthetically coherent combinations.
+Unlike generic fashion recommenders that ignore ownership constraints, the proposed approach generates recommendations grounded in the clothing items the user actually owns, improving practicality and user trust.
+We describe the end-to-end methodology, implementation choices, and validation evidence from automated tests of the rule-based engine and weather scoring components.}
+
+\keywords{fashion recommendation, weather-aware recommendation, virtual wardrobe, rule-based scoring, computer vision}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+Daily outfit selection is often treated as a simple routine, yet it becomes a recurring decision problem under shifting weather conditions and diverse social contexts.
+Many existing applications provide generic outfit templates or rely on catalog inventories rather than personal wardrobes, which can make recommendations impractical.
+A more useful recommender must (1) be constrained by what the user actually owns, (2) adapt to real-time weather inputs, and (3) provide intelligible reasoning so users can trust and refine suggestions.
+
+This research proposes an AI-assisted outfit recommendation system that integrates user wardrobe images with live weather data and a transparent scoring layer.
+The proposal is aligned with modern computer vision foundations for attribute learning \parencite{NIPS2012_c399862d} and leverages established fashion datasets such as DeepFashion \parencite{liuLQWTcvpr16DeepFashion} and DeepFashion-MultiModal \parencite{deepfashionmultimodal}.
+The resulting system targets daily use: recommending outfits optimized for comfort, practicality, and visual coherence.
+
+\section{Related Work}
+Modern fashion recommendation systems employ a variety of AI techniques to improve personalization and context-awareness \parencite{fashion2023review}.
+A key challenge in outfit recommendation is the integration of visual perception with contextual reasoning (weather, occasion, personal preference).
+
+Large-scale labeled datasets enable learning clothing categories and attributes from images.
+DeepFashion provides rich annotations (categories, attributes, bounding boxes, and landmarks) supporting recognition and retrieval tasks \parencite{liuLQWTcvpr16DeepFashion}.
+DeepFashion-MultiModal extends fashion understanding with multi-modal labels such as parsing masks, keypoints, and clothing texture attributes \parencite{deepfashionmultimodal,jiang2022text2human}.
+
+Weather-aware recommendations depend on reliable meteorological data sources.
+In practice, production systems often integrate commercial weather APIs that provide current conditions and forecasts via standardized JSON responses \parencite{openweatherapi}.
+Existing commercial applications (e.g., outfit planning apps and wardrobe management systems) offer varying levels of weather awareness, but many lack transparent reasoning or scientific grounding in comfort standards.
+
+From a systems perspective, training and deploying deep models frequently relies on frameworks such as TensorFlow \parencite{abadi2016tensorflow}.
+For classical machine learning utilities (e.g., clustering and baseline models), scikit-learn provides a widely used, well-documented implementation ecosystem \parencite{pedregosa2011scikit}.
+Finally, clustering of mixed numeric and categorical features (e.g., weather variables and occasion labels) can be addressed by extensions to $k$-means that explicitly handle categorical values \parencite{huang1998extensions}.
+
+\section{Method}
+\subsection{Participants}
+This work is a system design and engineering study.
+No human-subject experiment was conducted for the current submission.
+The system is intended for end users managing personal wardrobes; formal user studies are planned as future work.
+
+\subsection{Materials}
+\textbf{Wardrobe data.} Users provide images of clothing items (e.g., tops, bottoms, outerwear). Images are stored as part of a virtual wardrobe and associated with inferred attributes (color, type, and comfort-related properties).
+
+\textbf{Training and reference data.} For model development and benchmarking, we reference publicly available fashion datasets such as DeepFashion \parencite{liuLQWTcvpr16DeepFashion} and DeepFashion-MultiModal \parencite{deepfashionmultimodal}.
+
+\textbf{Weather data.} Real-time meteorological variables (temperature, humidity, and conditions such as rain) are fetched from OpenWeather APIs \parencite{openweatherapi}.
+
+\textbf{Software stack.} The system is implemented in Python with a web backend and an ML pipeline.
+TensorFlow supports deep learning workflows \parencite{abadi2016tensorflow}; OpenCV is used for image preprocessing utilities \parencite{opencvdocs}; and scikit-learn supports classical ML components \parencite{pedregosa2011scikit}.
+
+\subsection{Design}
+The proposed architecture is a hybrid of learned perception and explainable decision rules:
+\begin{enumerate}
+  \item \textbf{Perception layer}: attribute extraction from images (e.g., garment category, sleeve length, and visual features as proxies for fabric type inference).
+  \item \textbf{Context layer}: real-time weather features (temperature, humidity, precipitation, wind).
+  \item \textbf{Rule-based scoring layer}: interpretable rules combining color harmony constraints and comfort heuristics.
+  \item \textbf{Outfit generation layer}: constrained combinatorial search over the user\textquotesingle s wardrobe to produce outfits (top + bottom + optional outerwear) ranked by total score.
+\end{enumerate}
+
+The scoring layer is designed to be explainable: each recommendation can be decomposed into contextual sub-scores (e.g., warmth suitability, breathability suitability, rain appropriateness, color compatibility, and occasion appropriateness such as casual versus formal settings).
+Comfort evaluation is inspired by textile testing concepts for thermal and evaporative resistance \parencite{iso11092}, but implemented as a practical rule engine rather than a laboratory measurement instrument.
+
+\section{Procedure}
+\subsection{Requirement Gathering}
+We derive core requirements from the project proposal: (1) personalized recommendations based on owned wardrobe items, (2) weather-aware adaptation, (3) color-theory matching, and (4) scientifically informed comfort rules.
+
+\subsection{Data Collection and Preparation}
+Public datasets (e.g., DeepFashion) provide labeled images for attribute learning and validation \parencite{liuLQWTcvpr16DeepFashion}.
+For user wardrobes, images are normalized through a preprocessing pipeline (resizing, background normalization when available, and color extraction).
+
+\subsection{Attribute Extraction}
+A convolutional neural network (CNN) is used to infer visual attributes.
+CNN-based representation learning is motivated by established results in large-scale image classification \parencite{NIPS2012_c399862d}.
+
+\subsection{Weather Integration}
+Weather data are retrieved on demand and transformed into a feature vector used by the scoring layer (e.g., mapping precipitation to rain-protection requirements).
+
+\subsection{Outfit Scoring and Ranking}
+Candidate outfits are enumerated from wardrobe categories.
+Each candidate receives a total score:
+\[
+S = w_c S_{color} + w_w S_{weather} + w_k S_{comfort} + w_o S_{occasion},
+\]
+where $w_c, w_w, w_k, w_o$ denote configurable weights for color harmony, weather suitability, comfort, and occasion appropriateness respectively, and the corresponding $S$ components are normalized to $[0, 1]$.
+The system returns the top-ranked outfits and the explanation trace of contributing factors.
+
+\section{Results}
+Because the current submission focuses on an engineering prototype, we report verifiable software validation results rather than user-study outcomes.
+
+\subsection{Automated Tests}
+A focused subset of unit tests covering weather scoring, color scoring, and rule-based constraints was executed under Python 3.11.
+All tests in the selected suite passed (43/43) in a single run (0.78 seconds).
+This provides evidence that core logic remains consistent across representative inputs and edge cases.
+
+\subsection{Functional Output}
+Given a populated wardrobe and a weather snapshot, the system produces a ranked list of outfits.
+Each recommendation includes: (1) the selected garment items, (2) total score, and (3) a breakdown of weather suitability and comfort logic.
+
+\section{Discussion}
+The proposed system directly addresses common limitations of generic outfit recommenders by constraining suggestions to the user\textquotesingle s owned wardrobe and by incorporating live weather context \parencite{openweatherapi}.
+The explainable scoring layer improves transparency by exposing reasons for each recommendation (e.g., “layering suggested due to low temperature” or “avoid absorbent fabrics during rain”).
+
+\subsection{Limitations}
+This work has several practical constraints:
+\begin{itemize}
+  \item \textbf{Fabric inference}: fabric type is difficult to infer reliably from images alone; learned predictions and rule assumptions can be uncertain.
+  \item \textbf{Dataset bias}: public fashion datasets may not represent local clothing styles or cultural norms; this can affect generalization.
+  \item \textbf{Weather granularity}: microclimates and indoor/outdoor transitions are not fully captured by a single API call.
+\end{itemize}
+
+\subsection{Future Work}
+Future improvements include: (1) user-feedback loops for personalization, (2) occasion-aware context with calendar integration, (3) virtual try-on integration for confidence before wearing, and (4) rigorous user studies measuring decision time reduction and perceived recommendation quality.
+
+\section{Conclusion}
+This paper presents a weather-aware outfit recommendation system that combines wardrobe-constrained outfit generation with an explainable, rule-based comfort and style scoring layer.
+Grounded in established datasets and modern ML tooling \parencite{liuLQWTcvpr16DeepFashion,abadi2016tensorflow,pedregosa2011scikit}, the proposed approach prioritizes practicality, transparency, and context awareness.
+The system\textquotesingle s core scoring logic is validated through automated tests of the rule and weather components.
+
+\printbibliography
+
+\end{document}
