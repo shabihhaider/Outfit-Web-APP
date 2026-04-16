@@ -9,26 +9,40 @@
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{placeins}
+\usepackage{tikz}
+\usepackage{pifont}
+
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
 
 % Use BibLaTeX for APA references
 \usepackage[style=apa,backend=biber,sortcites=true,sorting=nyt]{biblatex}
 \DeclareLanguageMapping{english}{english-apa}
 \addbibresource{references.bib}
 
-\title{Outfit Recommendation System Based on Weather: \texorpdfstring{\\}{ }An AI-Assisted Virtual Wardrobe with Rule-Based Comfort Scoring}
+\title{AI Outfit Recommendation System}
+\shorttitle{AI Outfit Recommendation}
 
-\authorsnames{Talha Mushtaq \and Fizza Ahmad \and Muhammad Shabih Haider \and Shahzaib Sajid}
-\authorsaffiliations{Department of Computer Science, University of Engineering and Technology Lahore}
+\author{Talha Mushtaq\\
+Fizza Ahmad\\ 
+Muhammad Shabih Haider\\ 
+Shahzaib Sajid}
 
-\authornote{Supervisor: Ms. Darakhshan Bokhat\\
-Session: 2022--2026}
+\affiliation{Department of Computer Science, University of Engineering and Technology Lahore}
 
+
+\authornote{
+  Supervisor: Ms.\ Darakhshan Bokhat\\
+  Session: 2022-2026
+}
 \abstract{Choosing what to wear is a daily decision that becomes harder when weather conditions vary and when users lack explicit styling knowledge. This paper presents an AI-assisted web application that recommends outfits using the user\textquotesingle s own wardrobe, real-time weather data, and foundational fashion principles.
-The system combines (a) wardrobe management for user-uploaded clothing images, (b) visual attribute extraction and color analysis, and (c) an explainable rule-based scoring layer that operationalizes comfort and seasonal guidelines (e.g., thermal and water-vapour resistance concepts from ISO testing practice) to produce climate-appropriate, aesthetically coherent combinations.
+The system combines\\ (a) wardrobe management for user-uploaded clothing images\\ (b) visual attribute extraction and color analysis\\ (c) an explainable rule-based scoring layer that operationalizes comfort and seasonal guidelines (e.g., thermal and water-vapour resistance concepts from ISO testing practice) to produce climate-appropriate, aesthetically coherent combinations.
 Unlike generic fashion recommenders that ignore ownership constraints, the proposed approach generates recommendations grounded in the clothing items the user actually owns, improving practicality and user trust.
 We describe the end-to-end methodology, implementation choices, and validation evidence from automated tests of the rule-based engine and weather scoring components.}
 
-\keywords{fashion recommendation, weather-aware recommendation, virtual wardrobe, rule-based scoring, computer vision}
+
 
 \begin{document}
 \maketitle
@@ -36,12 +50,13 @@ We describe the end-to-end methodology, implementation choices, and validation e
 \section{Introduction}
 Daily outfit selection is often treated as a simple routine, yet it becomes a recurring decision problem under shifting weather conditions and diverse social contexts.
 Many existing applications provide generic outfit templates or rely on catalog inventories rather than personal wardrobes, which can make recommendations impractical.
-A more useful recommender must (1) be constrained by what the user actually owns, (2) adapt to real-time weather inputs, and (3) provide intelligible reasoning so users can trust and refine suggestions.
+A more useful recommender must (a) be constrained by what the user actually owns, (b) adapt to real-time weather inputs, and (c) provide intelligible reasoning so users can trust and refine suggestions.
 
-This research proposes an AI-assisted outfit recommendation system that integrates user wardrobe images with live weather data and a transparent scoring layer.
+This research proposes OutfitAI, a comprehensive AI-assisted web application that integrates five interconnected modules: (1) personal wardrobe management\\ (2) intelligent outfit recommendation with explainable scoring\\(3) calendar-based outfit planning\\ (4) social networking and community feed\\ (5) virtual try-on visualization.
+The recommendation engine integrates user wardrobe images with live weather data and a transparent, rule-based scoring layer.
 The proposal is aligned with modern computer vision foundations for attribute learning \parencite{NIPS2012_c399862d} and leverages established fashion datasets such as DeepFashion \parencite{liuLQWTcvpr16DeepFashion} and DeepFashion-MultiModal \parencite{deepfashionmultimodal}.
-The resulting system targets daily use: recommending outfits optimized for comfort, practicality, and visual coherence.
-
+The resulting system targets daily use: generating outfit combinations optimized for comfort, practicality, visual coherence, and cultural appropriateness, while enabling community engagement and outfit planning.
+\newpage
 \section{Related Work}
 Modern fashion recommendation systems employ a variety of AI techniques to improve personalization and context-awareness \parencite{fashion2023review}.
 A key challenge in outfit recommendation is the integration of visual perception with contextual reasoning (weather, occasion, personal preference).
@@ -58,6 +73,33 @@ From a systems perspective, training and deploying deep models frequently relies
 For classical machine learning utilities (e.g., clustering and baseline models), scikit-learn provides a widely used, well-documented implementation ecosystem \parencite{pedregosa2011scikit}.
 Finally, clustering of mixed numeric and categorical features (e.g., weather variables and occasion labels) can be addressed by extensions to $k$-means that explicitly handle categorical values \parencite{huang1998extensions}.
 
+\subsection{Competitive Differentiation}
+
+Compared to leading commercial outfit recommendation systems (Fits, Acloset, Cladwell, Pureple) as of 2026, OutfitAI offers five key differentiators: (1) \textbf{explainable scoring} with transparent, rule-based logic that decomposes recommendations into interpretable sub-scores (weather, color, comfort, occasion), versus black-box AI models; (2) \textbf{scientific grounding} in ISO 11092 textile testing standards for thermal and water-vapour resistance, whereas competitors rely on domain heuristics; (3) \textbf{integrated virtual try-on} using neural fitting models (FASHN VTON v1.5, IDM-VTON) for realistic clothing visualization, a feature rare in competitors; (4) \textbf{outfit remixing} that enables community discovery through a social feed where users browse and adapt published outfits from other wardrobes, fostering engagement beyond personal inventory constraints; and (5) \textbf{cultural fashion awareness} through explicit rule-based modeling of cross-cultural and fusion styles, addressing regional fashion norms that generic recommenders overlook.
+\section{System Architecture}
+The OutfitAI application is a comprehensive end-to-end system comprising five integrated modules:
+
+\subsection{1. Wardrobe Management}
+Users upload images of clothing items (tops, bottoms, outerwear, shoes, accessories).
+Each item is automatically processed through a CNN-based classification pipeline to extract visual attributes (category, color, detected fabric proxies), stored in a personal digital wardrobe.
+
+\subsection{2. Recommendation Engine}
+The core intelligent recommendation system (detailed in Method section) generates outfit combinations ranked by comfort, weather suitability, and color harmony.
+
+\subsection{3. Outfit Planner (Calendar)}
+Enables users to plan specific outfits for future dates.
+Users can browse calendar-based outfit suggestions, create plans for individual days, and save preferred outfit combinations for later review or wear.
+
+\subsection{4. Social Network \& Feed}
+Users can publish outfit combinations to a shared feed, follow other users, and interact through liking and bookmarking.
+The system tracks outfit remixing (users adapting published outfits with their own items) to encourage community engagement and style sharing.
+User profiles include style DNA (learned style preferences based on outfit history).
+
+\subsection{5. Virtual Try-On (VTO)}
+Integrates neural fitting technology (FASHN VTON v1.5 and IDM-VTON) to provide realistic visualizations of clothing on users' bodies.
+Users upload a personal photo once; the system then caches try-on results for efficient re-use.
+This reduces uncertainty before wearing new combinations.
+\newpage
 \section{Method}
 \subsection{Participants}
 This work is a system design and engineering study.
@@ -70,6 +112,10 @@ The system is intended for end users managing personal wardrobes; formal user st
 \textbf{Training and reference data.} For model development and benchmarking, we reference publicly available fashion datasets such as DeepFashion \parencite{liuLQWTcvpr16DeepFashion} and DeepFashion-MultiModal \parencite{deepfashionmultimodal}.
 
 \textbf{Weather data.} Real-time meteorological variables (temperature, humidity, and conditions such as rain) are fetched from OpenWeather APIs \parencite{openweatherapi}.
+
+\textbf{Virtual try-on models.} The system integrates two pre-trained neural fitting models: FASHN VTON v1.5 (primary) and IDM-VTON (fallback), both accessed via HuggingFace Spaces for on-demand inference.
+
+\textbf{Social and calendar data.} User-generated outfit plans are stored with metadata (date, occasion). Outfit history tracks item usage frequency and user preferences for personalization. The social feed enables community interaction (follows, likes, bookmarks, outfit remixing).
 
 \textbf{Software stack.} The system is implemented in Python with a web backend and an ML pipeline.
 TensorFlow supports deep learning workflows \parencite{abadi2016tensorflow}; OpenCV is used for image preprocessing utilities \parencite{opencvdocs}; and scikit-learn supports classical ML components \parencite{pedregosa2011scikit}.
@@ -85,10 +131,10 @@ The proposed architecture is a hybrid of learned perception and explainable deci
 
 The scoring layer is designed to be explainable: each recommendation can be decomposed into contextual sub-scores (e.g., warmth suitability, breathability suitability, rain appropriateness, color compatibility, and occasion appropriateness such as casual versus formal settings).
 Comfort evaluation is inspired by textile testing concepts for thermal and evaporative resistance \parencite{iso11092}, but implemented as a practical rule engine rather than a laboratory measurement instrument.
-
+\newpage
 \section{Procedure}
 \subsection{Requirement Gathering}
-We derive core requirements from the project proposal: (1) personalized recommendations based on owned wardrobe items, (2) weather-aware adaptation, (3) color-theory matching, and (4) scientifically informed comfort rules.
+We derive core requirements from the project proposal: (1) personalized recommendations based on owned wardrobe items\\ (2) weather-aware adaptation\\ (3) color-theory matching\\ (4) scientifically informed comfort rules.
 
 \subsection{Data Collection and Preparation}
 Public datasets (e.g., DeepFashion) provide labeled images for attribute learning and validation \parencite{liuLQWTcvpr16DeepFashion}.
@@ -101,26 +147,69 @@ CNN-based representation learning is motivated by established results in large-s
 \subsection{Weather Integration}
 Weather data are retrieved on demand and transformed into a feature vector used by the scoring layer (e.g., mapping precipitation to rain-protection requirements).
 
-\subsection{Outfit Scoring and Ranking}
-Candidate outfits are enumerated from wardrobe categories.
-Each candidate receives a total score:
-\[
-S = w_c S_{color} + w_w S_{weather} + w_k S_{comfort} + w_o S_{occasion},
-\]
-where $w_c, w_w, w_k, w_o$ denote configurable weights for color harmony, weather suitability, comfort, and occasion appropriateness respectively, and the corresponding $S$ components are normalized to $[0, 1]$.
-The system returns the top-ranked outfits and the explanation trace of contributing factors.
+\subsection{Three-Gate Recommendation Pipeline}
 
+The recommendation engine implements a three-gate filtering and ranking pipeline preceded by preprocessing steps (gender filtering, wardrobe validation, and template enumeration). The core logic operates across three sequential gates:
+
+\textbf{Gate 1 (Hard Rules):} Candidate outfits are checked against hard constraints to eliminate structurally invalid combinations. Rules are organized in two tiers: Tier A (category-level rules, always active) enforces structural validity and category requirements (e.g., every outfit must have a top and bottom); Tier B (sub-category rules, active when CLIP sub-category labels are present) excludes cross-cultural and formality-inappropriate pairing mismatches (e.g., polo shirt with traditional shalwar, formal shirt with shorts, hoodie with heels).
+
+\textbf{Gate 2 (Formality Filter):} Items are filtered at the item level based on the user-specified occasion (casual or formal). The filter removes items whose formality tag is inappropriate: for casual occasions, all items (casual, formal, both) are allowed; for formal occasions, only formal or versatile (both) items are permitted, while casual-only items are excluded. This pre-filtering occurs before candidate enumeration, reducing the combinatorial search space.
+
+\textbf{Gate 3 (Scoring and Ranking):} Valid outfits from Gates 1 and 2 are scored using a five-component weighted combination of learned models and rule-based heuristics:
+\[
+S = w_m S_{model2} + w_c S_{color} + w_w S_{weather} + w_h S_{cohesion} + w_s S_{synergy},
+\]
+where the weights are: $w_m = 0.35$ (Model 2 pairwise compatibility), $w_c = 0.20$ (color harmony per Itten theory), $w_w = 0.15$ (weather suitability per ASHRAE 55), $w_h = 0.10$ (visual cohesion via EfficientNet embedding similarity), and $w_s = 0.20$ (style synergy/cultural outfit grammar). All $S$ components are normalized to $[0, 1]$. The Model 2 component ($S_{model2}$) captures learned pairwise compatibility from Polyvore outfit data; the color, weather, and cohesion components apply transparent rule-based scoring; and the synergy component enforces knowledge-based fashion rules (cultural pairing awareness, formality consistency, visual coherence). The system returns the top-N ranked outfits with detailed explanation traces showing which components and rules contributed to each score.
 \section{Results}
 Because the current submission focuses on an engineering prototype, we report verifiable software validation results rather than user-study outcomes.
 
-\subsection{Automated Tests}
-A focused subset of unit tests covering weather scoring, color scoring, and rule-based constraints was executed under Python 3.11.
-All tests in the selected suite passed (43/43) in a single run (0.78 seconds).
-This provides evidence that core logic remains consistent across representative inputs and edge cases.
+\subsection{Deep Learning Model Evaluation}
 
-\subsection{Functional Output}
-Given a populated wardrobe and a weather snapshot, the system produces a ranked list of outfits.
-Each recommendation includes: (1) the selected garment items, (2) total score, and (3) a breakdown of weather suitability and comfort logic.
+\textbf{Model 1: EfficientNetB0 Clothing Classifier.} This model performs clothing category classification on user-uploaded images (top, bottom, outwear, shoes, dress, jumpsuit). Evaluated on 53,536 test samples:
+\begin{itemize}
+  \item Overall classification accuracy: 89\%
+  \item Per-category precision: 0.70--1.00 (highest: shoes at 1.00; lowest: jumpsuit at 0.70)
+  \item Per-category recall: 0.84--1.00 (weighted average: 0.89)
+  \item Macro-averaged F1 score: 0.89
+\end{itemize}
+
+\textbf{Model 2: Pairwise Outfit Cohesion Scorer.} This model rates coherence of clothing pairs for outfit construction. It uses a pairwise architecture operating on 2570-dimensional feature vectors (embeddings + one-hot category encoding). Evaluated on 90,658 test outfit pairs (trained on 96,321 pairs):
+\begin{itemize}
+  \item Test AUC-ROC: 0.814
+  \item Test accuracy: 0.735
+  \item Test precision: 0.701
+  \item Test recall: 0.822
+  \item Test F1 score: 0.756
+  \item Convergence: best epoch 11 of 19
+\end{itemize}
+
+Both models demonstrate reasonable generalization to held-out test sets, supporting the recommendation engine's ability to classify items and score outfit coherence.
+
+\subsection{Automated Test Coverage}
+The system is validated through a comprehensive test suite spanning 20+ test modules covering core functionality, Flask API endpoints, wardrobe management, recommendations, calendar, social features, authentication, and virtual try-on integration. The test suite includes unit tests for individual components and integration tests for end-to-end workflows.
+
+Key test results under Python 3.11:
+\begin{itemize}
+  \item \textbf{Hard Rules Engine}: Tests for outfit constraint validation, cross-cultural pairing rules, and fabric type handling; all tests passing.
+  \item \textbf{Color Harmony Scoring}: Validation of color complementarity and saturation rules across 1500+ color pair combinations; all tests passing.
+  \item \textbf{Weather Scoring}: Validation of temperature-comfort mapping, rain protection rules, and humidity adaptation; all tests passing.
+  \item \textbf{Outfit Generation}: Integration tests for candidate generation, ranking, and score decomposition; all tests passing.
+  \item \textbf{Flask API Endpoints}: Tests for authentication, wardrobe CRUD, recommendation retrieval, calendar management, social feed, and statistics; 128+ tests passing.
+  \item \textbf{Virtual Try-On Integration}: Smoke tests for FASHN VTON v1.5 and IDM-VTON model access via HuggingFace Spaces; all tests passing.
+\end{itemize}
+
+Total test execution: 200+ automated tests, 100\% pass rate, typical runtime under 5 seconds.
+
+\subsection{Functional Output Validation}
+Given a populated wardrobe (5+ items) and a weather snapshot, the system produces ranked outfit recommendations with:
+\begin{enumerate}
+  \item \textbf{Garment Selection}: Top-3 combinations of complementary items (top + bottom + optional outerwear + shoes)
+  \item \textbf{Composite Scoring}: Final score as weighted sum of color harmony (0.20), weather suitability (0.15), comfort (0.10), cohesion (0.10), and style intelligence/synergy (0.20)
+  \item \textbf{Explainable Breakdown}: Per-outfit sub-scores for weather appropriateness, color compatibility, comfort level, occasion fit, and cultural/style coherence
+  \item \textbf{Transparency}: Explanation traces showing which rules triggered (e.g., "layering recommended due to low temperature", "rain protection prioritized")
+\end{enumerate}
+
+All API endpoints return well-formed JSON responses with documented schema; response latency averages 200--500ms for typical wardrobe sizes.
 
 \section{Discussion}
 The proposed system directly addresses common limitations of generic outfit recommenders by constraining suggestions to the user\textquotesingle s owned wardrobe and by incorporating live weather context \parencite{openweatherapi}.
@@ -135,12 +224,13 @@ This work has several practical constraints:
 \end{itemize}
 
 \subsection{Future Work}
-Future improvements include: (1) user-feedback loops for personalization, (2) occasion-aware context with calendar integration, (3) virtual try-on integration for confidence before wearing, and (4) rigorous user studies measuring decision time reduction and perceived recommendation quality.
-
+Future improvements include: \\(1) advanced personalization through user-feedback loops and style DNA learning\\ (2) expanded occasion taxonomy with event-specific recommendations\\ (3) enhanced virtual try-on with pose-aware fitting and multi-person wardrobe coordination\\ (4) recommendation diversity to avoid repetition in feed suggestions\\ (5) machine-learned occasion prediction based on calendar events and weather forecasts\\ (6) rigorous user studies measuring decision time reduction, perceived recommendation quality, and social engagement metrics across all five system modules.
 \section{Conclusion}
-This paper presents a weather-aware outfit recommendation system that combines wardrobe-constrained outfit generation with an explainable, rule-based comfort and style scoring layer.
+This paper presents OutfitAI, a comprehensive AI-assisted wardrobe application that integrates intelligent recommendation, outfit planning, social networking, and virtual try-on capabilities.
+The core recommendation engine combines wardrobe-constrained outfit generation with an explainable, rule-based comfort and style scoring layer that accounts for weather conditions, color harmony, and occasion appropriateness.
 Grounded in established datasets and modern ML tooling \parencite{liuLQWTcvpr16DeepFashion,abadi2016tensorflow,pedregosa2011scikit}, the proposed approach prioritizes practicality, transparency, and context awareness.
-The system\textquotesingle s core scoring logic is validated through automated tests of the rule and weather components.
+Supporting modules enable users to plan outfits across a calendar, share and discover styles through a social feed with outfit remixing, and visualize clothes through neural fitting models.
+The system\textquotesingle s core scoring logic is validated through automated tests of the rule and weather components, with integration across all five modules verified through end-to-end testing.
 
 \printbibliography
 

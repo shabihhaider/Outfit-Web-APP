@@ -54,6 +54,10 @@ export default function RecommendationsPage() {
   function setOccasion(val) {
     setOccasionRaw(val)
     sessionStorage.setItem('rec_occasion', val)
+    // Clear stale results and error state from a different occasion
+    setResultsRaw(null)
+    sessionStorage.removeItem('rec_results')
+    mutation.reset()
   }
   function setWeatherParams(val) {
     setWeatherParamsRaw(val)
@@ -174,9 +178,9 @@ export default function RecommendationsPage() {
               message={
                 mutation.error?.response?.data?.error ||
                 mutation.error?.response?.data?.message ||
-                (mutation.error?.response?.status === 422 && occasion !== 'casual'
+                (mutation.error?.response?.status === 422
                   ? `Not enough ${occasion} items in your wardrobe. Go to Wardrobe and edit item formality to tag some as "${occasion}" or "both".`
-                  : 'Could not get recommendations. Make sure your wardrobe has enough items.')
+                  : 'Could not get recommendations. Please try again.')
               }
             />
           )}
