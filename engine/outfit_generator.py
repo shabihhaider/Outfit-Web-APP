@@ -243,7 +243,15 @@ def generate_recommendations(
             "No valid outfit combinations could be generated for this request."
         )
 
-    # Step 8: Sort by final_score descending, return top N
-    # Always return top_n even if all scores are below threshold (GAP-05 fix)
-    candidates.sort(key=lambda x: x.final_score, reverse=True)
-    return candidates[:top_n]
+    # Step 8: Apply completeness bonus, sort, return top N
+    # Outfits with more items get a small bonus so 3-item outfits (with shoes)
+    # rank above 2-item outfits with similar pairwise scores. Without this,
+    # sparse outfits dominate because fewer pairs dilute the model2 average less.
+    COMPLETENESS_BONUS = 0.03  # per item beyond 2
+    boosted: list[tuple[float, OutfitCandidate]] = []
+    for c in candidates:
+        bonus = max(0, len(c.items) - 2) * COMPLETENESS_BONUS
+        boosted.append((c.final_score + bonus, c))
+
+    boosted.sort(key=lambda x: x[0], reverse=True)
+    return [c for _, c in boosted[:top_n]]
