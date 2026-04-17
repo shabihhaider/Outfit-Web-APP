@@ -209,8 +209,10 @@ def generate_recommendations(
     # Single batch prediction for ALL outfits
     if all_vectors:
         batch = np.vstack(all_vectors)
-        logger.info("Batch Model 2 predict: %d vectors (%d outfits)",
-                     batch.shape[0], len(valid_outfits))
+        logger.info(
+            "Batch Model 2 predict: %d vectors (%d outfits)",
+            batch.shape[0], len(valid_outfits),
+        )
         all_predictions = model2.predict(batch, verbose=0).flatten()
     else:
         all_predictions = np.array([])
