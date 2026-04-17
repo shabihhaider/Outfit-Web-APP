@@ -87,12 +87,58 @@ def _score_pair_symmetric(
     return (float(score_ab) + float(score_ba)) / 2.0
 
 
+def build_pair_vectors(outfit: list[WardrobeItem]) -> np.ndarray:
+    """
+    Build symmetric pair feature vectors for all pairs in an outfit.
+
+    Returns a (2*num_pairs, feature_dim) array — two rows per pair (AB + BA).
+    Used by outfit_generator for batch prediction across many outfits at once.
+    """
+    pairs = [
+        (outfit[i], outfit[j])
+        for i in range(len(outfit))
+        for j in range(i + 1, len(outfit))
+    ]
+    if not pairs:
+        return np.empty((0, 0))
+
+    rows = []
+    for a, b in pairs:
+        cat_a = a.category_onehot()
+        cat_b = b.category_onehot()
+        emb_a = a.embedding_array()
+        emb_b = b.embedding_array()
+        rows.append(np.concatenate([emb_a, emb_b, cat_a, cat_b]))
+        rows.append(np.concatenate([emb_b, emb_a, cat_b, cat_a]))
+    return np.array(rows)
+
+
+def model2_score_from_predictions(
+    predictions: np.ndarray,
+    num_pairs: int,
+) -> float:
+    """
+    Compute symmetric average model2 score from a flat predictions array.
+
+    predictions has shape (2*num_pairs,) — alternating AB, BA scores.
+    """
+    if num_pairs == 0:
+        return 0.80
+    total = 0.0
+    for p in range(num_pairs):
+        score_ab = float(predictions[2 * p])
+        score_ba = float(predictions[2 * p + 1])
+        total += (score_ab + score_ba) / 2.0
+    return total / num_pairs
+
+
 # ─── Public API ───────────────────────────────────────────────────────────────
 
 def score_outfit(
     outfit: list[WardrobeItem],
     model2,           # Loaded Keras model
     temp_celsius: float,
+    precomputed_model2_score: float | None = None,
 ) -> OutfitCandidate:
     """
     Score a single outfit across all four Gate 3 components and return an
@@ -103,15 +149,21 @@ def score_outfit(
       2. Color harmony (Itten hue theory + saturation consistency)
       3. Weather CLO comfort (ASHRAE Standard 55)
       4. Visual cohesion (EfficientNet-B0 embedding cosine similarity)
+
+    When precomputed_model2_score is provided, Model 2 inference is skipped
+    (used by batch scoring in outfit_generator for performance).
     """
-    # Model 2: average symmetric pairwise scores across all pairs in the outfit
-    pairs = [
-        (outfit[i], outfit[j])
-        for i in range(len(outfit))
-        for j in range(i + 1, len(outfit))
-    ]
-    pair_scores = [_score_pair_symmetric(a, b, model2) for a, b in pairs]
-    model2_score = sum(pair_scores) / len(pair_scores) if pair_scores else 0.80
+    if precomputed_model2_score is not None:
+        model2_score = precomputed_model2_score
+    else:
+        # Model 2: average symmetric pairwise scores across all pairs
+        pairs = [
+            (outfit[i], outfit[j])
+            for i in range(len(outfit))
+            for j in range(i + 1, len(outfit))
+        ]
+        pair_scores = [_score_pair_symmetric(a, b, model2) for a, b in pairs]
+        model2_score = sum(pair_scores) / len(pair_scores) if pair_scores else 0.80
 
     color_score    = score_outfit_color(outfit)
     weather_score  = score_outfit_weather(outfit, temp_celsius)

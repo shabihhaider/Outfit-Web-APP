@@ -25,9 +25,11 @@ from engine.models import (
     WardrobeItem, OutfitCandidate, OutfitTemplate, Occasion,
     Gender, InsufficientWardrobeError,
 )
+import numpy as np
+
 from engine.hard_rules import passes_hard_rules
 from engine.occasion_filter import filter_by_occasion
-from engine.scorer import score_outfit
+from engine.scorer import score_outfit, build_pair_vectors, model2_score_from_predictions
 
 logger = logging.getLogger(__name__)
 
@@ -155,8 +157,8 @@ def generate_recommendations(
             )
         anchor_cat = anchor_item.category.value  # plain string, e.g. "top"
 
-    # Step 5–7: Enumerate, gate-1 filter, score
-    candidates: list[OutfitCandidate] = []
+    # Step 5–6: Enumerate and gate-1 filter (collect valid outfits before scoring)
+    valid_outfits: list[tuple[list[WardrobeItem], str]] = []  # (outfit, template_id)
 
     for template_id, required_categories in TEMPLATES.items():
         # When anchoring: skip templates that don't use the anchor's category
@@ -188,13 +190,51 @@ def generate_recommendations(
             if not passes_hard_rules(outfit):
                 continue
 
-            # Gate 3: score
-            scored = score_outfit(outfit, model2, temp_celsius)
-            # template_id is already inferred inside score_outfit; set explicitly
-            # using model_copy to stay compatible with Pydantic v2 immutability
-            if scored.template_id.value != template_id:
-                scored = scored.model_copy(update={"template_id": OutfitTemplate(template_id)})
-            candidates.append(scored)
+            valid_outfits.append((outfit, template_id))
+
+    # Step 7: Gate 3 — batch Model 2 scoring (single predict call)
+    # Build all pair vectors across all outfits, run one batch prediction,
+    # then distribute scores back. This collapses ~1800 individual predict()
+    # calls into 1, eliminating per-call TensorFlow overhead.
+    all_vectors = []
+    outfit_pair_counts = []  # how many pairs each outfit has
+
+    for outfit, _ in valid_outfits:
+        vectors = build_pair_vectors(outfit)
+        num_pairs = vectors.shape[0] // 2 if vectors.shape[0] > 0 else 0
+        outfit_pair_counts.append(num_pairs)
+        if vectors.shape[0] > 0:
+            all_vectors.append(vectors)
+
+    # Single batch prediction for ALL outfits
+    if all_vectors:
+        batch = np.vstack(all_vectors)
+        logger.info("Batch Model 2 predict: %d vectors (%d outfits)",
+                     batch.shape[0], len(valid_outfits))
+        all_predictions = model2.predict(batch, verbose=0).flatten()
+    else:
+        all_predictions = np.array([])
+
+    # Distribute predictions back to each outfit and score
+    candidates: list[OutfitCandidate] = []
+    pred_offset = 0
+
+    for idx, (outfit, template_id) in enumerate(valid_outfits):
+        num_pairs = outfit_pair_counts[idx]
+        num_rows = num_pairs * 2
+
+        if num_pairs > 0:
+            outfit_preds = all_predictions[pred_offset:pred_offset + num_rows]
+            pred_offset += num_rows
+            m2_score = model2_score_from_predictions(outfit_preds, num_pairs)
+        else:
+            m2_score = 0.80
+
+        scored = score_outfit(outfit, model2, temp_celsius,
+                              precomputed_model2_score=m2_score)
+        if scored.template_id.value != template_id:
+            scored = scored.model_copy(update={"template_id": OutfitTemplate(template_id)})
+        candidates.append(scored)
 
     if not candidates:
         raise InsufficientWardrobeError(
