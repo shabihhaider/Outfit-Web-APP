@@ -44,7 +44,11 @@ SYNERGY_BONUSES = {
     frozenset({"top:kurta", "bottom:shalwar"}): 0.50,  # Traditional Unity
     frozenset({"top:kameez", "bottom:shalwar"}): 0.50,
     frozenset({"top:kurta", "shoes:chappal"}): 0.40,
+    frozenset({"top:kameez", "shoes:chappal"}): 0.40,  # Traditional women's
     frozenset({"outwear:sherwani", "bottom:shalwar"}): 0.50,
+    frozenset({"outwear:sherwani", "shoes:formal_shoes"}): 0.45,  # Wedding classic
+    frozenset({"outwear:waistcoat", "top:kurta"}): 0.40,  # SA formal layering
+    frozenset({"outwear:waistcoat", "bottom:shalwar"}): 0.35,  # SA formal
 
     # ── Fusion (South Asian + Western mix) ────────────────────────────────
     frozenset({"top:kurta", "bottom:jeans"}): 0.30,
