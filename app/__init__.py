@@ -35,6 +35,10 @@ def create_app(config_name: str = "development") -> Flask:
     bcrypt.init_app(app)
     _origins = app.config.get("CORS_ORIGINS", "*")
     if _origins == "*":
+        import logging as _cors_log
+        _cors_log.getLogger(__name__).warning(
+            "CORS is configured with wildcard (*) — restrict CORS_ORIGINS in production."
+        )
         cors.init_app(app)
     else:
         cors.init_app(app, origins=[o.strip() for o in _origins.split(",")])
