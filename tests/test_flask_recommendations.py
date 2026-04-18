@@ -105,6 +105,8 @@ class TestRecommendations:
             headers=auth_headers,
         )
         assert resp.status_code == 200
+        assert resp.headers.get("Cache-Control") == "private, max-age=60, stale-while-revalidate=300"
+        assert "Authorization" in (resp.headers.get("Vary") or "")
         body = resp.get_json()
         assert body["occasion"] == "casual"
         assert body["temperature_used"] == 28.0

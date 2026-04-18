@@ -10,6 +10,7 @@ import { getGreeting, formatDate, scoreToPercent, pluralizeCategory } from '../u
 import { getWardrobeHealth } from '../utils/wardrobeHealth.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
+import RetryImage from '../components/ui/RetryImage.jsx'
 import OOTDWidget from '../components/dashboard/OOTDWidget.jsx'
 import WardrobeStats from '../components/dashboard/WardrobeStats.jsx'
 import StyleDNACard from '../components/social/StyleDNACard.jsx'
@@ -75,7 +76,13 @@ export default function DashboardPage() {
                   className="w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-brand-900 bg-brand-100 dark:bg-brand-800"
                 >
                   {item.image_url ? (
-                    <img src={resolveUrl(item.image_url)} alt="" className="w-full h-full object-cover" />
+                    <RetryImage
+                      src={resolveUrl(item.image_url)}
+                      alt={item.category}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-lg opacity-30">
                       {todayPlan.occasion === 'formal' ? '👔' : '👕'}
@@ -116,7 +123,7 @@ export default function DashboardPage() {
             </div>
 
             {wLoading ? (
-              <LoadingSpinner className="py-8" />
+              <LoadingSpinner className="py-8" label="Loading your wardrobe..." />
             ) : (
               <>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-5">

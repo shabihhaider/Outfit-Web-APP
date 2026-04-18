@@ -39,7 +39,7 @@ export default function WardrobePage() {
               My Wardrobe
             </h1>
             <p className="text-brand-500 dark:text-brand-400 mt-1">
-              {isLoading ? 'Loading...' : `${items.length} item${items.length !== 1 ? 's' : ''} in your collection`}
+              {isLoading ? 'Loading your wardrobe items...' : `${items.length} item${items.length !== 1 ? 's' : ''} in your collection`}
             </p>
           </div>
           <button onClick={() => setUploadOpen(true)} className="btn-primary flex items-center gap-2 group">

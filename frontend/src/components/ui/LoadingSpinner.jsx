@@ -1,8 +1,9 @@
-export default function LoadingSpinner({ size = 'md', className = '' }) {
+export default function LoadingSpinner({ size = 'md', className = '', label = 'Loading...' }) {
   const sizes = { sm: 'h-4 w-4', md: 'h-8 w-8', lg: 'h-12 w-12' }
   return (
-    <div className={`flex items-center justify-center ${className}`}>
+    <div className={`flex items-center justify-center gap-2 ${className}`} role="status" aria-live="polite">
       <div className={`${sizes[size]} rounded-full border-2 border-brand-200/60 border-t-accent-500 dark:border-brand-700/60 dark:border-t-accent-400 animate-spin`} />
+      {label ? <span className="text-sm text-brand-500 dark:text-brand-400">{label}</span> : null}
     </div>
   )
 }

@@ -33,6 +33,13 @@ recommendations_bp = Blueprint("recommendations", __name__)
 VALID_OCCASIONS = {"casual", "formal"}
 
 
+def _with_private_cache(response):
+    """Apply short-lived private cache headers for authenticated data responses."""
+    response.headers["Cache-Control"] = "private, max-age=60, stale-while-revalidate=300"
+    response.headers["Vary"] = "Authorization"
+    return response
+
+
 # ─── Private helpers ──────────────────────────────────────────────────────────
 
 def _missing_categories_hint(items_db: list) -> str:
@@ -217,7 +224,7 @@ def recommend():
     cached = recommendation_cache.get(user_id, occasion, temp_celsius)
     if cached is not None:
         logger.debug("Cache HIT for user=%s occasion=%s", user_id, occasion)
-        return jsonify(cached), 200
+        return _with_private_cache(jsonify(cached)), 200
 
     # 4. Load wardrobe
     user = db.session.get(User, user_id)
@@ -254,7 +261,7 @@ def recommend():
     filename_map = {item.id: item.image_filename for item in items_db}
     response_data = _format_outfits_response(outfits, filename_map, temp_celsius, occasion)
     recommendation_cache.put(user_id, occasion, temp_celsius, response_data)
-    return jsonify(response_data), 200
+    return _with_private_cache(jsonify(response_data)), 200
 
 
 # ─── POST /recommendations/around-item/<item_id> ─────────────────────────────
@@ -319,7 +326,7 @@ def recommend_around_item(item_id: int):
 
     # 6. Format and return response
     filename_map = {item.id: item.image_filename for item in items_db}
-    return jsonify(_format_outfits_response(outfits, filename_map, temp_celsius, occasion)), 200
+    return _with_private_cache(jsonify(_format_outfits_response(outfits, filename_map, temp_celsius, occasion))), 200
 
 
 # ─── GET /recommendations/ootd ──────────────────────────────────────────────
@@ -361,11 +368,11 @@ def outfit_of_the_day():
 
     items_db = WardrobeItemDB.query.filter_by(user_id=user_id).all()
     if not items_db:
-        return jsonify({
+        return _with_private_cache(jsonify({
             "outfit": None,
             "reason": "Your wardrobe is empty. Upload some items first.",
             "stats": {"preferred_occasion": occasion, "items_available": 0, "recently_worn_count": 0},
-        }), 200
+        })), 200
 
     wardrobe = [item_db_to_engine(item) for item in items_db]
 
@@ -393,7 +400,7 @@ def outfit_of_the_day():
             gender_filter = user.gender,
         )
     except InsufficientWardrobeError:
-        return jsonify({
+        return _with_private_cache(jsonify({
             "outfit": None,
             "reason": _missing_categories_hint(items_db),
             "stats": {
@@ -401,13 +408,13 @@ def outfit_of_the_day():
                 "items_available": len(items_db),
                 "recently_worn_count": len(recently_worn_ids),
             },
-        }), 200
+        })), 200
     except Exception as exc:
         logger.error("OOTD recommendation error: %s", exc)
         return jsonify({"error": "Could not generate outfit of the day."}), 500
 
     if not outfits:
-        return jsonify({
+        return _with_private_cache(jsonify({
             "outfit": None,
             "reason": "Could not find a suitable outfit. Try uploading more items.",
             "stats": {
@@ -415,7 +422,7 @@ def outfit_of_the_day():
                 "items_available": len(items_db),
                 "recently_worn_count": len(recently_worn_ids),
             },
-        }), 200
+        })), 200
 
     # 6. Prefer outfits that avoid recently worn items
     filename_map = {item.id: item.image_filename for item in items_db}
@@ -453,7 +460,7 @@ def outfit_of_the_day():
             "is_fresh":         not bool(ids & recently_worn_ids),
         }
 
-    return jsonify({
+    return _with_private_cache(jsonify({
         "outfit":   _fmt_outfit(top_outfits[0]),
         "outfits":  [_fmt_outfit(o) for o in top_outfits],
         "stats": {
@@ -461,7 +468,7 @@ def outfit_of_the_day():
             "items_available":     len(items_db),
             "recently_worn_count": len(recently_worn_ids),
         },
-    }), 200
+    })), 200
 
 
 # ─── POST /recommendations/score-outfit ─────────────────────────────────────
