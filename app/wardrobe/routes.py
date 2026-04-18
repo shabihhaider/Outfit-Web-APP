@@ -47,12 +47,18 @@ uploads_bp  = Blueprint("uploads",  __name__)
 VALID_FORMALITIES = {"casual", "formal", "both"}
 VALID_GENDERS     = {"men", "women", "unisex"}
 VALID_CATEGORIES  = {"top", "bottom", "outwear", "shoes", "dress", "jumpsuit"}
+IRREGULAR_PLURALS = {"shoes": "shoes", "dress": "dresses"}
 
 UPLOAD_TIPS = [
     "Lay the item flat or hang it for best results.",
     "Ensure good lighting — avoid shadows across the item.",
     "Crop to show only the clothing item, not the background.",
 ]
+
+
+def _pluralize_category(category: str) -> str:
+    """Pluralize wardrobe category names with small irregular overrides."""
+    return IRREGULAR_PLURALS.get(category, f"{category}s")
 
 
 # ─── POST /wardrobe/items ─────────────────────────────────────────────────────
@@ -411,7 +417,10 @@ def wardrobe_stats():
                 min_cat = min(min_essentials, key=min_essentials.get)
                 min_count = min_essentials[min_cat]
                 if max_count >= 3 * min_count and min_count > 0:
-                    balance_tip = f"You have {max_count} {max_cat}s but only {min_count} {min_cat}s. Consider adding more {min_cat}s for variety."
+                    balance_tip = (
+                        f"You have {max_count} {_pluralize_category(max_cat)} but only {min_count} {_pluralize_category(min_cat)}. "
+                        f"Consider adding more {_pluralize_category(min_cat)} for variety."
+                    )
 
     return jsonify({
         "wardrobe": {

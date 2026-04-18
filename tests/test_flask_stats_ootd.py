@@ -214,6 +214,37 @@ class TestWardrobeStats:
         assert tip is not None
         assert "bottom" in tip.lower() or "top" in tip.lower()
 
+    def test_stats_balance_tip_pluralizes_shoes(self, flask_app, client, auth_headers, minimal_png):
+        with flask_app.app_context():
+            for _ in range(6):
+                _upload_item(client, auth_headers, minimal_png, category="top")
+            for _ in range(3):
+                _upload_item(client, auth_headers, minimal_png, category="bottom")
+            for _ in range(2):
+                _upload_item(client, auth_headers, minimal_png, category="shoes")
+
+        resp = client.get("/wardrobe/stats", headers=auth_headers)
+        body = resp.get_json()
+        tip = (body["insights"].get("wardrobe_balance") or "").lower()
+
+        assert "shoes" in tip
+        assert "shoess" not in tip
+
+    def test_stats_balance_tip_pluralizes_dresses(self, flask_app, client, auth_headers, minimal_png):
+        with flask_app.app_context():
+            for _ in range(9):
+                _upload_item(client, auth_headers, minimal_png, category="dress")
+            _upload_item(client, auth_headers, minimal_png, category="top")
+            _upload_item(client, auth_headers, minimal_png, category="bottom")
+            _upload_item(client, auth_headers, minimal_png, category="shoes")
+
+        resp = client.get("/wardrobe/stats", headers=auth_headers)
+        body = resp.get_json()
+        tip = (body["insights"].get("wardrobe_balance") or "").lower()
+
+        assert "dresses" in tip
+        assert "dresss" not in tip
+
 
 # ─── OOTD ────────────────────────────────────────────────────────────────────
 
