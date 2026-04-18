@@ -96,6 +96,10 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = _get_db_uri()
+    # Production must not expose a CORS wildcard. Default to the known
+    # Vercel frontend origin; override via CORS_ORIGINS env var if needed
+    # (e.g. "https://drssl.app,https://www.drssl.app").
+    CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "https://drssl.app")
 
 
 config = {

@@ -101,6 +101,7 @@ CORE_TESTS=(
   tests/test_flask_consent.py
   tests/test_flask_outfits.py
   tests/test_flask_recommendations.py
+  tests/test_flask_cors.py
 )
 if FLASK_CONFIG=testing TQDM_DISABLE=1 $PYTHON -m pytest "${CORE_TESTS[@]}" \
     -q --tb=short -p no:warnings 2>&1; then
