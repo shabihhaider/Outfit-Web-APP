@@ -22,14 +22,23 @@ SYNERGY_BONUSES = {
 
     # ── Smart Casual / Professional ──────────────────────────────────────────
     frozenset({"top:polo_shirt", "bottom:chinos"}): 0.45,  # The Polo Classic
+    frozenset({"top:polo_shirt", "bottom:dress_trousers"}): 0.35,  # Business casual
+    frozenset({"top:polo_shirt", "shoes:loafers"}): 0.35,  # Preppy classic
     frozenset({"top:blouse", "bottom:skirt"}): 0.40,
     frozenset({"top:blouse", "bottom:dress_trousers"}): 0.40,
+    frozenset({"top:formal_shirt", "bottom:chinos"}): 0.40,  # Business casual staple
+    frozenset({"top:formal_shirt", "shoes:loafers"}): 0.35,  # Formal-casual bridge
+    frozenset({"top:formal_shirt", "shoes:boots"}): 0.30,  # Versatile classic
     frozenset({"shoes:loafers", "bottom:chinos"}): 0.35,
+    frozenset({"shoes:loafers", "bottom:dress_trousers"}): 0.35,
 
     # ── High-End Casual (Denim Master) ───────────────────────────────────────
     frozenset({"top:formal_shirt", "bottom:jeans"}): 0.50,  # THE White Shirt + Blue Jeans logic (Dynamic)
+    frozenset({"top:formal_shirt", "shoes:sneakers"}): 0.20,  # Modern smart casual (clean sneakers)
     frozenset({"top:polo_shirt", "bottom:jeans"}): 0.35,
     frozenset({"top:casual_tshirt", "bottom:jeans"}): 0.25,
+    frozenset({"top:casual_tshirt", "bottom:chinos"}): 0.25,  # Clean casual
+    frozenset({"top:casual_tshirt", "shoes:loafers"}): 0.20,  # Elevated casual
 
     # ── Pakistani / South Asian Heritage (Master Level) ─────────────────────
     frozenset({"top:kurta", "bottom:shalwar"}): 0.50,  # Traditional Unity
@@ -40,16 +49,30 @@ SYNERGY_BONUSES = {
     # ── Fusion (South Asian + Western mix) ────────────────────────────────
     frozenset({"top:kurta", "bottom:jeans"}): 0.30,
     frozenset({"top:kurta", "bottom:chinos"}): 0.30,
+    frozenset({"top:kurta", "shoes:boots"}): 0.25,   # Modern SA fusion
     frozenset({"top:kameez", "bottom:jeans"}): 0.25,
+    frozenset({"top:kameez", "bottom:chinos"}): 0.25,
 
     # ── Smart Casual / Modern (Global) ────────────────────────────────────
     frozenset({"outwear:blazer", "bottom:jeans"}): 0.35,
     frozenset({"outwear:blazer", "bottom:chinos"}): 0.40,
     frozenset({"outwear:blazer", "top:casual_tshirt"}): 0.30,  # Modern smart casual
+    frozenset({"outwear:blazer", "top:polo_shirt"}): 0.35,     # Classic smart casual
+    frozenset({"outwear:blazer", "shoes:sneakers"}): 0.25,     # Modern trend (GQ endorsed)
+    frozenset({"outwear:blazer", "shoes:loafers"}): 0.35,      # Smart casual footwear
     frozenset({"top:casual_tshirt", "bottom:shorts"}): 0.30,   # Summer casual
+
+    # ── Layering (outerwear combos) ──────────────────────────────────────
+    frozenset({"outwear:waistcoat", "top:formal_shirt"}): 0.40,  # Three-piece foundation
+    frozenset({"outwear:waistcoat", "bottom:dress_trousers"}): 0.35,
+    frozenset({"outwear:cardigan", "top:formal_shirt"}): 0.30,  # Smart casual layering
+    frozenset({"outwear:cardigan", "top:casual_tshirt"}): 0.25,  # Casual layering
+    frozenset({"outwear:coat", "top:formal_shirt"}): 0.30,      # Winter formal
+    frozenset({"outwear:coat", "bottom:dress_trousers"}): 0.30,
 
     # ── Athleisure ────────────────────────────────────────────────────────
     frozenset({"top:hoodie", "bottom:jeans"}): 0.30,
+    frozenset({"top:hoodie", "shoes:sneakers"}): 0.30,          # Classic athleisure
 }
 
 

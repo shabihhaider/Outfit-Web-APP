@@ -3,41 +3,60 @@ engine/hard_rules.py
 Gate 1 — Hard fashion rules that block structurally invalid outfit combinations.
 
 Two tiers of rules:
-  Tier A — Category-level rules (always active, enforceable with 6-category Model 1).
-  Tier B — Sub-category rules (active when CLIP sub-category labels are present).
-           When sub_category is None, Tier B rules are silently skipped.
+  Tier A — Category-level (always active): structural validity (dress/jumpsuit
+           exclusivity, no duplicate categories).
+  Tier B — Sub-category (active when CLIP labels present): specific pair blocks
+           for genuinely incompatible items.
 
-Tier B rules are based on established fashion incompatibilities that transcend
-cultural boundaries (blazer + joggers is incongruous in Western AND South Asian
-fashion contexts).
+Cross-formality mixing (formal shirt + jeans, blazer + t-shirt) is intentionally
+ALLOWED — smart casual is the most common modern dress code. Bad cross-formality
+combos are caught by specific blocked pairs (e.g. hoodie + formal trousers), not
+by a blanket formality rule.
 """
 
 from __future__ import annotations
 
-from engine.models import WardrobeItem, Category, Formality
+from engine.models import WardrobeItem, Category
 
 
 # ─── Tier B: Sub-category blocked pairs ───────────────────────────────────────
 # Active only when both items have sub_category set (by CLIP tagger).
 # Uses "{category}:{sub_category}" keys.
 # frozenset: order-independent pair matching.
+#
+# Philosophy: only hard-block combos that are UNIVERSALLY considered wrong.
+# If a combo is merely "unusual" or "fashion-forward", let the scorer handle it.
 
 BLOCKED_SUBCATEGORY_PAIRS: frozenset[frozenset] = frozenset({
-    frozenset({"outwear:blazer",    "bottom:leggings"}),   # blazer + leggings
-    frozenset({"outwear:blazer",    "shoes:sneakers"}),    # blazer + sneakers (unless smart-casual intent)
-    frozenset({"outwear:sherwani",  "bottom:jeans"}),      # sherwani + jeans
-    frozenset({"outwear:sherwani",  "shoes:sneakers"}),    # sherwani + sneakers
-    frozenset({"top:formal_shirt",  "bottom:shorts"}),     # dress shirt + shorts
+    # ── Formality extremes (skipping 2+ levels) ─────────────────────────────
     frozenset({"top:hoodie",        "bottom:dress_trousers"}),  # hoodie + formal trousers
     frozenset({"top:hoodie",        "shoes:formal_shoes"}),     # hoodie + Oxford shoes
-    frozenset({"top:hoodie",        "shoes:heels"}),       # hoodie + heels
-    frozenset({"shoes:heels",       "bottom:leggings"}),   # heels + leggings
+    frozenset({"top:hoodie",        "shoes:heels"}),            # hoodie + heels
+    frozenset({"outwear:hoodie_jacket", "bottom:dress_trousers"}),  # zip hoodie + formal trousers
+    frozenset({"outwear:hoodie_jacket", "shoes:formal_shoes"}),     # zip hoodie + formal shoes
+    frozenset({"top:formal_shirt",  "bottom:shorts"}),          # dress shirt + shorts
+
+    # ── Blazer compatibility ─────────────────────────────────────────────────
+    # blazer + sneakers is ALLOWED — modern smart casual (GQ/Esquire endorsed)
+    frozenset({"outwear:blazer",    "bottom:leggings"}),   # blazer + leggings
+
+    # ── Sherwani (SA black-tie — demands formal/traditional pairing) ────────
+    frozenset({"outwear:sherwani",  "bottom:jeans"}),      # sherwani + jeans
+    frozenset({"outwear:sherwani",  "bottom:shorts"}),     # sherwani + shorts
+    frozenset({"outwear:sherwani",  "bottom:leggings"}),   # sherwani + leggings
+    frozenset({"outwear:sherwani",  "shoes:sneakers"}),    # sherwani + sneakers
+    frozenset({"outwear:sherwani",  "top:casual_tshirt"}),  # tshirt under sherwani
+    frozenset({"outwear:sherwani",  "top:hoodie"}),        # hoodie under sherwani
+
+    # ── Chappal (SA casual sandal — doesn't pair with formal Western) ───────
     frozenset({"shoes:chappal",     "outwear:blazer"}),    # chappal + blazer
-    frozenset({"shoes:chappal",     "outwear:sherwani"}),  # chappal + sherwani (formal mismatch)
-    # Cross-cultural: Western casual + Eastern traditional
+    frozenset({"shoes:chappal",     "outwear:sherwani"}),  # chappal + sherwani
+
+    # ── Cross-cultural: Western casual + Eastern traditional bottom ──────────
     frozenset({"top:polo_shirt",    "bottom:shalwar"}),    # polo + shalwar
     frozenset({"top:casual_tshirt", "bottom:shalwar"}),    # tshirt + shalwar
     frozenset({"top:hoodie",        "bottom:shalwar"}),    # hoodie + shalwar
+    frozenset({"outwear:hoodie_jacket", "bottom:shalwar"}),  # zip hoodie + shalwar
 })
 
 
@@ -63,11 +82,15 @@ def passes_hard_rules(outfit_items: list[WardrobeItem]) -> bool:
       2. A jumpsuit cannot coexist with a top or bottom.
       3. A dress and a jumpsuit cannot coexist.
       4. No two items may share the same category.
-      5. Formal and casual items cannot coexist (items tagged "both" are exempt).
 
     Tier B — Sub-category rules (enforced only when CLIP labels are present):
-      6. Blocked pairs from BLOCKED_SUBCATEGORY_PAIRS (e.g. blazer+sneakers,
-         sherwani+jeans, dress_shirt+shorts, hoodie+formal_trousers).
+      5. Blocked pairs from BLOCKED_SUBCATEGORY_PAIRS (e.g. hoodie+dress_trousers,
+         sherwani+jeans, dress_shirt+shorts).
+
+    Note: Cross-formality mixing (formal + casual items) is intentionally allowed.
+    Smart casual (formal shirt + jeans, blazer + t-shirt) is the most common modern
+    dress code. Genuinely bad cross-formality combos are caught by specific blocked
+    pairs in Tier B, not by a blanket formality rule.
     """
     categories = [item.category for item in outfit_items]
 
@@ -93,22 +116,13 @@ def passes_hard_rules(outfit_items: list[WardrobeItem]) -> bool:
     if len(categories) != len(set(categories)):
         return False
 
-    # Rule 5: formal and casual items cannot be mixed
-    # Items tagged "both" are neutral and excluded from this check
-    strict_formalities = {
-        item.formality for item in outfit_items
-        if item.formality != Formality.BOTH
-    }
-    if Formality.CASUAL in strict_formalities and Formality.FORMAL in strict_formalities:
-        return False
-
     # ── Tier B rules (sub-category, requires CLIP labels) ─────────────────────
 
     # Build sub-category keys only for items that have CLIP labels
     sub_keys = [_sub_category_key(item) for item in outfit_items]
     labeled  = [k for k in sub_keys if k is not None]
 
-    # Rule 6: blocked sub-category pairs
+    # Rule 5: blocked sub-category pairs
     # Only applied when BOTH items in a pair have sub-category labels
     if len(labeled) >= 2:
         for i in range(len(labeled)):

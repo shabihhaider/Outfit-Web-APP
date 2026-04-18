@@ -66,32 +66,40 @@ class TestHardRules:
         from engine.hard_rules import passes_hard_rules
         assert passes_hard_rules([dress_item, outwear_item, shoes_item]) is True
 
-    # ─── Rule 5: formality mixing ──────────────────────────────────────────────
+    # ─── Cross-formality mixing (smart casual is valid) ─────────────────────────
 
-    def test_mixed_formal_casual_rejected(self, casual_item, formal_item, shoes_item):
-        """An outfit with one casual and one formal item must be rejected."""
+    def test_formal_shirt_with_casual_jeans_allowed(self, shoes_item):
+        """Formal shirt + casual jeans = classic smart casual — must be allowed."""
         from engine.hard_rules import passes_hard_rules
-        # casual_item and formal_item are both Category.TOP — but Rule 4 (duplicates)
-        # would trigger first. Use different categories for a clean Rule 5 test.
         from engine.models import Category, Formality
         from tests.conftest import _make_item
-        formal_bottom = _make_item(20, Category.BOTTOM, formality=Formality.FORMAL, seed=20)
-        assert passes_hard_rules([casual_item, formal_bottom, shoes_item]) is False
+        formal_top = _make_item(20, Category.TOP, formality=Formality.FORMAL, seed=20)
+        casual_bottom = _make_item(21, Category.BOTTOM, formality=Formality.CASUAL, seed=21)
+        assert passes_hard_rules([formal_top, casual_bottom, shoes_item]) is True
+
+    def test_casual_top_with_formal_bottom_allowed(self, shoes_item):
+        """Casual top + formal trousers = valid smart casual — must be allowed."""
+        from engine.hard_rules import passes_hard_rules
+        from engine.models import Category, Formality
+        from tests.conftest import _make_item
+        casual_top = _make_item(22, Category.TOP, formality=Formality.CASUAL, seed=22)
+        formal_bottom = _make_item(23, Category.BOTTOM, formality=Formality.FORMAL, seed=23)
+        assert passes_hard_rules([casual_top, formal_bottom, shoes_item]) is True
 
     def test_casual_with_both_is_valid(self, casual_item, shoes_item):
-        """Casual + 'both' items are allowed — 'both' is neutral."""
+        """Casual + 'both' items are allowed."""
         from engine.hard_rules import passes_hard_rules
         from engine.models import Category, Formality
         from tests.conftest import _make_item
-        both_bottom = _make_item(21, Category.BOTTOM, formality=Formality.BOTH, seed=21)
+        both_bottom = _make_item(24, Category.BOTTOM, formality=Formality.BOTH, seed=24)
         assert passes_hard_rules([casual_item, both_bottom, shoes_item]) is True
 
     def test_formal_with_both_is_valid(self, formal_item, shoes_item):
-        """Formal + 'both' items are allowed — 'both' is neutral."""
+        """Formal + 'both' items are allowed."""
         from engine.hard_rules import passes_hard_rules
         from engine.models import Category, Formality
         from tests.conftest import _make_item
-        both_bottom = _make_item(22, Category.BOTTOM, formality=Formality.BOTH, seed=22)
+        both_bottom = _make_item(25, Category.BOTTOM, formality=Formality.BOTH, seed=25)
         assert passes_hard_rules([formal_item, both_bottom, shoes_item]) is True
 
     def test_all_casual_is_valid(self, casual_item, shoes_item):
@@ -99,7 +107,7 @@ class TestHardRules:
         from engine.hard_rules import passes_hard_rules
         from engine.models import Category, Formality
         from tests.conftest import _make_item
-        casual_bottom = _make_item(23, Category.BOTTOM, formality=Formality.CASUAL, seed=23)
+        casual_bottom = _make_item(26, Category.BOTTOM, formality=Formality.CASUAL, seed=26)
         assert passes_hard_rules([casual_item, casual_bottom, shoes_item]) is True
 
     # ─── Tier B: cross-cultural blocked pairs ─────────────────────────────────
@@ -136,6 +144,43 @@ class TestHardRules:
         shalwar = _make_item(35, Category.BOTTOM, formality=Formality.BOTH, seed=35)
         shalwar = shalwar.model_copy(update={"sub_category": "shalwar"})
         assert passes_hard_rules([hoodie, shalwar, shoes_item]) is False
+
+    def test_sherwani_shorts_blocked(self, shoes_item):
+        """Sherwani + shorts is absurd — SA black-tie with casual bottom."""
+        from engine.hard_rules import passes_hard_rules
+        from engine.models import Category, Formality
+        from tests.conftest import _make_item
+        shirt = _make_item(40, Category.TOP, formality=Formality.FORMAL, seed=40)
+        sherwani = _make_item(41, Category.OUTWEAR, formality=Formality.FORMAL, seed=41)
+        sherwani = sherwani.model_copy(update={"sub_category": "sherwani"})
+        shorts = _make_item(42, Category.BOTTOM, formality=Formality.CASUAL, seed=42)
+        shorts = shorts.model_copy(update={"sub_category": "shorts"})
+        assert passes_hard_rules([shirt, sherwani, shorts, shoes_item]) is False
+
+    def test_sherwani_tshirt_blocked(self, shoes_item):
+        """T-shirt under sherwani — costume, not fashion."""
+        from engine.hard_rules import passes_hard_rules
+        from engine.models import Category, Formality
+        from tests.conftest import _make_item
+        tshirt = _make_item(43, Category.TOP, formality=Formality.CASUAL, seed=43)
+        tshirt = tshirt.model_copy(update={"sub_category": "casual_tshirt"})
+        sherwani = _make_item(44, Category.OUTWEAR, formality=Formality.FORMAL, seed=44)
+        sherwani = sherwani.model_copy(update={"sub_category": "sherwani"})
+        shalwar = _make_item(45, Category.BOTTOM, formality=Formality.BOTH, seed=45)
+        assert passes_hard_rules([tshirt, sherwani, shalwar, shoes_item]) is False
+
+    def test_blazer_sneakers_allowed(self, shoes_item):
+        """Blazer + sneakers = modern smart casual — GQ/Esquire endorsed."""
+        from engine.hard_rules import passes_hard_rules
+        from engine.models import Category, Formality
+        from tests.conftest import _make_item
+        shirt = _make_item(46, Category.TOP, formality=Formality.BOTH, seed=46)
+        blazer = _make_item(47, Category.OUTWEAR, formality=Formality.FORMAL, seed=47)
+        blazer = blazer.model_copy(update={"sub_category": "blazer"})
+        jeans = _make_item(48, Category.BOTTOM, formality=Formality.CASUAL, seed=48)
+        sneakers = _make_item(49, Category.SHOES, formality=Formality.CASUAL, seed=49)
+        sneakers = sneakers.model_copy(update={"sub_category": "sneakers"})
+        assert passes_hard_rules([shirt, blazer, jeans, sneakers]) is True
 
     def test_kurta_shalwar_allowed(self, shoes_item):
         """Kurta + shalwar is a classic South Asian combo — must be allowed."""
