@@ -75,6 +75,8 @@ class TestWardrobeStats:
     def test_stats_empty_wardrobe(self, client, auth_headers):
         resp = client.get("/wardrobe/stats", headers=auth_headers)
         assert resp.status_code == 200
+        assert resp.headers.get("Cache-Control") == "private, max-age=60, stale-while-revalidate=300"
+        assert "Authorization" in (resp.headers.get("Vary") or "")
         body = resp.get_json()
 
         assert body["wardrobe"]["total_items"] == 0
@@ -252,6 +254,8 @@ class TestOOTD:
     def test_ootd_empty_wardrobe(self, client, auth_headers):
         resp = client.get("/recommendations/ootd", headers=auth_headers)
         assert resp.status_code == 200
+        assert resp.headers.get("Cache-Control") == "private, max-age=60, stale-while-revalidate=300"
+        assert "Authorization" in (resp.headers.get("Vary") or "")
         body = resp.get_json()
 
         assert body["outfit"] is None

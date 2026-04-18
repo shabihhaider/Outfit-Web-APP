@@ -12,6 +12,7 @@ import LocationToggle from '../components/recommendations/LocationToggle.jsx'
 import WeatherCard from '../components/recommendations/WeatherCard.jsx'
 import OutfitCard from '../components/recommendations/OutfitCard.jsx'
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
+import RetryImage from '../components/ui/RetryImage.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 
@@ -126,9 +127,11 @@ export default function RecommendationsPage() {
         <div className="card p-4 mb-6 flex items-center gap-4 border-accent-300/40 dark:border-accent-700/40 bg-accent-50/50 dark:bg-accent-900/10">
           <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-brand-800 border border-accent-200/60 dark:border-accent-700/40">
             {anchorItem.image_url && (
-              <img
+              <RetryImage
                 src={resolveUrl(anchorItem.image_url)}
                 alt={anchorItem.category}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             )}
@@ -153,7 +156,7 @@ export default function RecommendationsPage() {
             className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 text-base group"
           >
             {mutation.isPending ? (
-              <><LoadingSpinner size="sm" /> Finding outfits...</>
+              <><LoadingSpinner size="sm" label="" /> Building your recommendation...</>
             ) : (
               <>
                 <FiZap size={16} className="transition-transform group-hover:rotate-12" />
@@ -167,6 +170,7 @@ export default function RecommendationsPage() {
         <div className="lg:col-span-2 space-y-5">
           {mutation.isPending && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+              <p className="text-sm text-brand-500 dark:text-brand-400">Building your recommendation and loading wardrobe images...</p>
               <OutfitSkeleton />
               <OutfitSkeleton />
               <OutfitSkeleton />

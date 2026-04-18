@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { resolveUrl } from '../../utils/resolveUrl.js'
+import RetryImage from '../ui/RetryImage.jsx'
 
 const CAT_EMOJI = { top: '\u{1F455}', bottom: '\u{1F456}', outwear: '\u{1F9E5}', shoes: '\u{1F45F}', dress: '\u{1F457}', jumpsuit: '\u{1F938}' }
 
@@ -24,9 +25,11 @@ export default function OutfitItems({ items }) {
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/10 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
               
               {imageUrl ? (
-                <img
+                <RetryImage
                   src={imageUrl}
                   alt={item.category}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
               ) : (

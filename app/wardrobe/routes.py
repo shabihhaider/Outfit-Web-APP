@@ -244,10 +244,13 @@ def list_items():
     """GET /wardrobe/items — return all wardrobe items for the authenticated user."""
     user_id = int(get_jwt_identity())
     items   = WardrobeItemDB.query.filter_by(user_id=user_id).order_by(WardrobeItemDB.created_at.desc()).all()
-    return jsonify({
+    response = jsonify({
         "items": [item.to_dict() for item in items],
         "count": len(items),
-    }), 200
+    })
+    response.headers["Cache-Control"] = "private, max-age=60, stale-while-revalidate=300"
+    response.headers["Vary"] = "Authorization"
+    return response, 200
 
 
 # ─── DELETE /wardrobe/items/<id> ──────────────────────────────────────────────
@@ -422,7 +425,7 @@ def wardrobe_stats():
                         f"Consider adding more {_pluralize_category(min_cat)} for variety."
                     )
 
-    return jsonify({
+    response = jsonify({
         "wardrobe": {
             "total_items": total_items,
             "capacity": 50,
@@ -441,7 +444,10 @@ def wardrobe_stats():
             "most_common_occasion": most_common_occasion,
             "wardrobe_balance": balance_tip,
         },
-    }), 200
+    })
+    response.headers["Cache-Control"] = "private, max-age=60, stale-while-revalidate=300"
+    response.headers["Vary"] = "Authorization"
+    return response, 200
 
 
 # ─── GET /uploads/<filename> ─────────────────────────────────────────────────
@@ -456,8 +462,12 @@ def serve_upload(filename: str):
     from app.storage import is_configured, get_public_url
 
     if is_configured():
-        return redirect(get_public_url(filename), code=302)
+        response = redirect(get_public_url(filename), code=302)
+        response.headers["Cache-Control"] = "public, max-age=86400"
+        return response
 
     # Fallback for local dev without Supabase
     upload_dir = current_app.config["UPLOAD_FOLDER"]
-    return send_from_directory(os.path.abspath(upload_dir), filename)
+    response = send_from_directory(os.path.abspath(upload_dir), filename)
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    return response

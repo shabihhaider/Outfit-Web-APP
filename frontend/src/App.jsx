@@ -4,6 +4,7 @@ import AuthGuard from './guards/AuthGuard.jsx'
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
 import ConsentBanner from './components/ui/ConsentBanner.jsx'
 import Navbar from './components/layout/Navbar.jsx'
+import InitialWarmupOverlay from './components/ui/InitialWarmupOverlay.jsx'
 
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
@@ -28,6 +29,7 @@ function Layout({ children }) {
         Skip to content
       </a>
       <Navbar />
+      <InitialWarmupOverlay />
       <main id="main-content">
         <ErrorBoundary>
           {children}

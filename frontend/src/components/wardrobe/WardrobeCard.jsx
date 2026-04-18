@@ -6,6 +6,7 @@ import { FiEdit2, FiTrash2, FiStar, FiUser } from 'react-icons/fi'
 import { patchItem } from '../../api/wardrobe.js'
 import { resolveUrl } from '../../utils/resolveUrl.js'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
+import RetryImage from '../ui/RetryImage.jsx'
 import TryOnModal from '../tryon/TryOnModal.jsx'
 
 const CAT_EMOJI = {
@@ -51,13 +52,12 @@ export default function WardrobeCard({ item, onDelete }) {
         {/* Image */}
         <div className="relative aspect-square bg-brand-100/60 dark:bg-brand-800/40 overflow-hidden">
           {imageUrl ? (
-            <img
+            <RetryImage
               src={imageUrl}
               alt={`${item.category} item`}
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              onError={e => { e.target.style.display = 'none' }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-5xl opacity-60">

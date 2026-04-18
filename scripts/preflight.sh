@@ -102,8 +102,8 @@ CORE_TESTS=(
   tests/test_flask_outfits.py
   tests/test_flask_recommendations.py
 )
-if FLASK_CONFIG=testing $PYTHON -m pytest "${CORE_TESTS[@]}" \
-    -q --tb=short 2>&1; then
+if FLASK_CONFIG=testing TQDM_DISABLE=1 $PYTHON -m pytest "${CORE_TESTS[@]}" \
+    -q --tb=short -p no:warnings 2>&1; then
   _ok "pytest — all core tests passed"
 else
   _fail "pytest — tests failed (see above)"

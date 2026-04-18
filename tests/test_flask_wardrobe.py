@@ -252,6 +252,8 @@ class TestList:
     def test_list_after_upload(self, client, auth_headers, upload_item):
         resp = client.get("/wardrobe/items", headers=auth_headers)
         assert resp.status_code == 200
+        assert resp.headers.get("Cache-Control") == "private, max-age=60, stale-while-revalidate=300"
+        assert "Authorization" in (resp.headers.get("Vary") or "")
         body = resp.get_json()
         assert body["count"] == 1
         assert body["items"][0]["id"] == upload_item["id"]
@@ -357,6 +359,8 @@ class TestServeUpload:
         image_url = upload_item["image_url"]
         filename = image_url.split("/uploads/")[1]
         resp = client.get(f"/uploads/{filename}")
+        if resp.status_code in (200, 302):
+            assert resp.headers.get("Cache-Control") == "public, max-age=86400"
         # DB record exists, so not 401/403. File may not be on disk → 200 or 404.
         assert resp.status_code in (200, 404)
 
