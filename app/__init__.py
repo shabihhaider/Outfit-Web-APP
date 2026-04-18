@@ -22,9 +22,30 @@ _FRONTEND_DIST = os.path.join(
 )
 
 
+_DEV_SECRET_FALLBACKS = frozenset({
+    "dev-secret-key-minimum-32-bytes!!",
+    "dev-jwt-secret-key-min-32-bytes!!",
+})
+
+
+def _assert_production_secrets(app_config: dict) -> None:
+    """Raise RuntimeError if any secret key is still the known-public dev fallback."""
+    for key in ("SECRET_KEY", "JWT_SECRET_KEY"):
+        if app_config.get(key, "") in _DEV_SECRET_FALLBACKS:
+            raise RuntimeError(
+                f"'{key}' is set to a known-public development value in production. "
+                "Set a strong random secret via the environment variable. "
+                "Generate one: python -c \"import secrets; print(secrets.token_hex(32))\""
+            )
+
+
 def create_app(config_name: str = "development") -> Flask:
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object(config[config_name])
+
+    # -- Guard: reject startup if production uses known-public fallback secrets --
+    if config_name == "production":
+        _assert_production_secrets(app.config)
 
     # -- Init extensions -------------------------------------------------------
     from app.extensions import db, migrate, jwt, bcrypt, cors, compress, limiter
