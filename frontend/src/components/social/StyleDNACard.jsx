@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FiZap, FiTarget, FiSun, FiMoon, FiCoffee, FiActivity, FiGlobe, FiHexagon } from 'react-icons/fi'
+import { FiZap, FiTarget, FiSun, FiMoon, FiCoffee, FiActivity, FiGlobe, FiHexagon, FiArrowRight } from 'react-icons/fi'
+import { Link } from 'react-router-dom'
 import { getMyStyleDNA } from '../../api/social.js'
 
 const PERSONA_ICONS = {
@@ -138,7 +139,7 @@ export default function StyleDNACard() {
         )}
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="grid grid-cols-3 gap-2 text-center mb-4">
           <div className="bg-brand-50 dark:bg-brand-800/40 rounded-lg p-2">
             <p className="text-lg font-bold text-brand-900 dark:text-brand-100">{total_items}</p>
             <p className="text-[10px] text-brand-400 uppercase tracking-wide">Items</p>
@@ -152,6 +153,14 @@ export default function StyleDNACard() {
             <p className="text-[10px] text-brand-400 uppercase tracking-wide">Formality</p>
           </div>
         </div>
+
+        {/* CTA */}
+        <Link
+          to="/recommendations"
+          className="flex items-center justify-center gap-1.5 w-full h-9 rounded-xl btn-accent text-sm font-medium"
+        >
+          Build outfits for your style <FiArrowRight size={14} />
+        </Link>
       </div>
     </motion.div>
   )
