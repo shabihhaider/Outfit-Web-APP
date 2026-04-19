@@ -231,7 +231,12 @@ export default function SocialFeedPage() {
                 ? 'Bookmark posts from the feed to save inspiration for later.'
                 : vibeFilter
                 ? 'No posts tagged with this vibe yet. Be the first!'
-                : 'Be the first to publish an outfit from your Saved collection.'
+                : 'Be the first to share an outfit with the community!'
+            }
+            action={
+              tab === 'discover' && !vibeFilter
+                ? { label: 'Share an outfit →', onClick: () => navigate('/saved') }
+                : undefined
             }
           />
         )}
