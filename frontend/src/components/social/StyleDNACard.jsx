@@ -79,27 +79,7 @@ export default function StyleDNACard() {
       animate={{ opacity: 1, y: 0 }}
       className="card p-5 overflow-hidden relative"
     >
-      {/* Background patterns */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-30">
-        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path
-            d="M-10,50 Q25,20 50,50 T110,50"
-            fill="none"
-            stroke="#f59e0b"
-            strokeWidth="0.5"
-            className="dna-wave-1"
-          />
-          <path
-            d="M-10,50 Q25,80 50,50 T110,50"
-            fill="none"
-            stroke="#9ca3af"
-            strokeWidth="0.3"
-            className="dna-wave-2"
-          />
-        </svg>
-      </div>
-
-      <div className="relative z-10">
+<div className="relative z-10">
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center justify-center w-5 h-5 rounded-full bg-accent-100 dark:bg-accent-900/30">
             <FiZap size={11} className="text-accent-600 dark:text-accent-400" />
