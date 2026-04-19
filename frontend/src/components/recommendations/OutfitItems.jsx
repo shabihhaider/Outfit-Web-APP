@@ -39,7 +39,7 @@ export default function OutfitItems({ items }) {
             </div>
             
             <div className="mt-2 flex flex-col items-center">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-brand-400 dark:text-brand-500 mb-0.5">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-brand-500 dark:text-brand-400 mb-0.5">
                 {item.category}
               </span>
               {item.color_name && (

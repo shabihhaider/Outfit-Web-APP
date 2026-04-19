@@ -56,9 +56,9 @@ export default function RegisterPage() {
             </div>
             <h2 className="font-display text-4xl xl:text-5xl font-bold text-white leading-tight">
               Build your<br />
-              <span className="text-accent-400 italic">perfect wardrobe.</span>
+              <span className="text-accent-700 italic">perfect wardrobe.</span>
             </h2>
-            <p className="mt-4 text-brand-400 text-lg max-w-md leading-relaxed">
+            <p className="mt-4 text-brand-500 text-lg max-w-md leading-relaxed">
               Upload your clothes. Let AI understand your style. Get outfits that work.
             </p>
           </div>
@@ -115,26 +115,26 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm font-medium text-brand-600 dark:text-brand-400 mb-1.5">Full Name</label>
               <div className="relative">
-                <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" size={16} />
+                <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-500" size={16} />
                 <input type="text" value={form.name} onChange={update('name')} className="input-field pl-10" placeholder="Your name" required />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-600 dark:text-brand-400 mb-1.5">Email</label>
               <div className="relative">
-                <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" size={16} />
+                <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-500" size={16} />
                 <input type="email" value={form.email} onChange={update('email')} className="input-field pl-10" placeholder="you@example.com" required autoComplete="email" />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-600 dark:text-brand-400 mb-1.5">Password</label>
               <div className="relative">
-                <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" size={16} />
+                <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-500" size={16} />
                 <input type={showPassword ? 'text' : 'password'} value={form.password} onChange={update('password')} className="input-field pl-10 pr-10" placeholder="Min. 8 characters" required autoComplete="new-password" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-600 dark:hover:text-brand-200"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-500 hover:text-brand-600 dark:hover:text-brand-200"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
@@ -178,7 +178,7 @@ export default function RegisterPage() {
 
           <p className="mt-8 text-center text-sm text-brand-500 dark:text-brand-400">
             Already have an account?{' '}
-            <Link to="/login" className="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300 font-semibold transition-colors">
+            <Link to="/login" className="text-accent-700 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300 font-semibold transition-colors">
               Sign In
             </Link>
           </p>

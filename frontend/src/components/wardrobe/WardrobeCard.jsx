@@ -73,7 +73,7 @@ export default function WardrobeCard({ item, onDelete, selectMode = false, selec
             <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-200 ${selected ? 'bg-accent-500/20' : 'bg-transparent hover:bg-brand-900/10'}`}>
               <FiCheckCircle
                 size={32}
-                className={`transition-all duration-200 ${selected ? 'text-accent-500 opacity-100' : 'text-white opacity-40'}`}
+                className={`transition-all duration-200 ${selected ? 'text-accent-700 opacity-100' : 'text-white opacity-40'}`}
               />
             </div>
           )}
@@ -163,7 +163,7 @@ export default function WardrobeCard({ item, onDelete, selectMode = false, selec
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="text-[10px] text-brand-400 dark:text-brand-500 hover:text-accent-600 dark:hover:text-accent-400 underline decoration-dotted transition-colors ml-auto"
+                className="text-[10px] text-brand-500 dark:text-brand-400 hover:text-accent-700 dark:hover:text-accent-700 underline decoration-dotted transition-colors ml-auto"
               >
                 Fix?
               </button>
@@ -171,7 +171,7 @@ export default function WardrobeCard({ item, onDelete, selectMode = false, selec
           </div>
 
           {item.model_confidence != null && (
-            <div className="text-xs text-brand-400 dark:text-brand-500 mb-2">
+            <div className="text-xs text-brand-500 dark:text-brand-400 mb-2">
               AI confidence: <span className="data-value text-xs">{Math.round(item.model_confidence * 100)}%</span>
             </div>
           )}

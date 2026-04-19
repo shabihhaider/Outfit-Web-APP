@@ -21,7 +21,7 @@ export default function CustomSelect({ value, onChange, options, label, classNam
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {label && (
-        <label className="text-[10px] font-bold uppercase tracking-widest text-brand-400 mb-2 block">
+        <label className="text-[10px] font-bold uppercase tracking-widest text-brand-500 mb-2 block">
           {label}
         </label>
       )}
@@ -36,7 +36,7 @@ export default function CustomSelect({ value, onChange, options, label, classNam
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
-          <FiChevronDown className="text-brand-400" />
+          <FiChevronDown className="text-brand-500" />
         </motion.div>
       </button>
 

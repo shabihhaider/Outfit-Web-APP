@@ -39,7 +39,7 @@ export default function OccasionPicker({ value, onChange }) {
             <div className={`mb-6 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${
               value === occ.value 
                 ? 'bg-white/10 text-white dark:bg-brand-900/10 dark:text-brand-900 rotate-12' 
-                : 'bg-brand-50 dark:bg-brand-800/40 text-brand-400 group-hover:rotate-12'
+                : 'bg-brand-50 dark:bg-brand-800/40 text-brand-500 group-hover:rotate-12'
             }`}>
               <occ.icon size={22} />
             </div>

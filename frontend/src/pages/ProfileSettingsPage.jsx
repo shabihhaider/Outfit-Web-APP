@@ -100,7 +100,7 @@ function AccountTab({ profile, qc, updateUser }) {
       </div>
 
       <div>
-        <label className="block text-xs font-bold uppercase tracking-widest text-brand-400 mb-1.5">Bio</label>
+        <label className="block text-xs font-bold uppercase tracking-widest text-brand-500 mb-1.5">Bio</label>
         <textarea
           value={form.bio}
           onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
@@ -109,11 +109,11 @@ function AccountTab({ profile, qc, updateUser }) {
           placeholder="A short bio about your style…"
           className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-300 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400 resize-none"
         />
-        <p className="text-[10px] text-brand-400 text-right mt-1">{form.bio.length}/150</p>
+        <p className="text-[10px] text-brand-500 text-right mt-1">{form.bio.length}/150</p>
       </div>
 
       <div>
-        <label className="block text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">Gender</label>
+        <label className="block text-xs font-bold uppercase tracking-widest text-brand-500 mb-2">Gender</label>
         <div className="flex gap-2">
           {['men', 'women', 'unisex'].map(g => (
             <button
@@ -134,7 +134,7 @@ function AccountTab({ profile, qc, updateUser }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-brand-800 dark:text-brand-200">Public Profile</p>
-          <p className="text-xs text-brand-400">Let others discover and follow you</p>
+          <p className="text-xs text-brand-500">Let others discover and follow you</p>
         </div>
         <button
           onClick={() => setForm(p => ({ ...p, is_public: !p.is_public }))}
@@ -231,7 +231,7 @@ function AvatarTab({ profile, qc, updateUser }) {
 
         <div className="text-center">
           <p className="font-semibold text-brand-800 dark:text-brand-200">{displayName}</p>
-          {profile?.username && <p className="text-sm text-brand-400">@{profile.username}</p>}
+          {profile?.username && <p className="text-sm text-brand-500">@{profile.username}</p>}
         </div>
       </div>
 
@@ -316,7 +316,7 @@ function VtoTab() {
     <div className="card p-6 space-y-6">
       <div className="p-4 bg-accent-50 dark:bg-accent-900/20 border border-accent-100 dark:border-accent-800/40 rounded-2xl text-sm text-accent-700 dark:text-accent-300 space-y-1">
         <p className="font-semibold">What is a VTO Body Photo?</p>
-        <p className="text-accent-600 dark:text-accent-400">Upload a clear, full-body photo of yourself. This is used by our Virtual Try-On feature to show how clothing items look on you. For best results, stand straight against a plain background.</p>
+        <p className="text-accent-700 dark:text-accent-400">Upload a clear, full-body photo of yourself. This is used by our Virtual Try-On feature to show how clothing items look on you. For best results, stand straight against a plain background.</p>
       </div>
 
       {/* Preview */}
@@ -440,7 +440,7 @@ function PrivacyTab() {
       {/* Data Consent */}
       <div className="card p-6 space-y-5">
         <div className="flex items-center gap-2 mb-1">
-          <FiShield size={18} className="text-accent-500" />
+          <FiShield size={18} className="text-accent-700" />
           <h3 className="font-semibold text-brand-800 dark:text-brand-200">Data Usage Consent</h3>
         </div>
         <p className="text-sm text-brand-500 dark:text-brand-400">
@@ -453,7 +453,7 @@ function PrivacyTab() {
               <p className="text-sm font-medium text-brand-800 dark:text-brand-200 capitalize">
                 {key.replace('_', ' ')}
               </p>
-              <p className="text-xs text-brand-400 mt-0.5">{consent.description}</p>
+              <p className="text-xs text-brand-500 mt-0.5">{consent.description}</p>
               {consent.granted && consent.granted_at && (
                 <p className="text-[10px] text-brand-300 mt-1">
                   Granted: {new Date(consent.granted_at).toLocaleDateString()} (v{consent.version})
@@ -488,7 +488,7 @@ function PrivacyTab() {
             ].map(([label, val]) => (
               <div key={label} className="bg-brand-50 dark:bg-brand-900/40 rounded-xl p-3 text-center">
                 <p className="text-lg font-bold text-brand-800 dark:text-brand-200">{val ?? 0}</p>
-                <p className="text-[10px] text-brand-400 uppercase tracking-wider">{label}</p>
+                <p className="text-[10px] text-brand-500 uppercase tracking-wider">{label}</p>
               </div>
             ))}
           </div>
@@ -602,7 +602,7 @@ function PrivacyTab() {
 function Field({ label, value, onChange, placeholder }) {
   return (
     <div>
-      <label className="block text-xs font-bold uppercase tracking-widest text-brand-400 mb-1.5">{label}</label>
+      <label className="block text-xs font-bold uppercase tracking-widest text-brand-500 mb-1.5">{label}</label>
       <input
         type="text"
         value={value}

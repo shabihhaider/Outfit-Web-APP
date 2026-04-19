@@ -145,7 +145,7 @@
 
   /* ─── Section label ─── */
   .label-xs {
-    @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-400 font-sans dark:text-brand-500;
+    @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-600 font-sans dark:text-brand-400;
   }
 
   /* ─── Divider ─── */

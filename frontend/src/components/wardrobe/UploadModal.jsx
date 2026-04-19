@@ -107,7 +107,7 @@ export default function UploadModal({ open, onClose }) {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-2xl font-semibold text-brand-900 dark:text-brand-100">Upload Item</h2>
-              <button onClick={handleClose} className="p-1.5 rounded-lg text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
+              <button onClick={handleClose} className="p-1.5 rounded-lg text-brand-500 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
                 <FiX size={18} />
               </button>
             </div>
@@ -130,7 +130,7 @@ export default function UploadModal({ open, onClose }) {
                       transition={{ delay: 0.2 }}
                       className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-accent-100 dark:bg-accent-900/30 border border-accent-200/60 dark:border-accent-700/40"
                     >
-                      <FiZap size={11} className="text-accent-600 dark:text-accent-400" />
+                      <FiZap size={11} className="text-accent-700 dark:text-accent-400" />
                       <span className="text-xs font-medium text-accent-700 dark:text-accent-300">Atelier: Background removed</span>
                     </motion.div>
                   )}
@@ -141,7 +141,7 @@ export default function UploadModal({ open, onClose }) {
                     <p className="label-xs">Style tips</p>
                     {uploadData.tips.map((tip, i) => (
                       <div key={i} className="text-sm text-brand-600 dark:text-brand-400 flex gap-2.5 bg-brand-50/60 dark:bg-brand-800/30 rounded-xl p-3 border border-brand-100/40 dark:border-brand-700/30">
-                        <span className="text-accent-500 font-bold mt-0.5">*</span>
+                        <span className="text-accent-700 font-bold mt-0.5">*</span>
                         <span>{tip}</span>
                       </div>
                     ))}
@@ -170,16 +170,16 @@ export default function UploadModal({ open, onClose }) {
                       </div>
                     </div>
                   ) : (
-                    <div className="py-12 flex flex-col items-center text-brand-400 dark:text-brand-500">
+                    <div className="py-12 flex flex-col items-center text-brand-500 dark:text-brand-400">
                       <FiUploadCloud size={32} className="mb-3 text-brand-300 dark:text-brand-600" />
                       <p className="text-sm font-medium text-brand-500 dark:text-brand-400">Drop image here or click to browse</p>
-                      <p className="text-xs mt-1 text-brand-400 dark:text-brand-500">PNG, JPG, WEBP up to 10MB</p>
+                      <p className="text-xs mt-1 text-brand-500 dark:text-brand-400">PNG, JPG, WEBP up to 10MB</p>
                     </div>
                   )}
                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileSelect(e.target.files[0])} />
                 </div>
 
-                <p className="text-xs text-brand-400 dark:text-brand-500 text-center">
+                <p className="text-xs text-brand-500 dark:text-brand-400 text-center">
                   Category will be auto-detected by AI
                 </p>
 

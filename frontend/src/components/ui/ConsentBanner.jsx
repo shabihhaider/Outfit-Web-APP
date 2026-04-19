@@ -67,13 +67,13 @@ export default function ConsentBanner() {
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center flex-shrink-0">
-                <FiShield size={16} className="text-accent-600 dark:text-accent-400" />
+                <FiShield size={16} className="text-accent-700 dark:text-accent-400" />
               </div>
               <h3 className="font-semibold text-sm text-brand-800 dark:text-brand-200">Data Usage Consent</h3>
             </div>
             <button
               onClick={() => setDismissed(true)}
-              className="p-1 text-brand-400 hover:text-brand-600 dark:hover:text-brand-300 transition-colors"
+              className="p-1 text-brand-500 hover:text-brand-600 dark:hover:text-brand-300 transition-colors"
             >
               <FiX size={16} />
             </button>

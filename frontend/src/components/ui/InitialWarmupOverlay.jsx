@@ -52,7 +52,7 @@ export default function InitialWarmupOverlay() {
       className="fixed inset-0 z-[70] bg-brand-950/70 backdrop-blur-sm flex items-center justify-center px-6"
     >
       <div className="w-full max-w-md rounded-2xl border border-brand-700/60 bg-brand-900/95 px-6 py-5 shadow-xl">
-        <p className="text-xs uppercase tracking-[0.2em] text-brand-400 mb-2">OutfitAI</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-brand-500 mb-2">OutfitAI</p>
         <LoadingSpinner size="sm" label="Warming up the AI service…" className="justify-start text-brand-100" />
         <p className="text-sm text-brand-300 mt-3">
           This can take a few seconds after idle. We&apos;re loading your wardrobe and recommendations.

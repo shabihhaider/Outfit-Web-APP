@@ -58,9 +58,9 @@ export default function LoginPage() {
             </div>
             <h2 className="font-display text-4xl xl:text-5xl font-bold text-white leading-tight">
               Your wardrobe,<br />
-              <span className="text-accent-400 italic">reimagined.</span>
+              <span className="text-accent-700 italic">reimagined.</span>
             </h2>
-            <p className="mt-4 text-brand-400 text-lg max-w-md leading-relaxed">
+            <p className="mt-4 text-brand-500 text-lg max-w-md leading-relaxed">
               AI-powered outfit recommendations tailored to your style, occasion, and weather.
             </p>
           </div>
@@ -84,7 +84,7 @@ export default function LoginPage() {
               </svg>
             </div>
             <h1 className="font-display text-2xl font-bold text-brand-900 dark:text-brand-100">
-              Outfit<span className="text-accent-500">AI</span>
+              Outfit<span className="text-accent-700">AI</span>
             </h1>
           </div>
 
@@ -110,7 +110,7 @@ export default function LoginPage() {
             <div>
               <label className="block text-sm font-medium text-brand-600 dark:text-brand-400 mb-1.5">Email</label>
               <div className="relative">
-                <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" size={16} />
+                <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-500" size={16} />
                 <input
                   type="email"
                   value={email}
@@ -125,7 +125,7 @@ export default function LoginPage() {
             <div>
               <label className="block text-sm font-medium text-brand-600 dark:text-brand-400 mb-1.5">Password</label>
               <div className="relative">
-                <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" size={16} />
+                <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-500" size={16} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -138,7 +138,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-600 dark:hover:text-brand-200"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-500 hover:text-brand-600 dark:hover:text-brand-200"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
@@ -146,7 +146,7 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="text-right">
-              <Link to="/forgot-password" className="text-sm text-brand-400 hover:text-accent-600 dark:hover:text-accent-400 transition-colors">
+              <Link to="/forgot-password" className="text-sm text-brand-500 hover:text-accent-700 dark:hover:text-accent-700 transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -168,7 +168,7 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-brand-500 dark:text-brand-400">
             Don&apos;t have an account?{' '}
-            <Link to="/register" className="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300 font-semibold transition-colors">
+            <Link to="/register" className="text-accent-700 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300 font-semibold transition-colors">
               Create one
             </Link>
           </p>

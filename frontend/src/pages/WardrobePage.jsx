@@ -165,7 +165,7 @@ export default function WardrobePage() {
                   />
                 )}
                 <span className="capitalize">{cat}</span>
-                <span className={`text-xs font-mono ${filter === cat ? 'text-brand-500 dark:text-brand-400' : 'text-brand-400 dark:text-brand-500'}`}>
+                <span className={`text-xs font-mono ${filter === cat ? 'text-brand-500 dark:text-brand-400' : 'text-brand-500 dark:text-brand-400'}`}>
                   {count}
                 </span>
               </motion.button>

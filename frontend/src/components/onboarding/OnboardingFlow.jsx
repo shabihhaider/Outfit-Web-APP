@@ -116,7 +116,7 @@ export default function OnboardingFlow() {
                   </button>
                 )}
 
-                <button onClick={() => setStep(3)} className="w-full text-center text-sm text-brand-400 hover:text-brand-600 dark:hover:text-brand-300 mt-4 py-2 transition-colors">
+                <button onClick={() => setStep(3)} className="w-full text-center text-sm text-brand-500 hover:text-brand-600 dark:hover:text-brand-300 mt-4 py-2 transition-colors">
                   Skip for now
                 </button>
               </motion.div>

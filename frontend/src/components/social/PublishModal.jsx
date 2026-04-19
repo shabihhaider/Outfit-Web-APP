@@ -94,7 +94,7 @@ export default function PublishModal({ open, onClose, savedOutfit, remixSourcePo
                   <p className="text-sm text-brand-500 mt-0.5">{savedOutfit.name}</p>
                 )}
               </div>
-              <button onClick={onClose} className="p-2 rounded-lg text-brand-400 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
+              <button onClick={onClose} className="p-2 rounded-lg text-brand-500 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
                 <FiX size={18} />
               </button>
             </div>
@@ -112,18 +112,18 @@ export default function PublishModal({ open, onClose, savedOutfit, remixSourcePo
                   placeholder="Describe this look…"
                   className="w-full rounded-xl border border-brand-200 dark:border-brand-700 bg-brand-50 dark:bg-brand-800/40 px-3 py-2.5 text-sm text-brand-800 dark:text-brand-200 placeholder-brand-400 focus:outline-none focus:border-accent-400 resize-none"
                 />
-                <p className="text-right text-[10px] text-brand-400 mt-1">{caption.length}/300</p>
+                <p className="text-right text-[10px] text-brand-500 mt-1">{caption.length}/300</p>
               </div>
 
               {/* Vibe tags */}
               <div>
-                <label className="label-xs mb-1.5 block">Vibe Tags <span className="font-normal text-brand-400">(pick up to 3)</span></label>
+                <label className="label-xs mb-1.5 block">Vibe Tags <span className="font-normal text-brand-500">(pick up to 3)</span></label>
                 {allVibes.length > 0 && (
                   <div className="space-y-3">
                     {/* South Asian tags first */}
                     {(vibesData?.['south-asian'] || []).length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-brand-400 mb-1.5">South Asian</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-brand-500 mb-1.5">South Asian</p>
                         <div className="flex flex-wrap gap-1.5">
                           {(vibesData?.['south-asian'] || []).map(v => (
                             <button
@@ -143,7 +143,7 @@ export default function PublishModal({ open, onClose, savedOutfit, remixSourcePo
                       </div>
                     )}
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-brand-400 mb-1.5">Global</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-brand-500 mb-1.5">Global</p>
                       <div className="flex flex-wrap gap-1.5">
                         {(vibesData?.global || []).map(v => (
                           <button

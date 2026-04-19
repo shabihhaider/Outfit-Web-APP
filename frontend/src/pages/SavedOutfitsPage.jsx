@@ -57,13 +57,13 @@ export default function SavedOutfitsPage() {
           <div className="flex bg-brand-50/60 dark:bg-brand-900/20 p-1 rounded-2xl border border-brand-100 dark:border-brand-800">
             <button 
               onClick={() => setViewMode('grid')}
-              className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-brand-800 shadow-sm text-brand-900 dark:text-brand-100' : 'text-brand-400 hover:text-brand-600'}`}
+              className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-brand-800 shadow-sm text-brand-900 dark:text-brand-100' : 'text-brand-500 hover:text-brand-600'}`}
             >
               <FiGrid size={20} />
             </button>
             <button 
               onClick={() => setViewMode('list')}
-              className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-brand-800 shadow-sm text-brand-900 dark:text-brand-100' : 'text-brand-400 hover:text-brand-600'}`}
+              className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-brand-800 shadow-sm text-brand-900 dark:text-brand-100' : 'text-brand-500 hover:text-brand-600'}`}
             >
               <FiList size={20} />
             </button>
@@ -114,10 +114,10 @@ export default function SavedOutfitsPage() {
                 >
                   <div className="flex items-start justify-between mb-6">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-brand-400 dark:text-brand-500">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-brand-500 dark:text-brand-400">
                         {formatDate(outfit.created_at ?? outfit.saved_at)}
                       </p>
-                      <h3 className="font-display text-xl font-bold text-brand-900 dark:text-brand-100 group-hover:text-accent-600 transition-colors truncate max-w-[180px]">
+                      <h3 className="font-display text-xl font-bold text-brand-900 dark:text-brand-100 group-hover:text-accent-700 transition-colors truncate max-w-[180px]">
                         {outfit.name || 'Untitled Look'}
                       </h3>
                     </div>
@@ -142,14 +142,14 @@ export default function SavedOutfitsPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setTryOnTarget(outfit)}
-                        className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-accent-600 dark:hover:text-accent-400 font-medium px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
+                        className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-accent-700 dark:hover:text-accent-700 font-medium px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
                         title="Virtual Try-On"
                       >
                         <FiUser size={13} /> Try On
                       </button>
                       <button
                         onClick={() => setPublishTarget(outfit)}
-                        className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-accent-600 dark:hover:text-accent-400 font-medium px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
+                        className="flex items-center gap-1.5 text-xs text-brand-500 hover:text-accent-700 dark:hover:text-accent-700 font-medium px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
                         title="Share to Feed"
                       >
                         <FiShare2 size={13} />

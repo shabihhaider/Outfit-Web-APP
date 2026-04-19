@@ -181,18 +181,18 @@ export default function OutfitEditorPage() {
             className="lg:hidden w-full flex items-center justify-between p-4 card-glass mb-3 border-brand-100/60 dark:border-brand-800/40 rounded-2xl"
           >
             <div className="flex items-center gap-2">
-              <FiLayers className="text-accent-500" size={16} />
+              <FiLayers className="text-accent-700" size={16} />
               <span className="font-bold text-sm text-brand-900 dark:text-brand-100">Wardrobe Assets</span>
-              <span className="text-xs text-brand-400 dark:text-brand-500">({sidebarItems.length})</span>
+              <span className="text-xs text-brand-500 dark:text-brand-400">({sidebarItems.length})</span>
             </div>
             <motion.div animate={{ rotate: mobileSidebarOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-              <FiChevronDown size={16} className="text-brand-400" />
+              <FiChevronDown size={16} className="text-brand-500" />
             </motion.div>
           </button>
 
           <div className={`card-glass p-5 border-brand-100/60 dark:border-brand-800/40 ${mobileSidebarOpen ? 'block' : 'hidden'} lg:block`}>
             <div className="hidden lg:flex items-center gap-2 mb-5">
-              <FiLayers className="text-accent-500" size={18} />
+              <FiLayers className="text-accent-700" size={18} />
               <h2 className="font-display text-lg font-bold text-brand-900 dark:text-brand-100 tracking-tight">Assets</h2>
             </div>
 
@@ -241,7 +241,7 @@ export default function OutfitEditorPage() {
                       <FiPlus className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" size={20} />
                     </div>
                   </div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-brand-400 text-center mt-1.5 truncate px-1">{item.category}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-brand-500 text-center mt-1.5 truncate px-1">{item.category}</p>
                 </motion.div>
               ))}
               {sidebarItems.length === 0 && (
@@ -297,7 +297,7 @@ export default function OutfitEditorPage() {
                     {'\u{2728}'}
                   </div>
                   <p className="font-display text-xl font-medium text-brand-900 dark:text-brand-200 mb-2">Build Your Vision</p>
-                  <p className="text-brand-400 dark:text-brand-500 text-sm max-w-[280px]">
+                  <p className="text-brand-500 dark:text-brand-400 text-sm max-w-[280px]">
                     <span className="hidden sm:inline">Drag assets from your wardrobe onto the canvas to begin composing.</span>
                     <span className="sm:hidden">Tap items from Wardrobe Assets above to add them to the canvas.</span>
                   </p>
@@ -331,7 +331,7 @@ export default function OutfitEditorPage() {
                           <FiX size={14} />
                         </button>
                         <div className="mt-3 text-center">
-                          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-accent-600 dark:text-accent-400 ml-1">{item.category}</span>
+                          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-accent-700 dark:text-accent-400 ml-1">{item.category}</span>
                         </div>
                       </motion.div>
                     ))}
@@ -347,7 +347,7 @@ export default function OutfitEditorPage() {
               <p className="label-xs mb-4">Context Modifiers</p>
               <div className="space-y-5">
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-brand-400 block mb-2">Occasion</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-brand-500 block mb-2">Occasion</label>
                   <CustomSelect
                     value={occasion}
                     onChange={(val) => { setOccasion(val); setSaved(false) }}
@@ -356,7 +356,7 @@ export default function OutfitEditorPage() {
                 </div>
 
                 <div>
-                   <label className="text-[10px] font-bold uppercase tracking-widest text-brand-400 block mb-2">Temperature</label>
+                   <label className="text-[10px] font-bold uppercase tracking-widest text-brand-500 block mb-2">Temperature</label>
                    <div className="flex items-center gap-3">
                       <div className="flex-1">
                         <input
@@ -529,7 +529,7 @@ export default function OutfitEditorPage() {
                 <p className="label-xs">Score Breakdown</p>
                 <button
                   onClick={() => setScoreModalOpen(false)}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-800 transition-all"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-brand-500 hover:bg-brand-100 dark:hover:bg-brand-800 transition-all"
                 >
                   <FiX size={16} />
                 </button>
@@ -623,14 +623,14 @@ export default function OutfitEditorPage() {
                   </div>
                   <div>
                     <h2 className="font-display text-xl font-bold text-brand-900 dark:text-brand-100 tracking-tight italic">Studio Canvas</h2>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-brand-400">{canvasItems.length} item{canvasItems.length !== 1 ? 's' : ''}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-brand-500">{canvasItems.length} item{canvasItems.length !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   {scoreData && isValid && (
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 dark:bg-brand-900/40 border border-brand-100 dark:border-brand-800">
                       <span className="data-value text-sm">{pct}%</span>
-                      <span className="text-[10px] text-brand-400 font-medium">match</span>
+                      <span className="text-[10px] text-brand-500 font-medium">match</span>
                       <ConfidenceBadge level={scoreData.confidence} />
                     </div>
                   )}
@@ -638,7 +638,7 @@ export default function OutfitEditorPage() {
                     onClick={() => setCanvasFullscreen(false)}
                     whileHover={{ scale: 1.06 }}
                     whileTap={{ scale: 0.94 }}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-brand-400 hover:text-brand-700 dark:hover:text-brand-200 hover:bg-brand-100 dark:hover:bg-brand-800 transition-all"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-brand-500 hover:text-brand-700 dark:hover:text-brand-200 hover:bg-brand-100 dark:hover:bg-brand-800 transition-all"
                     title="Exit fullscreen"
                   >
                     <FiMinimize2 size={18} />
@@ -654,7 +654,7 @@ export default function OutfitEditorPage() {
                       {'\u2728'}
                     </div>
                     <p className="font-display text-2xl font-medium text-brand-900 dark:text-brand-200 mb-2">Canvas is empty</p>
-                    <p className="text-brand-400 text-sm">Close fullscreen and add items from your wardrobe.</p>
+                    <p className="text-brand-500 text-sm">Close fullscreen and add items from your wardrobe.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 max-w-6xl mx-auto">
@@ -683,7 +683,7 @@ export default function OutfitEditorPage() {
                           <FiX size={14} />
                         </button>
                         <div className="mt-3 text-center">
-                          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-accent-600 dark:text-accent-400">{item.category}</span>
+                          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-accent-700 dark:text-accent-400">{item.category}</span>
                         </div>
                       </motion.div>
                     ))}
@@ -709,7 +709,7 @@ function ScoreStat({ icon, label, value, delay = 0 }) {
   const pct = Math.round((value ?? 0) * 100)
   return (
     <div className="flex flex-col gap-2">
-       <div className="flex items-center gap-2 text-brand-400">
+       <div className="flex items-center gap-2 text-brand-500">
          <div className="w-6 h-6 rounded-lg bg-brand-50 dark:bg-brand-800/60 flex items-center justify-center">
             {icon}
          </div>
@@ -734,7 +734,7 @@ function SwapSuggestions({ suggestions, onSwap }) {
   return (
     <div className="pt-6 border-t border-brand-100/60 dark:border-brand-800/40">
       <div className="flex items-center gap-2 mb-4">
-        <FiZap size={14} className="text-accent-500" />
+        <FiZap size={14} className="text-accent-700" />
         <h3 className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand-500">Suggested Optimizations</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

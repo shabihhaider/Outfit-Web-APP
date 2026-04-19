@@ -53,7 +53,7 @@ export default function DashboardPage() {
           <p className="label-xs mb-2">Dashboard</p>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-brand-900 dark:text-brand-100 leading-[1.1] tracking-tight">
             {getGreeting()},<br />
-            <span className="text-accent-500 italic">{user?.name || 'there'}</span>
+            <span className="text-accent-700 italic">{user?.name || 'there'}</span>
           </h1>
         </motion.div>
 
@@ -91,7 +91,7 @@ export default function DashboardPage() {
               ))}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-accent-600 dark:text-accent-400 uppercase tracking-wider mb-0.5">
+              <p className="text-xs font-semibold text-accent-700 dark:text-accent-400 uppercase tracking-wider mb-0.5">
                 Today&apos;s Planned Look
               </p>
               <p className="text-sm font-medium text-brand-700 dark:text-brand-200 capitalize truncate">
@@ -101,7 +101,7 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={() => navigate('/calendar')}
-              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-accent-600 dark:text-accent-400 hover:underline"
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-accent-700 dark:text-accent-400 hover:underline"
             >
               <FiCalendar size={13} /> View Calendar
             </button>
@@ -115,7 +115,7 @@ export default function DashboardPage() {
               <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200">Wardrobe Health</h2>
               <button
                 onClick={() => navigate('/wardrobe')}
-                className="text-sm text-brand-400 hover:text-accent-600 dark:hover:text-accent-400 transition-colors flex items-center gap-1"
+                className="text-sm text-brand-500 hover:text-accent-700 dark:hover:text-accent-700 transition-colors flex items-center gap-1"
               >
                 View all <FiArrowRight size={14} />
               </button>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
                   <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200">Recent</h2>
                   <button
                     onClick={() => navigate('/outfits/history')}
-                    className="text-sm text-brand-400 hover:text-accent-600 dark:hover:text-accent-400 transition-colors flex items-center gap-1"
+                    className="text-sm text-brand-500 hover:text-accent-700 dark:hover:text-accent-700 transition-colors flex items-center gap-1"
                   >
                     View all <FiArrowRight size={14} />
                   </button>
@@ -219,7 +219,7 @@ export default function DashboardPage() {
                     >
                       <div className="flex items-center justify-between mb-3">
                         <span className="badge-casual capitalize">{entry.occasion}</span>
-                        <span className="text-xs text-brand-400 dark:text-brand-500">{formatDate(entry.created_at)}</span>
+                        <span className="text-xs text-brand-500 dark:text-brand-400">{formatDate(entry.created_at)}</span>
                       </div>
                       <div className="flex gap-1 flex-wrap">
                         {entry.items?.slice(0, 3).map((item, i) => (

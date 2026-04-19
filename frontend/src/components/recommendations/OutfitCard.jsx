@@ -86,7 +86,7 @@ export default function OutfitCard({ outfit, occasion }) {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <ConfidenceBadge level={outfit.confidence} />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-brand-400 dark:text-brand-500">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-brand-500 dark:text-brand-400">
                 Compatibility
               </span>
             </div>
@@ -127,9 +127,9 @@ export default function OutfitCard({ outfit, occasion }) {
           <div className="flex items-center justify-between flex-wrap gap-y-2">
             <button
               onClick={() => setShowDetails(!showDetails)}
-              className="text-xs font-bold uppercase tracking-widest text-brand-500 dark:text-brand-400 flex items-center gap-1.5 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
+              className="text-xs font-bold uppercase tracking-widest text-brand-500 dark:text-brand-400 flex items-center gap-1.5 hover:text-accent-700 dark:hover:text-accent-700 transition-colors"
             >
-              <FiInfo size={14} className={showDetails ? 'text-accent-500' : ''} />
+              <FiInfo size={14} className={showDetails ? 'text-accent-700' : ''} />
               {showDetails ? 'Close Analysis' : 'View Analysis'}
             </button>
             <div className="flex gap-2 sm:gap-4">
@@ -178,7 +178,7 @@ export default function OutfitCard({ outfit, occasion }) {
           <div className="flex items-center gap-3">
              <button
                onClick={() => setTryOnOpen(true)}
-               className="h-9 px-3.5 rounded-xl text-xs font-medium text-brand-500 dark:text-brand-400 border border-brand-200/60 dark:border-brand-700/40 hover:bg-accent-50 dark:hover:bg-accent-900/15 hover:text-accent-600 dark:hover:text-accent-400 hover:border-accent-200 dark:hover:border-accent-700 transition-all flex items-center gap-1.5"
+               className="h-9 px-3.5 rounded-xl text-xs font-medium text-brand-500 dark:text-brand-400 border border-brand-200/60 dark:border-brand-700/40 hover:bg-accent-50 dark:hover:bg-accent-900/15 hover:text-accent-700 dark:hover:text-accent-700 hover:border-accent-200 dark:hover:border-accent-700 transition-all flex items-center gap-1.5"
                title="Virtual Try-On"
              >
                <FiUser size={13} /> Try On
@@ -207,7 +207,7 @@ export default function OutfitCard({ outfit, occasion }) {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display text-lg font-bold text-brand-900 dark:text-brand-100">Name this look</h3>
-                <button onClick={() => { setShowNameModal(false); setSaveError('') }} className="w-8 h-8 rounded-lg flex items-center justify-center text-brand-400 hover:text-brand-700 dark:hover:text-brand-200 hover:bg-brand-100 dark:hover:bg-brand-800 transition-all">
+                <button onClick={() => { setShowNameModal(false); setSaveError('') }} className="w-8 h-8 rounded-lg flex items-center justify-center text-brand-500 hover:text-brand-700 dark:hover:text-brand-200 hover:bg-brand-100 dark:hover:bg-brand-800 transition-all">
                   <FiX size={16} />
                 </button>
               </div>

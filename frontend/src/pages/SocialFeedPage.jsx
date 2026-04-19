@@ -95,13 +95,13 @@ export default function SocialFeedPage() {
         {/* Search bar — Discover tab only */}
         {tab === 'discover' && (
           <div className="relative mb-6">
-            <FiSearch size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" />
+            <FiSearch size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-500" />
             <input
               type="text"
               value={searchQ}
               onChange={e => setSearchQ(e.target.value)}
               placeholder="Search people by username or name…"
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-brand-200/60 dark:border-brand-700/40 bg-white dark:bg-brand-900 text-sm text-brand-800 dark:text-brand-200 placeholder:text-brand-400 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-brand-200/60 dark:border-brand-700/40 bg-white dark:bg-brand-900 text-sm text-brand-800 dark:text-brand-200 placeholder:text-brand-500 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400 transition-all"
             />
           </div>
         )}
@@ -121,7 +121,7 @@ export default function SocialFeedPage() {
                 </div>
               )}
               {!isSearching && searchResults.length === 0 && (
-                <p className="text-sm text-brand-400 dark:text-brand-500 text-center py-3">
+                <p className="text-sm text-brand-500 dark:text-brand-400 text-center py-3">
                   No users found for &ldquo;{debouncedQ}&rdquo;
                 </p>
               )}
@@ -144,7 +144,7 @@ export default function SocialFeedPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6"
           >
-            <p className="text-xs font-semibold text-brand-400 uppercase tracking-widest mb-2">
+            <p className="text-xs font-semibold text-brand-500 uppercase tracking-widest mb-2">
               🔥 Trending this week
             </p>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -305,7 +305,7 @@ function UserSearchRow({ user, onNavigate, onFollowChange }) {
         </div>
         <div className="min-w-0">
           <p className="text-sm font-medium text-brand-800 dark:text-brand-200 truncate">@{user.username}</p>
-          <p className="text-xs text-brand-400 dark:text-brand-500 truncate">{user.name} · {user.follower_count} followers</p>
+          <p className="text-xs text-brand-500 dark:text-brand-400 truncate">{user.name} · {user.follower_count} followers</p>
         </div>
       </button>
       <button

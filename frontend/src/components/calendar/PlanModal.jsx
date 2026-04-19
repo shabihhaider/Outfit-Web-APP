@@ -159,7 +159,7 @@ export default function PlanModal({ open, date, existingPlan, monthStr, onClose 
                   </h3>
                   <p className="text-sm text-brand-500 dark:text-brand-400">{formatDateDisplay(date)}</p>
                 </div>
-                <button onClick={onClose} className="p-1.5 rounded-lg text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
+                <button onClick={onClose} className="p-1.5 rounded-lg text-brand-500 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
                   <FiX size={18} />
                 </button>
               </div>
@@ -209,7 +209,7 @@ export default function PlanModal({ open, date, existingPlan, monthStr, onClose 
               {mode === 'saved' && (
                 <div className="space-y-2 mb-5 max-h-48 overflow-y-auto">
                   {savedOutfits.length === 0 ? (
-                    <p className="text-sm text-brand-400 dark:text-brand-500 text-center py-4">No saved outfits yet.</p>
+                    <p className="text-sm text-brand-500 dark:text-brand-400 text-center py-4">No saved outfits yet.</p>
                   ) : (
                     savedOutfits.map(outfit => (
                       <button
@@ -230,7 +230,7 @@ export default function PlanModal({ open, date, existingPlan, monthStr, onClose 
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-brand-800 dark:text-brand-200 truncate">{outfit.name}</p>
-                          <p className="text-xs text-brand-400 dark:text-brand-500 capitalize">
+                          <p className="text-xs text-brand-500 dark:text-brand-400 capitalize">
                             {outfit.occasion} &middot; {Math.round((outfit.final_score || 0) * 100)}%
                           </p>
                         </div>
