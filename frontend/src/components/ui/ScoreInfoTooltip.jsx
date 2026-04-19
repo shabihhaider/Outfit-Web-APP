@@ -5,8 +5,20 @@ import { FiInfo } from 'react-icons/fi'
  * Small ⓘ icon that shows a tooltip explaining the outfit match score.
  * Works on desktop (hover) and mobile (tap to toggle).
  */
-export default function ScoreInfoTooltip() {
+/**
+ * placement: "up" (default) — tooltip appears above the icon
+ *            "down"         — tooltip appears below (use when card is near top of viewport)
+ */
+export default function ScoreInfoTooltip({ placement = 'up' }) {
   const [open, setOpen] = useState(false)
+
+  const above = placement === 'up'
+  const tooltipPos = above
+    ? 'bottom-full left-1/2 -translate-x-1/2 mb-2'
+    : 'top-full right-0 mt-2'
+  const arrowClass = above
+    ? 'absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-brand-900 dark:border-t-brand-100'
+    : 'absolute bottom-full right-4 border-4 border-transparent border-b-brand-900 dark:border-b-brand-100'
 
   return (
     <span className="relative inline-flex items-center">
@@ -24,7 +36,7 @@ export default function ScoreInfoTooltip() {
       {open && (
         <div
           role="tooltip"
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 z-50 bg-brand-900 dark:bg-brand-100 text-white dark:text-brand-900 text-[11px] rounded-xl shadow-xl px-3.5 py-3 pointer-events-none"
+          className={`absolute ${tooltipPos} w-60 z-50 bg-brand-900 dark:bg-brand-100 text-white dark:text-brand-900 text-[11px] rounded-xl shadow-xl px-3.5 py-3 pointer-events-none`}
         >
           <p className="font-semibold mb-1.5">Match Score</p>
           <p className="text-brand-300 dark:text-brand-600 mb-2">Combines 4 factors:</p>
@@ -37,8 +49,7 @@ export default function ScoreInfoTooltip() {
           <div className="mt-2 pt-2 border-t border-brand-700 dark:border-brand-300 text-brand-400 dark:text-brand-500">
             85%+ great · 70–84% good · &lt;70% fair
           </div>
-          {/* Arrow */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-brand-900 dark:border-t-brand-100" />
+          <div className={arrowClass} />
         </div>
       )}
     </span>

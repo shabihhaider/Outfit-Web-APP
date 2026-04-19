@@ -119,7 +119,7 @@ export default function OOTDWidget() {
         </div>
         <div className="text-right">
           <span className="data-value text-2xl">{pct}%</span>
-          <ScoreInfoTooltip />
+          <ScoreInfoTooltip placement="down" />
           <div className="mt-1">
             <ConfidenceBadge level={outfit.confidence} />
           </div>
