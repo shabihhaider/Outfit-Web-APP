@@ -8,6 +8,9 @@ import VibeTagPill from './VibeTagPill.jsx'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { resolveUrl } from '../../utils/resolveUrl.js'
+import { formatRelativeTime } from '../../utils/formatters.js'
+
+const TRENDING_LIKES_THRESHOLD = 20
 
 export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick }) {
   const { user } = useAuth()
@@ -61,7 +64,8 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
   const previewUrl  = post.preview_url ? resolveUrl(post.preview_url) : null
   const itemImages  = post.outfit?.item_images ?? []
   const username    = post.user?.username || `user_${post.user_id}`
-  const timeAgo     = _timeAgo(post.created_at)
+  const timeAgo     = formatRelativeTime(post.created_at)
+  const isTrending  = likeCount >= TRENDING_LIKES_THRESHOLD
 
   return (
     <>
@@ -95,9 +99,16 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
             <OccasionCard outfit={post.outfit} />
           )}
 
+          {/* Trending badge */}
+          {isTrending && (
+            <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm flex items-center gap-1">
+              🔥 Trending
+            </div>
+          )}
+
           {/* Remix source badge */}
           {post.remix_source_post_id && (
-            <div className="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm">
+            <div className={`absolute text-white text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm bg-black/50 ${isTrending ? 'top-2 left-[90px]' : 'top-2 left-2'}`}>
               Remixed
             </div>
           )}
@@ -193,7 +204,7 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-brand-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
               >
                 <FiRefreshCw size={13} />
-                <span>{post.remix_count > 0 ? post.remix_count : 'Remix'}</span>
+                <span>{post.remix_count ?? 0}</span>
               </button>
             )}
 
@@ -311,14 +322,3 @@ function OccasionCard({ outfit }) {
   )
 }
 
-/* ─── Helpers ───────────────────────────────────────────────────────── */
-
-function _timeAgo(isoString) {
-  if (!isoString) return ''
-  const diff = (Date.now() - new Date(isoString).getTime()) / 1000
-  if (diff < 60)        return `${Math.floor(diff)}s`
-  if (diff < 3600)      return `${Math.floor(diff / 60)}m`
-  if (diff < 86400)     return `${Math.floor(diff / 3600)}h`
-  if (diff < 2592000)   return `${Math.floor(diff / 86400)}d`
-  return new Date(isoString).toLocaleDateString()
-}

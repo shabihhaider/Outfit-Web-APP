@@ -74,6 +74,17 @@ export function formatDate(isoString) {
   })
 }
 
+export function formatRelativeTime(isoString) {
+  if (!isoString) return ''
+  const diff = (Date.now() - new Date(isoString).getTime()) / 1000
+  if (diff < 60)      return 'just now'
+  if (diff < 3600)    return `${Math.floor(diff / 60)} min ago`
+  if (diff < 86400)   return `${Math.floor(diff / 3600)} hour${Math.floor(diff / 3600) !== 1 ? 's' : ''} ago`
+  if (diff < 172800)  return 'Yesterday'
+  if (diff < 604800)  return `${Math.floor(diff / 86400)} days ago`
+  return new Date(isoString).toLocaleDateString('en-PK', { month: 'short', day: 'numeric' })
+}
+
 export function getGreeting() {
   const hour = new Date().getHours()
   if (hour < 12) return 'Good morning'
