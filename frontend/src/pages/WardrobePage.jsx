@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useRef, useCallback } from 'react'
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiPlus, FiCheckSquare, FiX, FiTrash2 } from 'react-icons/fi'
+import { FiPlus, FiCheckSquare, FiX, FiTrash2, FiLoader } from 'react-icons/fi'
 import { getItems, deleteItem, bulkDeleteItems, bulkUpdateFormality } from '../api/wardrobe.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import WardrobeGrid from '../components/wardrobe/WardrobeGrid.jsx'
@@ -20,9 +20,19 @@ export default function WardrobePage() {
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const queryClient = useQueryClient()
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['wardrobe'],
-    queryFn: getItems,
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['wardrobe', filter],
+    queryFn: ({ pageParam = 1 }) => getItems({ page: pageParam, limit: 20, category: filter }),
+    getNextPageParam: (lastPage) => lastPage.has_next ? lastPage.page + 1 : undefined,
+    staleTime: 60 * 1000,
   })
 
   const deleteMutation = useMutation({
@@ -46,8 +56,14 @@ export default function WardrobePage() {
     },
   })
 
-  const items = data?.items ?? []
-  const filtered = filter === 'all' ? items : items.filter(i => i.category === filter)
+  // Flatten all loaded pages
+  const items = data?.pages.flatMap(p => p.items) ?? []
+  const totalItems = data?.pages[0]?.total ?? 0
+
+  function handleFilterChange(cat) {
+    setFilter(cat)
+    exitSelectMode()
+  }
 
   function toggleSelect(id) {
     setSelectedIds(prev => {
@@ -63,10 +79,19 @@ export default function WardrobePage() {
   }
 
   function selectAll() {
-    setSelectedIds(new Set(filtered.map(i => i.id)))
+    setSelectedIds(new Set(items.map(i => i.id)))
   }
 
   const selCount = selectedIds.size
+
+  // Category counts from loaded items (updates as more pages load)
+  function catCount(cat) {
+    if (cat === 'all') return totalItems
+    // When a category filter is active, total comes from API; otherwise count client-side
+    if (filter === cat) return totalItems
+    if (filter !== 'all') return 0
+    return items.filter(i => i.category === cat).length
+  }
 
   return (
     <>
@@ -79,17 +104,19 @@ export default function WardrobePage() {
               My Wardrobe
             </h1>
             <p className="text-brand-500 dark:text-brand-400 mt-1">
-              {isLoading ? 'Loading your wardrobe items...' : `${items.length} item${items.length !== 1 ? 's' : ''} in your collection`}
+              {isLoading
+                ? 'Loading your wardrobe items...'
+                : `${totalItems} item${totalItems !== 1 ? 's' : ''} in your collection`}
             </p>
           </div>
           <div className="flex items-center gap-2">
             {selectMode ? (
               <>
                 <button
-                  onClick={selCount === filtered.length ? () => setSelectedIds(new Set()) : selectAll}
+                  onClick={selCount === items.length ? () => setSelectedIds(new Set()) : selectAll}
                   className="h-9 px-3 rounded-xl text-xs font-medium text-brand-500 dark:text-brand-400 border border-brand-200/60 dark:border-brand-700/40 hover:bg-brand-50 dark:hover:bg-brand-800/40 transition-all"
                 >
-                  {selCount === filtered.length ? 'Deselect All' : 'Select All'}
+                  {selCount === items.length ? 'Deselect All' : 'Select All'}
                 </button>
                 <button onClick={exitSelectMode} className="h-9 px-3 rounded-xl text-xs font-medium btn-secondary flex items-center gap-1.5">
                   <FiX size={13} /> Done
@@ -97,7 +124,7 @@ export default function WardrobePage() {
               </>
             ) : (
               <>
-                {items.length > 0 && (
+                {totalItems > 0 && (
                   <button
                     onClick={() => setSelectMode(true)}
                     className="h-9 px-3 rounded-xl text-xs font-medium text-brand-500 dark:text-brand-400 border border-brand-200/60 dark:border-brand-700/40 hover:bg-brand-50 dark:hover:bg-brand-800/40 transition-all flex items-center gap-1.5"
@@ -117,12 +144,12 @@ export default function WardrobePage() {
         {/* Filter tabs */}
         <div className="flex gap-2 flex-wrap mb-8">
           {CATEGORIES.map(cat => {
-            const count = cat === 'all' ? items.length : items.filter(i => i.category === cat).length
+            const count = catCount(cat)
             return (
               <motion.button
                 key={cat}
                 whileTap={{ scale: 0.96 }}
-                onClick={() => setFilter(cat)}
+                onClick={() => handleFilterChange(cat)}
                 style={{ touchAction: 'manipulation' }}
                 className={`relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                   filter === cat
@@ -163,13 +190,28 @@ export default function WardrobePage() {
         {error && <ErrorMessage message="Could not load wardrobe." onRetry={refetch} />}
         {!isLoading && !error && (
           <WardrobeGrid
-            items={filtered}
+            items={items}
             onDelete={id => deleteMutation.mutate(id)}
             onUpload={() => setUploadOpen(true)}
             selectMode={selectMode}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
           />
+        )}
+
+        {/* Load more */}
+        {hasNextPage && !isLoading && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="btn-secondary flex items-center gap-2 disabled:opacity-60"
+            >
+              {isFetchingNextPage
+                ? <><FiLoader size={14} className="animate-spin" /> Loading…</>
+                : `Load more (${totalItems - items.length} remaining)`}
+            </button>
+          </div>
         )}
       </PageWrapper>
 

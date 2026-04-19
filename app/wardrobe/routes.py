@@ -240,15 +240,54 @@ def upload_item():
 
 # ─── GET /wardrobe/items ──────────────────────────────────────────────────────
 
+_VALID_CATEGORIES = {"top", "bottom", "outwear", "shoes", "dress", "jumpsuit"}
+_MAX_LIMIT = 50
+
+
 @wardrobe_bp.route("/items", methods=["GET"])
 @jwt_required()
 def list_items():
-    """GET /wardrobe/items — return all wardrobe items for the authenticated user."""
+    """
+    GET /wardrobe/items?page=1&limit=20&category=top
+    Returns paginated wardrobe items for the authenticated user.
+
+    Query params:
+      page     — 1-based page number (default: 1)
+      limit    — items per page, max 50 (default: 20)
+      category — filter by category (optional)
+    """
     user_id = int(get_jwt_identity())
-    items   = WardrobeItemDB.query.filter_by(user_id=user_id).order_by(WardrobeItemDB.created_at.desc()).all()
+
+    try:
+        page  = max(1, int(request.args.get("page", 1)))
+        limit = min(_MAX_LIMIT, max(1, int(request.args.get("limit", 20))))
+    except (TypeError, ValueError):
+        return jsonify({"error": "page and limit must be integers"}), 400
+
+    category = request.args.get("category", "").strip().lower() or None
+    if category and category not in _VALID_CATEGORIES:
+        return jsonify({"error": f"Invalid category '{category}'"}), 400
+
+    query = (
+        WardrobeItemDB.query
+        .filter_by(user_id=user_id)
+        .order_by(WardrobeItemDB.created_at.desc())
+    )
+    if category:
+        query = query.filter(WardrobeItemDB.category == category)
+
+    total   = query.count()
+    pages   = max(1, -(-total // limit))          # ceiling division
+    items   = query.offset((page - 1) * limit).limit(limit).all()
+
     response = jsonify({
-        "items": [item.to_dict() for item in items],
-        "count": len(items),
+        "items":    [item.to_dict() for item in items],
+        "total":    total,
+        "page":     page,
+        "pages":    pages,
+        "limit":    limit,
+        "has_next": page < pages,
+        "has_prev": page > 1,
     })
     response.headers["Cache-Control"] = "private, max-age=60, stale-while-revalidate=300"
     response.headers["Vary"] = "Authorization"

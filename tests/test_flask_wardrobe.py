@@ -249,7 +249,9 @@ class TestList:
         assert resp.status_code == 200
         body = resp.get_json()
         assert body["items"] == []
-        assert body["count"] == 0
+        assert body["total"] == 0
+        assert body["page"] == 1
+        assert body["has_next"] is False
 
     def test_list_after_upload(self, client, auth_headers, upload_item):
         resp = client.get("/wardrobe/items", headers=auth_headers)
@@ -257,12 +259,38 @@ class TestList:
         assert resp.headers.get("Cache-Control") == "private, max-age=60, stale-while-revalidate=300"
         assert "Authorization" in (resp.headers.get("Vary") or "")
         body = resp.get_json()
-        assert body["count"] == 1
+        assert body["total"] == 1
         assert body["items"][0]["id"] == upload_item["id"]
 
     def test_list_requires_auth(self, client):
         resp = client.get("/wardrobe/items")
         assert resp.status_code == 401
+
+    def test_list_pagination_params(self, client, auth_headers, upload_item):
+        """page/limit params are respected; category filter works."""
+        resp = client.get("/wardrobe/items?page=1&limit=5", headers=auth_headers)
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["page"] == 1
+        assert body["limit"] == 5
+        assert "has_next" in body
+        assert "has_prev" in body
+
+    def test_list_category_filter(self, client, auth_headers, upload_item):
+        """?category=top returns only tops; other categories return empty."""
+        resp = client.get("/wardrobe/items?category=top", headers=auth_headers)
+        body = resp.get_json()
+        assert resp.status_code == 200
+        # The mock pipeline returns "top" for every upload
+        assert body["total"] == 1
+        assert all(i["category"] == "top" for i in body["items"])
+
+        resp2 = client.get("/wardrobe/items?category=shoes", headers=auth_headers)
+        assert resp2.get_json()["total"] == 0
+
+    def test_list_invalid_category(self, client, auth_headers):
+        resp = client.get("/wardrobe/items?category=invalid", headers=auth_headers)
+        assert resp.status_code == 400
 
     def test_list_isolation_between_users(self, client, auth_headers, minimal_png):
         """Items uploaded by user A must not appear in user B's list."""
@@ -297,7 +325,7 @@ class TestList:
 
         resp = client.get("/wardrobe/items", headers=headers_b)
         assert resp.status_code == 200
-        assert resp.get_json()["count"] == 0
+        assert resp.get_json()["total"] == 0
 
 
 # ─── Delete ───────────────────────────────────────────────────────────────────
@@ -311,7 +339,7 @@ class TestDelete:
 
         # Confirm it's gone
         list_resp = client.get("/wardrobe/items", headers=auth_headers)
-        assert list_resp.get_json()["count"] == 0
+        assert list_resp.get_json()["total"] == 0
 
     def test_delete_not_found(self, client, auth_headers):
         resp = client.delete("/wardrobe/items/99999", headers=auth_headers)

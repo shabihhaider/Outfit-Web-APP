@@ -1,7 +1,10 @@
 import api from './axios.js'
 
-export const getItems = () =>
-  api.get('/wardrobe/items').then(r => r.data)
+export const getItems = ({ page = 1, limit = 20, category } = {}) => {
+  const params = { page, limit }
+  if (category && category !== 'all') params.category = category
+  return api.get('/wardrobe/items', { params }).then(r => r.data)
+}
 
 export const uploadItem = (formData) =>
   api.post('/wardrobe/items', formData, {
