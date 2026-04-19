@@ -69,7 +69,7 @@ export default function OOTDWidget() {
     return (
       <div className="card p-6">
         <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200 mb-2">Today&apos;s Pick</h2>
-        <p className="text-sm text-brand-400 dark:text-brand-500">Could not load today&apos;s outfit.</p>
+        <p className="text-sm text-brand-500 dark:text-brand-400">Could not load today&apos;s outfit.</p>
       </div>
     )
   }
@@ -105,11 +105,11 @@ export default function OOTDWidget() {
         <div>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-accent-100/80 dark:bg-accent-900/25 flex items-center justify-center">
-              <FiSun className="text-accent-500" size={16} />
+              <FiSun className="text-accent-700" size={16} />
             </div>
             <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200">Today&apos;s Pick</h2>
           </div>
-          <p className="text-xs text-brand-400 dark:text-brand-500 mt-1 ml-[42px] flex items-center gap-1.5">
+          <p className="text-xs text-brand-500 dark:text-brand-400 mt-1 ml-[42px] flex items-center gap-1.5">
             <span className="capitalize">{outfit.occasion}</span>
             <span className="text-brand-300 dark:text-brand-600">/</span>
             <FiThermometer size={11} />
@@ -168,7 +168,7 @@ export default function OOTDWidget() {
               <div className="w-20 h-20 rounded-xl overflow-hidden bg-brand-100/40 dark:bg-brand-800/20 border-2 border-dashed border-brand-200/60 dark:border-brand-700/40 flex items-center justify-center">
                 <FiPlus className="text-brand-300 dark:text-brand-600" size={20} />
               </div>
-              <p className="text-[10px] text-brand-400 dark:text-brand-500 text-center mt-1.5">
+              <p className="text-[10px] text-brand-500 dark:text-brand-400 text-center mt-1.5">
                 {hasShoesinWardrobe ? 'No match' : 'Add shoes'}
               </p>
             </motion.div>
@@ -188,7 +188,7 @@ export default function OOTDWidget() {
             }`}
           />
         </div>
-        <div className="flex justify-between text-[11px] text-brand-400 dark:text-brand-500 mt-1.5 font-mono">
+        <div className="flex justify-between text-[11px] text-brand-500 dark:text-brand-400 mt-1.5 font-mono">
           <span>Model {scoreToPercent(outfit.model2_score)}%</span>
           <span>Color {scoreToPercent(outfit.color_score)}%</span>
           <span>Weather {scoreToPercent(outfit.weather_score)}%</span>

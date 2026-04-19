@@ -62,7 +62,7 @@ export default function Navbar() {
                 </svg>
               </div>
               <span className="hidden sm:block font-display text-xl font-bold text-brand-900 dark:text-brand-100 tracking-tight">
-                Outfit<span className="text-accent-500">AI</span>
+                Outfit<span className="text-accent-700">AI</span>
               </span>
             </NavLink>
 
@@ -76,7 +76,7 @@ export default function Navbar() {
                   className={({ isActive }) =>
                     `relative group flex items-center gap-1.5 px-2.5 h-9 rounded-xl transition-all duration-200 ${isActive
                       ? 'text-brand-900 dark:text-brand-100'
-                      : 'text-brand-400 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-200'
+                      : 'text-brand-500 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-200'
                     }`
                   }
                 >
@@ -102,7 +102,7 @@ export default function Navbar() {
               {/* Bell */}
               <button
                 onClick={() => setNotifOpen(o => !o)}
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl text-brand-400 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-200 transition-colors hover:bg-brand-100/60 dark:hover:bg-brand-800/30"
+                className="relative flex items-center justify-center w-9 h-9 rounded-xl text-brand-500 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-200 transition-colors hover:bg-brand-100/60 dark:hover:bg-brand-800/30"
                 title="Notifications"
               >
                 <FiBell size={17} />
@@ -137,7 +137,7 @@ export default function Navbar() {
 
               <button
                 onClick={handleLogout}
-                className="hidden sm:flex items-center justify-center w-9 h-9 rounded-xl text-brand-400 hover:text-red-500 dark:text-brand-500 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="hidden sm:flex items-center justify-center w-9 h-9 rounded-xl text-brand-500 hover:text-red-500 dark:text-brand-400 dark:hover:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
                 title="Logout"
               >
                 <FiLogOut size={17} />

@@ -73,14 +73,14 @@ export default function RemixResultModal({ open, onClose, post }) {
               <div className="flex items-center justify-between p-5 border-b border-brand-100 dark:border-brand-800">
                 <div>
                   <h2 className="font-display text-xl font-bold text-brand-900 dark:text-brand-100 flex items-center gap-2">
-                    <FiRefreshCw size={18} className="text-accent-500" />
+                    <FiRefreshCw size={18} className="text-accent-700" />
                     Remix This Look
                   </h2>
                   <p className="text-sm text-brand-500 mt-0.5">
                     Matching from your wardrobe…
                   </p>
                 </div>
-                <button onClick={handleClose} className="p-2 rounded-lg text-brand-400 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
+                <button onClick={handleClose} className="p-2 rounded-lg text-brand-500 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
                   <FiX size={18} />
                 </button>
               </div>
@@ -88,7 +88,7 @@ export default function RemixResultModal({ open, onClose, post }) {
               <div className="overflow-y-auto flex-1 p-5">
                 {/* Loading */}
                 {remixMutation.isPending && (
-                  <div className="py-16 text-center text-brand-400">
+                  <div className="py-16 text-center text-brand-500">
                     <div className="w-10 h-10 border-2 border-brand-200 border-t-accent-500 rounded-full animate-spin mx-auto mb-4" />
                     <p className="text-sm">Finding your closest matches…</p>
                   </div>
@@ -129,7 +129,7 @@ export default function RemixResultModal({ open, onClose, post }) {
                         <div className="p-3 flex items-center gap-3">
                           {/* Source item */}
                           <div className="flex-shrink-0 text-center">
-                            <p className="text-[10px] text-brand-400 mb-1">Original</p>
+                            <p className="text-[10px] text-brand-500 mb-1">Original</p>
                             <div className="w-16 h-16 rounded-lg bg-brand-100 dark:bg-brand-800 overflow-hidden">
                               {match.source_item?.image_url ? (
                                 <img
@@ -147,7 +147,7 @@ export default function RemixResultModal({ open, onClose, post }) {
 
                           {/* Candidate options */}
                           {match.candidates.length === 0 ? (
-                            <div className="flex-1 text-xs text-brand-400 italic">
+                            <div className="flex-1 text-xs text-brand-500 italic">
                               No {match.source_category} in your wardrobe
                             </div>
                           ) : (

@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
       >
         <Link
           to="/login"
-          className="inline-flex items-center gap-1.5 text-sm text-brand-400 hover:text-brand-700 dark:hover:text-brand-200 mb-8 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-brand-500 hover:text-brand-700 dark:hover:text-brand-200 mb-8 transition-colors"
         >
           <FiArrowLeft size={14} /> Back to login
         </Link>
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
               <div>
                 <label className="block text-sm font-medium text-brand-600 dark:text-brand-400 mb-1.5">Email</label>
                 <div className="relative">
-                  <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" size={16} />
+                  <FiMail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-500" size={16} />
                   <input
                     type="email"
                     value={email}

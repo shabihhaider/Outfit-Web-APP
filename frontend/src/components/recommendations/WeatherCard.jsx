@@ -11,7 +11,7 @@ export default function WeatherCard({ detectedTemp, locationName }) {
       className="card-glass p-5 flex items-center gap-5 border-accent-200/40 dark:border-accent-800/20 bg-accent-50/30 dark:bg-accent-950/20"
     >
       <div className="w-12 h-12 rounded-2xl bg-accent-100/60 dark:bg-accent-900/30 flex items-center justify-center shadow-sm">
-        <FiThermometer className="text-accent-600 dark:text-accent-400" size={22} />
+        <FiThermometer className="text-accent-700 dark:text-accent-400" size={22} />
       </div>
       
       <div className="flex-1">
@@ -19,7 +19,7 @@ export default function WeatherCard({ detectedTemp, locationName }) {
           <span className="font-display text-3xl font-bold text-brand-900 dark:text-brand-100 tracking-tight">
             {detectedTemp}{'\u00B0'}
           </span>
-          <span className="text-[11px] font-bold uppercase tracking-widest text-brand-400 dark:text-brand-500 mb-1">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-brand-500 dark:text-brand-400 mb-1">
             Celsius
           </span>
         </div>
@@ -35,7 +35,7 @@ export default function WeatherCard({ detectedTemp, locationName }) {
       <div className="hidden sm:block h-10 w-[1px] bg-brand-200/50 dark:bg-brand-700/30 mx-2" />
       
       <div className="hidden sm:block text-right">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-brand-400">Status</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-brand-500">Status</p>
         <p className="text-xs font-semibold text-brand-600 dark:text-brand-300">Live Data</p>
       </div>
     </motion.div>

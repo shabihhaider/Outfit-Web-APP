@@ -28,7 +28,7 @@ export default function ScoreInfoTooltip({ placement = 'up' }) {
         aria-expanded={open}
         onClick={() => setOpen(o => !o)}
         onBlur={() => setOpen(false)}
-        className="group flex items-center justify-center w-5 h-5 rounded-full text-brand-300 hover:text-accent-500 dark:text-brand-600 dark:hover:text-accent-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+        className="group flex items-center justify-center w-5 h-5 rounded-full text-brand-300 hover:text-accent-700 dark:text-brand-600 dark:hover:text-accent-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
         <FiInfo size={13} />
       </button>
@@ -46,7 +46,7 @@ export default function ScoreInfoTooltip({ placement = 'up' }) {
             <li><span className="font-medium text-white dark:text-brand-900">Weather</span> — suitability for today&apos;s temperature</li>
             <li><span className="font-medium text-white dark:text-brand-900">Cohesion</span> — formality &amp; occasion consistency</li>
           </ul>
-          <div className="mt-2 pt-2 border-t border-brand-700 dark:border-brand-300 text-brand-400 dark:text-brand-500">
+          <div className="mt-2 pt-2 border-t border-brand-700 dark:border-brand-300 text-brand-500 dark:text-brand-400">
             85%+ great · 70–84% good · &lt;70% fair
           </div>
           <div className={arrowClass} />

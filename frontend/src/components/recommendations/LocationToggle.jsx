@@ -113,7 +113,7 @@ export default function LocationToggle({ onTempChange }) {
         {/* Manual control */}
         <div className={`transition-all duration-500 ${useLocation ? 'opacity-40 grayscale pointer-events-none' : 'opacity-100'}`}>
           <div className="flex justify-between items-end mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-brand-400">Manual Temperature</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-brand-500">Manual Temperature</span>
             <span className="data-value text-lg leading-none">{manualTemp}°C</span>
           </div>
           <input
@@ -123,7 +123,7 @@ export default function LocationToggle({ onTempChange }) {
             onChange={handleSlider}
             className="w-full"
           />
-          <div className="flex justify-between text-[10px] font-mono text-brand-400 dark:text-brand-500 mt-2">
+          <div className="flex justify-between text-[10px] font-mono text-brand-500 dark:text-brand-400 mt-2">
             <span>0°C</span>
             <span>50°C</span>
           </div>

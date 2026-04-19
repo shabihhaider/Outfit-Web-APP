@@ -90,7 +90,7 @@ export default function ResetPasswordPage() {
               <div>
                 <label className="block text-sm font-medium text-brand-600 dark:text-brand-400 mb-1.5">New password</label>
                 <div className="relative">
-                  <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400" size={16} />
+                  <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-500" size={16} />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-600 dark:hover:text-brand-200"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-brand-500 hover:text-brand-600 dark:hover:text-brand-200"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}

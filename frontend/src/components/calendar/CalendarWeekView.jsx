@@ -55,7 +55,7 @@ export default function CalendarWeekView({ weekStart, plans, onDayClick }) {
               isToday ? 'bg-accent-500 text-white' : 'bg-brand-50/60 dark:bg-brand-800/30'
             }`}>
               <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                isToday ? 'text-white/80' : 'text-brand-400 dark:text-brand-500'
+                isToday ? 'text-white/80' : 'text-brand-500 dark:text-brand-400'
               }`}>{label}</span>
               <span className={`text-sm font-bold ${
                 isToday ? 'text-white' : 'text-brand-700 dark:text-brand-200'
@@ -111,7 +111,7 @@ export default function CalendarWeekView({ weekStart, plans, onDayClick }) {
 
                   {/* Notes snippet */}
                   {plan.notes && (
-                    <p className="text-[10px] text-brand-400 dark:text-brand-500 truncate leading-tight px-0.5">
+                    <p className="text-[10px] text-brand-500 dark:text-brand-400 truncate leading-tight px-0.5">
                       {plan.notes}
                     </p>
                   )}
@@ -119,7 +119,7 @@ export default function CalendarWeekView({ weekStart, plans, onDayClick }) {
               ) : (
                 /* Empty day */
                 <div className="aspect-square rounded-xl border-2 border-dashed border-brand-200/60 dark:border-brand-700/30 flex items-center justify-center">
-                  <span className="text-brand-300 dark:text-brand-600 text-lg group-hover:text-accent-400 transition-colors">+</span>
+                  <span className="text-brand-300 dark:text-brand-600 text-lg group-hover:text-accent-700 transition-colors">+</span>
                 </div>
               )}
             </div>

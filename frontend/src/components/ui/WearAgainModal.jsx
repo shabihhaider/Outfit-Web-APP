@@ -50,7 +50,7 @@ export default function WearAgainModal({ outfit, open, onClose, onSave, onCalend
                  </div>
                  <h3 className="font-display text-2xl font-bold text-brand-900 dark:text-brand-100 tracking-tight italic">Reclaim Style</h3>
                </div>
-               <button onClick={onClose} className="p-2 rounded-xl text-brand-400 hover:bg-brand-100/40 dark:hover:bg-brand-800/40 transition-all hover:rotate-90">
+               <button onClick={onClose} className="p-2 rounded-xl text-brand-500 hover:bg-brand-100/40 dark:hover:bg-brand-800/40 transition-all hover:rotate-90">
                  <FiX size={20} />
                </button>
             </div>
@@ -58,7 +58,7 @@ export default function WearAgainModal({ outfit, open, onClose, onSave, onCalend
             {scoreQuery.isLoading && (
               <div className="flex flex-col items-center gap-4 py-12 justify-center">
                 <LoadingSpinner size="lg" />
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-400">Synchronizing Analysis</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-500">Synchronizing Analysis</p>
               </div>
             )}
 
@@ -74,14 +74,14 @@ export default function WearAgainModal({ outfit, open, onClose, onSave, onCalend
                 <div className="bg-brand-50/40 dark:bg-brand-900/10 rounded-[24px] p-6 border border-brand-100/40 dark:border-brand-800/40 mb-8">
                    <div className="flex items-center justify-between gap-4">
                       <div className="flex-1 text-center">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-brand-400 mb-2">Historical</p>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-brand-500 mb-2">Historical</p>
                         <p className="data-value text-3xl opacity-60">{originalPct}%</p>
                       </div>
                       <div className="w-10 h-10 rounded-full bg-white dark:bg-brand-800 border border-brand-100 dark:border-brand-700 flex items-center justify-center shadow-sm">
-                        <FiArrowRight className="text-accent-500" size={18} />
+                        <FiArrowRight className="text-accent-700" size={18} />
                       </div>
                       <div className="flex-1 text-center">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-brand-400 mb-2">Projected</p>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-brand-500 mb-2">Projected</p>
                         <p className="data-value text-3xl text-brand-900 dark:text-brand-100">
                            {newData.valid ? `${newPct}%` : '--'}
                         </p>

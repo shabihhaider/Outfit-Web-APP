@@ -126,7 +126,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                 <div className="flex items-center gap-2 min-w-0">
                   <button
                     onClick={() => { onClose(); navigate(`/u/${username}`) }}
-                    className="flex items-center gap-2 text-sm font-semibold text-brand-800 dark:text-brand-200 hover:text-accent-600 transition-colors min-w-0"
+                    className="flex items-center gap-2 text-sm font-semibold text-brand-800 dark:text-brand-200 hover:text-accent-700 transition-colors min-w-0"
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden bg-brand-200 dark:bg-brand-700 flex-shrink-0 flex items-center justify-center text-xs font-bold text-brand-600 dark:text-brand-300">
                       {p?.user?.avatar_url ? (
@@ -156,7 +156,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
 
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-lg text-brand-400 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors flex-shrink-0"
+                  className="p-2 rounded-lg text-brand-500 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors flex-shrink-0"
                 >
                   <FiX size={18} />
                 </button>
@@ -171,7 +171,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
 
                 {/* Outfit info */}
                 {p?.outfit && (
-                  <div className="flex items-center gap-3 text-xs text-brand-400">
+                  <div className="flex items-center gap-3 text-xs text-brand-500">
                     <span className="capitalize font-medium">{p.outfit.occasion}</span>
                     {p.outfit.final_score != null && (
                       <span>{Math.round(p.outfit.final_score * 100)}% match</span>
@@ -231,7 +231,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                 {fullPost?.items?.length > 0 && (
                   <button
                     onClick={() => setTryOnOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-brand-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-brand-500 hover:text-accent-700 hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
                   >
                     <FiUser size={15} />
                     <span>Try On</span>
@@ -241,7 +241,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                 {!isOwn && (
                   <button
                     onClick={() => onRemixClick?.(p)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-brand-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-brand-500 hover:text-accent-700 hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
                   >
                     <FiRefreshCw size={15} />
                     <span>{p?.remix_count > 0 ? p.remix_count : 'Remix'}</span>
@@ -253,8 +253,8 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                     onClick={() => bookmarkMutation.mutate()}
                     className={`ml-auto flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       bookmarked
-                        ? 'text-accent-600 bg-accent-50 dark:bg-accent-900/20'
-                        : 'text-brand-400 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/10'
+                        ? 'text-accent-700 bg-accent-50 dark:bg-accent-900/20'
+                        : 'text-brand-500 hover:text-accent-700 hover:bg-accent-50 dark:hover:bg-accent-900/10'
                     }`}
                   >
                     <FiBookmark size={15} className={bookmarked ? 'fill-accent-600' : ''} />
@@ -343,7 +343,7 @@ function ModalPlaceholder({ outfit }) {
     <div className={`w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-br ${style.grad}`}>
       <span className="text-7xl drop-shadow select-none">{style.icon}</span>
       <span className={`text-sm font-bold uppercase tracking-widest ${style.accent}`}>{occ}</span>
-      <div className="flex items-center gap-4 text-xs text-brand-400 dark:text-brand-500">
+      <div className="flex items-center gap-4 text-xs text-brand-500 dark:text-brand-400">
         {score != null && <span>{score}% match</span>}
         {count != null && <span>{count} items</span>}
       </div>

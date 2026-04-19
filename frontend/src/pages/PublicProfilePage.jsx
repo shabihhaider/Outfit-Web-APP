@@ -118,11 +118,11 @@ export default function PublicProfilePage() {
             {!isOwnProfile && compatScore !== undefined && compatScore !== null && (
               <div className="sm:ml-auto flex-shrink-0">
                 <div className="card p-4 text-center min-w-[110px]">
-                  <p className="text-2xl font-bold text-accent-600 dark:text-accent-400">
+                  <p className="text-2xl font-bold text-accent-700 dark:text-accent-400">
                     {Math.round(compatScore * 100)}%
                   </p>
                   <p className="text-xs text-brand-500 mt-0.5">{compatLabel}</p>
-                  <p className="text-[10px] text-brand-400 mt-1">Style Match</p>
+                  <p className="text-[10px] text-brand-500 mt-1">Style Match</p>
                 </div>
               </div>
             )}
@@ -131,7 +131,7 @@ export default function PublicProfilePage() {
 
         {/* Posts grid */}
         {posts.length === 0 ? (
-          <div className="text-center py-16 text-brand-400">
+          <div className="text-center py-16 text-brand-500">
             <p className="text-4xl mb-3">👗</p>
             <p className="text-sm">No posts yet.</p>
           </div>

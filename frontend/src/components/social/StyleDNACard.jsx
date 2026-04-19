@@ -82,9 +82,9 @@ export default function StyleDNACard() {
 <div className="relative z-10">
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center justify-center w-5 h-5 rounded-full bg-accent-100 dark:bg-accent-900/30">
-            <FiZap size={11} className="text-accent-600 dark:text-accent-400" />
+            <FiZap size={11} className="text-accent-700 dark:text-accent-400" />
           </div>
-          <p className="label-xs text-brand-400 dark:text-brand-500">Style DNA</p>
+          <p className="label-xs text-brand-500 dark:text-brand-400">Style DNA</p>
         </div>
 
         <div className="flex items-center gap-3 mb-1">
@@ -118,15 +118,15 @@ export default function StyleDNACard() {
         <div className="grid grid-cols-3 gap-2 text-center mb-4">
           <div className="bg-brand-50 dark:bg-brand-800/40 rounded-lg p-2">
             <p className="text-lg font-bold text-brand-900 dark:text-brand-100">{total_items}</p>
-            <p className="text-[10px] text-brand-400 uppercase tracking-wide">Items</p>
+            <p className="text-[10px] text-brand-500 uppercase tracking-wide">Items</p>
           </div>
           <div className="bg-brand-50 dark:bg-brand-800/40 rounded-lg p-2">
             <p className="text-xs font-semibold text-brand-700 dark:text-brand-300 capitalize">{topCategory}</p>
-            <p className="text-[10px] text-brand-400 uppercase tracking-wide">Main Cat</p>
+            <p className="text-[10px] text-brand-500 uppercase tracking-wide">Main Cat</p>
           </div>
           <div className="bg-brand-50 dark:bg-brand-800/40 rounded-lg p-2">
             <p className="text-xs font-semibold text-brand-700 dark:text-brand-300 capitalize">{topFormality}</p>
-            <p className="text-[10px] text-brand-400 uppercase tracking-wide">Formality</p>
+            <p className="text-[10px] text-brand-500 uppercase tracking-wide">Formality</p>
           </div>
         </div>
 

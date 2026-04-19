@@ -120,7 +120,7 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
           <div className="flex items-center justify-between mb-2">
             <button
               onClick={() => navigate(`/u/${username}`)}
-              className="flex items-center gap-1.5 text-sm font-semibold text-brand-800 dark:text-brand-200 hover:text-accent-600 transition-colors"
+              className="flex items-center gap-1.5 text-sm font-semibold text-brand-800 dark:text-brand-200 hover:text-accent-700 transition-colors"
             >
               <div className="w-6 h-6 rounded-full overflow-hidden bg-brand-200 dark:bg-brand-700 flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-brand-600 dark:text-brand-300">
                 {post.user?.avatar_url ? (
@@ -132,12 +132,12 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
               @{username}
             </button>
             <div className="flex items-center gap-1">
-              <span className="text-[11px] text-brand-400">{timeAgo}</span>
+              <span className="text-[11px] text-brand-500">{timeAgo}</span>
               {isOwn && (
                 <div className="relative">
                   <button
                     onClick={() => setMenuOpen(v => !v)}
-                    className="p-1 rounded text-brand-400 hover:text-brand-600 transition-colors"
+                    className="p-1 rounded text-brand-500 hover:text-brand-600 transition-colors"
                   >
                     <FiMoreHorizontal size={14} />
                   </button>
@@ -201,7 +201,7 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
             {!isOwn && (
               <button
                 onClick={() => onRemixClick?.(post)}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-brand-500 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-brand-500 hover:text-accent-700 hover:bg-accent-50 dark:hover:bg-accent-900/15 transition-all"
               >
                 <FiRefreshCw size={13} />
                 <span>{post.remix_count ?? 0}</span>
@@ -214,8 +214,8 @@ export default function FeedCard({ post, onRemixClick, onVibeClick, onPostClick 
                 onClick={() => bookmarkMutation.mutate()}
                 className={`ml-auto flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   bookmarked
-                    ? 'text-accent-600 bg-accent-50 dark:bg-accent-900/20'
-                    : 'text-brand-400 hover:text-accent-600 hover:bg-accent-50 dark:hover:bg-accent-900/10'
+                    ? 'text-accent-700 bg-accent-50 dark:bg-accent-900/20'
+                    : 'text-brand-500 hover:text-accent-700 hover:bg-accent-50 dark:hover:bg-accent-900/10'
                 }`}
               >
                 <FiBookmark size={13} className={bookmarked ? 'fill-accent-600' : ''} />
@@ -314,7 +314,7 @@ function OccasionCard({ outfit }) {
       <span className={`text-[11px] font-bold uppercase tracking-widest ${style.accent}`}>
         {occ}
       </span>
-      <div className="flex items-center gap-3 text-[10px] text-brand-400 dark:text-brand-500">
+      <div className="flex items-center gap-3 text-[10px] text-brand-500 dark:text-brand-400">
         {score != null && <span>{score}% match</span>}
         {count != null && <span>{count} items</span>}
       </div>

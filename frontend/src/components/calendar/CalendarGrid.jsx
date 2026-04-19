@@ -41,7 +41,7 @@ export default function CalendarGrid({ year, month, plans, onDayClick }) {
     <div>
       <div className="grid grid-cols-7 gap-1 mb-1">
         {DAY_NAMES.map(d => (
-          <div key={d} className="text-center text-[9px] sm:text-[11px] font-semibold text-brand-400 dark:text-brand-500 py-2 uppercase tracking-wider">{d}</div>
+          <div key={d} className="text-center text-[9px] sm:text-[11px] font-semibold text-brand-500 dark:text-brand-400 py-2 uppercase tracking-wider">{d}</div>
         ))}
       </div>
 
@@ -83,7 +83,7 @@ export default function CalendarGrid({ year, month, plans, onDayClick }) {
                     {cell.dayNum}
                   </span>
                 )}
-                {OccIcon && <OccIcon size={9} className="hidden sm:block text-brand-400 dark:text-brand-500" />}
+                {OccIcon && <OccIcon size={9} className="hidden sm:block text-brand-500 dark:text-brand-400" />}
               </div>
 
               {plan && (
@@ -97,7 +97,7 @@ export default function CalendarGrid({ year, month, plans, onDayClick }) {
                       </div>
                     ))}
                     {plan.items?.length > 2 && (
-                      <span className="text-[9px] text-brand-400 dark:text-brand-500">+{plan.items.length - 2}</span>
+                      <span className="text-[9px] text-brand-500 dark:text-brand-400">+{plan.items.length - 2}</span>
                     )}
                   </div>
                   {plan.notes && (
@@ -107,7 +107,7 @@ export default function CalendarGrid({ year, month, plans, onDayClick }) {
               )}
 
               {!plan && isToday && (
-                <span className="hidden sm:inline-block mt-1 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-accent-400/60 text-accent-600 dark:text-accent-400 dark:border-accent-600/50">
+                <span className="hidden sm:inline-block mt-1 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-accent-400/60 text-accent-700 dark:text-accent-400 dark:border-accent-600/50">
                   Plan today
                 </span>
               )}

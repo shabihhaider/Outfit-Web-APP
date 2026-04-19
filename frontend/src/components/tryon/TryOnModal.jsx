@@ -165,18 +165,18 @@ export default function TryOnModal({ open, onClose, item }) {
                 <h2 className="font-display text-2xl font-semibold text-brand-900 dark:text-brand-100">
                   Virtual Try-On
                 </h2>
-                <p className="text-xs text-brand-400 dark:text-brand-500 mt-0.5">
+                <p className="text-xs text-brand-500 dark:text-brand-400 mt-0.5">
                   OutfitAI Style Engine · Neural Fitting
                 </p>
               </div>
-              <button onClick={onClose} className="p-1.5 rounded-lg text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
+              <button onClick={onClose} className="p-1.5 rounded-lg text-brand-500 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors">
                 <FiX size={18} />
               </button>
             </div>
 
             {/* ── Phase: check / loading screen ── */}
             {(phase === 'check' || photoLoading) && (
-              <div className="py-12 flex flex-col items-center gap-3 text-brand-400">
+              <div className="py-12 flex flex-col items-center gap-3 text-brand-500">
                 <LoadingSpinner size="md" />
                 <p className="text-sm">Checking your profile...</p>
               </div>
@@ -187,12 +187,12 @@ export default function TryOnModal({ open, onClose, item }) {
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                 <div className="mb-5 p-4 rounded-2xl bg-accent-50/60 dark:bg-accent-900/20 border border-accent-200/50 dark:border-accent-700/30">
                   <div className="flex items-start gap-3">
-                    <FiUser className="text-accent-500 mt-0.5 shrink-0" size={18} />
+                    <FiUser className="text-accent-700 mt-0.5 shrink-0" size={18} />
                     <div>
                       <p className="text-sm font-medium text-accent-700 dark:text-accent-300">
                         One-time setup required
                       </p>
-                      <p className="text-xs text-accent-600/80 dark:text-accent-400/80 mt-1">
+                      <p className="text-xs text-accent-700/80 dark:text-accent-400/80 mt-1">
                         Upload a clear photo of yourself. It will be reused for all future try-ons — you only need to do this once.
                       </p>
                     </div>
@@ -208,7 +208,7 @@ export default function TryOnModal({ open, onClose, item }) {
                     'Good lighting — no harsh shadows',
                   ].map((tip, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-brand-500 dark:text-brand-400">
-                      <span className="text-accent-400 font-bold mt-0.5">·</span>
+                      <span className="text-accent-700 font-bold mt-0.5">·</span>
                       {tip}
                     </li>
                   ))}
@@ -227,7 +227,7 @@ export default function TryOnModal({ open, onClose, item }) {
                       </div>
                     </div>
                   ) : (
-                    <div className="py-12 flex flex-col items-center text-brand-400 dark:text-brand-500">
+                    <div className="py-12 flex flex-col items-center text-brand-500 dark:text-brand-400">
                       <FiUser size={32} className="mb-3 text-brand-300 dark:text-brand-600" />
                       <p className="text-sm font-medium">Upload your photo</p>
                       <p className="text-xs mt-1">JPG or PNG</p>
@@ -274,7 +274,7 @@ export default function TryOnModal({ open, onClose, item }) {
                     <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-brand-100 dark:bg-brand-800 border border-brand-200/60 dark:border-brand-700/40">
                       {personPhotoUrl
                         ? <img src={personPhotoUrl} alt="You" className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center text-brand-400"><FiUser size={32} /></div>
+                        : <div className="w-full h-full flex items-center justify-center text-brand-500"><FiUser size={32} /></div>
                       }
                     </div>
                   </div>
@@ -285,13 +285,13 @@ export default function TryOnModal({ open, onClose, item }) {
                     <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-brand-50 dark:bg-brand-800/60 border border-brand-200/60 dark:border-brand-700/40">
                       {itemImageUrl
                         ? <img src={itemImageUrl} alt={item.category} className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center text-brand-400 text-4xl">👕</div>
+                        : <div className="w-full h-full flex items-center justify-center text-brand-500 text-4xl">👕</div>
                       }
                     </div>
                   </div>
                 </div>
 
-                <p className="text-xs text-brand-400 dark:text-brand-500 text-center mb-5">
+                <p className="text-xs text-brand-500 dark:text-brand-400 text-center mb-5">
                   Our AI will digitally place this item on your photo using neural fitting technology.
                   First try takes a few seconds; subsequent tries are instant from cache.
                 </p>
@@ -310,7 +310,7 @@ export default function TryOnModal({ open, onClose, item }) {
                   <div className="flex items-center justify-between">
                     <button
                       onClick={() => setPhase('setup')}
-                      className="text-xs text-brand-400 hover:text-brand-200 flex items-center gap-1.5 transition-colors"
+                      className="text-xs text-brand-500 hover:text-brand-200 flex items-center gap-1.5 transition-colors"
                       title="Change person photo"
                     >
                       <FiRefreshCw size={12} /> Change photo
@@ -318,7 +318,7 @@ export default function TryOnModal({ open, onClose, item }) {
                     <span className={`text-xs font-medium ${
                       quota.current >= quota.limit
                         ? 'text-red-400'
-                        : 'text-brand-400'
+                        : 'text-brand-500'
                     }`}>
                       {quota.current >= quota.limit
                         ? 'Daily limit reached'
@@ -360,7 +360,7 @@ export default function TryOnModal({ open, onClose, item }) {
                 <p className="text-sm text-brand-500 dark:text-brand-400 mb-1">
                   OutfitAI is fitting the garment to your body
                 </p>
-                <p className="text-xs text-brand-400 dark:text-brand-500">
+                <p className="text-xs text-brand-500 dark:text-brand-400">
                   This usually takes 5–15 seconds
                 </p>
 
@@ -383,7 +383,7 @@ export default function TryOnModal({ open, onClose, item }) {
                       <span className={`text-xs transition-colors ${
                         step.done
                           ? 'text-brand-600 dark:text-brand-300 font-medium'
-                          : 'text-brand-400 dark:text-brand-500'
+                          : 'text-brand-500 dark:text-brand-400'
                       }`}>
                         {step.label}
                       </span>

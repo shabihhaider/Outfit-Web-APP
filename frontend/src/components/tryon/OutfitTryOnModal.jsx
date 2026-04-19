@@ -68,14 +68,14 @@ export default function OutfitTryOnModal({ open, onClose, items, occasion }) {
                 <h2 className="font-display text-xl font-semibold text-brand-900 dark:text-brand-100">
                   Try On Outfit
                 </h2>
-                <p className="text-xs text-brand-400 dark:text-brand-500 mt-0.5">
+                <p className="text-xs text-brand-500 dark:text-brand-400 mt-0.5">
                   Select which piece to virtually try on
                   {occasion && <span className="ml-1 capitalize">· {occasion}</span>}
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors"
+                className="p-1.5 rounded-lg text-brand-500 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors"
               >
                 <FiX size={18} />
               </button>

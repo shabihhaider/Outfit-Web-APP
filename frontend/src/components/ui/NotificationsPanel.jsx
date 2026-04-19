@@ -7,7 +7,7 @@ import { resolveUrl } from '../../utils/resolveUrl.js'
 
 const TYPE_ICON = {
   like:   <FiHeart size={13} className="text-red-400" />,
-  follow: <FiUserPlus size={13} className="text-accent-500" />,
+  follow: <FiUserPlus size={13} className="text-accent-700" />,
   remix:  <FiRefreshCw size={13} className="text-violet-400" />,
 }
 
@@ -84,7 +84,7 @@ export default function NotificationsPanel({ open, onClose }) {
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg text-brand-400 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors"
+                className="p-1.5 rounded-lg text-brand-500 hover:text-brand-600 hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors"
               >
                 <FiX size={15} />
               </button>
@@ -101,7 +101,7 @@ export default function NotificationsPanel({ open, onClose }) {
               {!isLoading && notifications.length === 0 && (
                 <div className="py-12 text-center">
                   <FiBell size={28} className="mx-auto mb-3 text-brand-200 dark:text-brand-700" />
-                  <p className="text-sm text-brand-400 dark:text-brand-500">No notifications yet</p>
+                  <p className="text-sm text-brand-500 dark:text-brand-400">No notifications yet</p>
                   <p className="text-xs text-brand-300 dark:text-brand-600 mt-1">
                     Likes, follows, and remixes will appear here
                   </p>
@@ -134,7 +134,7 @@ export default function NotificationsPanel({ open, onClose }) {
                   {/* Text */}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-brand-700 dark:text-brand-200 leading-snug">{n.message}</p>
-                    <p className="text-xs text-brand-400 dark:text-brand-500 mt-0.5">{timeAgo(n.created_at)}</p>
+                    <p className="text-xs text-brand-500 dark:text-brand-400 mt-0.5">{timeAgo(n.created_at)}</p>
                   </div>
 
                   {/* Unread dot */}

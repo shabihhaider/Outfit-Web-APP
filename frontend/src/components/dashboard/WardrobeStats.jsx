@@ -67,7 +67,7 @@ export default function WardrobeStats() {
     return (
       <div className="card p-6">
         <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200 mb-2">Wardrobe Insights</h2>
-        <p className="text-sm text-brand-400 dark:text-brand-500">Could not load statistics.</p>
+        <p className="text-sm text-brand-500 dark:text-brand-400">Could not load statistics.</p>
       </div>
     )
   }
@@ -88,7 +88,7 @@ export default function WardrobeStats() {
     >
       <div className="flex items-center gap-2.5 mb-5">
         <div className="w-8 h-8 rounded-lg bg-accent-100/80 dark:bg-accent-900/25 flex items-center justify-center">
-          <FiBarChart2 className="text-accent-500" size={16} />
+          <FiBarChart2 className="text-accent-700" size={16} />
         </div>
         <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200">Insights</h2>
       </div>
@@ -133,7 +133,7 @@ export default function WardrobeStats() {
         {activity.avg_score != null && (
           <div className="bg-brand-50/60 dark:bg-brand-800/30 rounded-xl p-3 text-center border border-brand-100/40 dark:border-brand-800/30">
             <div className="text-xl font-mono font-bold text-brand-900 dark:text-brand-100">{Math.round(activity.avg_score * 100)}%</div>
-            <div className="text-[10px] font-medium text-accent-600 dark:text-accent-400 mt-0.5">{scoreToLabel(activity.avg_score)}</div>
+            <div className="text-[10px] font-medium text-accent-700 dark:text-accent-400 mt-0.5">{scoreToLabel(activity.avg_score)}</div>
           </div>
         )}
         {(feedback.thumbs_up > 0 || feedback.thumbs_down > 0) && (
@@ -174,7 +174,7 @@ export default function WardrobeStats() {
       )}
 
       {insights.most_common_occasion && (
-        <p className="flex items-center gap-1.5 text-xs text-brand-400 dark:text-brand-500 mt-3">
+        <p className="flex items-center gap-1.5 text-xs text-brand-500 dark:text-brand-400 mt-3">
           <FiTrendingUp size={12} />
           Most requested: <span className="font-medium capitalize text-brand-600 dark:text-brand-300">{insights.most_common_occasion}</span>
         </p>

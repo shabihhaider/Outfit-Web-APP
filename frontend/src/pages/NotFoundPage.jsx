@@ -18,11 +18,11 @@ export default function NotFoundPage() {
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="text-center max-w-sm"
       >
-        <p className="font-mono text-7xl font-bold text-accent-500 mb-4 select-none">404</p>
+        <p className="font-mono text-7xl font-bold text-accent-700 mb-4 select-none">404</p>
         <h1 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200 mb-2">
           Page not found
         </h1>
-        <p className="text-sm text-brand-400 dark:text-brand-500 mb-8">
+        <p className="text-sm text-brand-500 dark:text-brand-400 mb-8">
           The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
         <Link

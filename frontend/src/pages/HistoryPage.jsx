@@ -103,21 +103,21 @@ export default function HistoryPage() {
                       <span className="data-value text-sm">{scoreToPercent(entry.final_score)}%</span> compatible
                     </span>
                   )}
-                  <span className="text-xs text-brand-400 dark:text-brand-500 ml-auto">{formatDate(entry.logged_at ?? entry.created_at)}</span>
+                  <span className="text-xs text-brand-500 dark:text-brand-400 ml-auto">{formatDate(entry.logged_at ?? entry.created_at)}</span>
                 </div>
                 <OutfitItems items={entry.items ?? []} />
 
                 <div className="mt-3 pt-3 border-t border-brand-100/60 dark:border-brand-800/40 flex items-center gap-4">
                   <button
                     onClick={() => setWearAgainTarget(entry)}
-                    className="inline-flex items-center gap-1.5 text-sm text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300 font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm text-accent-700 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300 font-medium transition-colors"
                   >
                     <FiRepeat size={14} />
                     Wear Again
                   </button>
                   <button
                     onClick={() => setTryOnTarget(entry)}
-                    className="inline-flex items-center gap-1.5 text-sm text-brand-500 hover:text-accent-600 dark:text-brand-400 dark:hover:text-accent-400 font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm text-brand-500 hover:text-accent-700 dark:text-brand-400 dark:hover:text-accent-700 font-medium transition-colors"
                   >
                     <FiUser size={14} />
                     Try On

@@ -21,7 +21,7 @@ export default function FeedbackButtons({ historyId }) {
 
   return (
     <div className="flex items-center gap-2.5">
-      <span className="text-[11px] text-brand-400 dark:text-brand-500">Rate:</span>
+      <span className="text-[11px] text-brand-500 dark:text-brand-400">Rate:</span>
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => handleVote(1)}
@@ -29,7 +29,7 @@ export default function FeedbackButtons({ historyId }) {
         className={`p-1.5 rounded-lg transition-all ${
           voted === 1
             ? 'bg-emerald-100/80 dark:bg-emerald-900/25 text-emerald-600 dark:text-emerald-400'
-            : 'text-brand-400 dark:text-brand-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/15'
+            : 'text-brand-500 dark:text-brand-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/15'
         }`}
         title="Good outfit"
       >
@@ -42,7 +42,7 @@ export default function FeedbackButtons({ historyId }) {
         className={`p-1.5 rounded-lg transition-all ${
           voted === -1
             ? 'bg-red-100/80 dark:bg-red-900/25 text-red-500 dark:text-red-400'
-            : 'text-brand-400 dark:text-brand-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/15'
+            : 'text-brand-500 dark:text-brand-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/15'
         }`}
         title="Not my style"
       >
@@ -52,7 +52,7 @@ export default function FeedbackButtons({ historyId }) {
         <motion.span
           initial={{ opacity: 0, x: -4 }}
           animate={{ opacity: 1, x: 0 }}
-          className="text-[11px] text-brand-400 dark:text-brand-500 flex items-center gap-0.5"
+          className="text-[11px] text-brand-500 dark:text-brand-400 flex items-center gap-0.5"
         >
           <FiCheck size={12} /> Thanks
         </motion.span>
