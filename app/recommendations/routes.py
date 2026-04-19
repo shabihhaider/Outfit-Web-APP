@@ -460,6 +460,8 @@ def outfit_of_the_day():
             "is_fresh":         not bool(ids & recently_worn_ids),
         }
 
+    has_shoes = any(item.category == "shoes" for item in items_db)
+
     return _with_private_cache(jsonify({
         "outfit":   _fmt_outfit(top_outfits[0]),
         "outfits":  [_fmt_outfit(o) for o in top_outfits],
@@ -467,6 +469,7 @@ def outfit_of_the_day():
             "preferred_occasion":  occasion,
             "items_available":     len(items_db),
             "recently_worn_count": len(recently_worn_ids),
+            "has_shoes":           has_shoes,
         },
     })), 200
 
