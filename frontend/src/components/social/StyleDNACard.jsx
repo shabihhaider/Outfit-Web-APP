@@ -88,6 +88,7 @@ export default function StyleDNACard() {
             stroke="currentColor"
             strokeWidth="0.5"
             className="text-accent-500"
+            initial={{ opacity: 0.6 }}
             animate={{ opacity: [0.6, 1, 0.6] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -97,6 +98,7 @@ export default function StyleDNACard() {
             stroke="currentColor"
             strokeWidth="0.3"
             className="text-brand-300 dark:text-brand-600"
+            initial={{ opacity: 1 }}
             animate={{ opacity: [1, 0.6, 1] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
