@@ -15,10 +15,8 @@ from engine.models import WardrobeItem, Occasion
 
 
 OCCASION_RULES: dict[str, set[str]] = {
-    "casual":   {"casual", "formal", "both"},   # All formalities allowed
-    "formal":   {"formal", "both"},             # No casual-only items
-    "party":    {"casual", "both"},             # Evening/social — no strictly formal items
-    "athletic": {"casual"},                     # Activewear — casual-tagged items only
+    "casual": {"casual", "formal", "both"},   # All formalities allowed
+    "formal": {"formal", "both"},             # No casual-only items
 }
 
 
