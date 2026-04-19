@@ -15,6 +15,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import RetryImage from '../components/ui/RetryImage.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
+import LiveRegion from '../components/ui/LiveRegion.jsx'
 
 function OutfitSkeleton() {
   return (
@@ -167,8 +168,20 @@ export default function RecommendationsPage() {
 
         {/* Right: results */}
         <div className="lg:col-span-2 space-y-5">
+          <LiveRegion
+            message={
+              mutation.isPending
+                ? 'Loading recommendations…'
+                : mutation.isError
+                ? 'Could not load recommendations.'
+                : results
+                ? `${outfits.length} outfit recommendation${outfits.length !== 1 ? 's' : ''} found`
+                : ''
+            }
+          />
+
           {mutation.isPending && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5" aria-busy="true" aria-label="Loading recommendations">
               <p className="text-sm text-brand-500 dark:text-brand-400">Building your recommendation and loading wardrobe images...</p>
               <OutfitSkeleton />
               <OutfitSkeleton />
