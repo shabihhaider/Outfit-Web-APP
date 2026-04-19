@@ -15,10 +15,10 @@ export default function ScoreInfoTooltip({ placement = 'up' }) {
   const above = placement === 'up'
   const tooltipPos = above
     ? 'bottom-full left-1/2 -translate-x-1/2 mb-2'
-    : 'top-full right-0 mt-2'
+    : 'top-full left-0 mt-2'
   const arrowClass = above
     ? 'absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-brand-900 dark:border-t-brand-100'
-    : 'absolute bottom-full right-4 border-4 border-transparent border-b-brand-900 dark:border-b-brand-100'
+    : 'absolute bottom-full left-4 border-4 border-transparent border-b-brand-900 dark:border-b-brand-100'
 
   return (
     <span className="relative inline-flex items-center">
