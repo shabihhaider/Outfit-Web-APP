@@ -74,9 +74,15 @@ export default function CalendarGrid({ year, month, plans, onDayClick }) {
               `}
             >
               <div className="flex items-center justify-between">
-                <span className={`text-xs sm:text-sm font-medium ${isToday ? 'text-accent-700 dark:text-accent-400' : 'text-brand-700 dark:text-brand-300'}`}>
-                  {cell.dayNum}
-                </span>
+                {isToday ? (
+                  <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-accent-500 flex items-center justify-center text-[10px] sm:text-xs font-bold text-white flex-shrink-0">
+                    {cell.dayNum}
+                  </span>
+                ) : (
+                  <span className="text-xs sm:text-sm font-medium text-brand-700 dark:text-brand-300">
+                    {cell.dayNum}
+                  </span>
+                )}
                 {OccIcon && <OccIcon size={9} className="hidden sm:block text-brand-400 dark:text-brand-500" />}
               </div>
 
@@ -101,7 +107,9 @@ export default function CalendarGrid({ year, month, plans, onDayClick }) {
               )}
 
               {!plan && isToday && (
-                <p className="hidden sm:block text-[10px] text-accent-500 dark:text-accent-400 mt-1">Plan today</p>
+                <span className="hidden sm:inline-block mt-1 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-accent-400/60 text-accent-600 dark:text-accent-400 dark:border-accent-600/50">
+                  Plan today
+                </span>
               )}
             </motion.button>
           )
