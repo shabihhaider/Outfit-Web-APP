@@ -66,7 +66,7 @@ export default function Navbar() {
               </span>
             </NavLink>
 
-            {/* Desktop nav — icons only */}
+            {/* Desktop nav — icons with labels at lg+ */}
             <div className="hidden md:flex items-center gap-1">
               {NAV_LINKS.map(link => (
                 <NavLink
@@ -74,7 +74,7 @@ export default function Navbar() {
                   to={link.to}
                   title={link.label}
                   className={({ isActive }) =>
-                    `relative group flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 ${isActive
+                    `relative group flex items-center gap-1.5 px-2.5 h-9 rounded-xl transition-all duration-200 ${isActive
                       ? 'text-brand-900 dark:text-brand-100'
                       : 'text-brand-400 hover:text-brand-700 dark:text-brand-500 dark:hover:text-brand-200'
                     }`
@@ -82,7 +82,8 @@ export default function Navbar() {
                 >
                   {({ isActive }) => (
                     <>
-                      <link.Icon size={17} />
+                      <link.Icon size={17} className="flex-shrink-0" />
+                      <span className="hidden lg:block text-xs font-medium">{link.label}</span>
                       {isActive && (
                         <motion.div
                           layoutId="nav-indicator"
@@ -90,9 +91,6 @@ export default function Navbar() {
                           transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
                         />
                       )}
-                      <span className="pointer-events-none absolute top-full mt-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-900 dark:bg-brand-100 text-white dark:text-brand-900 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                        {link.label}
-                      </span>
                     </>
                   )}
                 </NavLink>
