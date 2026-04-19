@@ -107,8 +107,15 @@ class ProductionConfig(Config):
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "https://drssl.app")
 
 
+class RateLimitTestingConfig(TestingConfig):
+    """Like TestingConfig but with rate limiting enabled — used by test_rate_limits.py."""
+    RATELIMIT_ENABLED      = True
+    RATELIMIT_STORAGE_URI  = "memory://"
+
+
 config = {
-    "development": DevelopmentConfig,
-    "testing":     TestingConfig,
-    "production":  ProductionConfig,
+    "development":        DevelopmentConfig,
+    "testing":            TestingConfig,
+    "rate_limit_testing": RateLimitTestingConfig,
+    "production":         ProductionConfig,
 }
