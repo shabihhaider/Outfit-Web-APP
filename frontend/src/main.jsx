@@ -7,6 +7,12 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { Toaster } from 'sonner'
 import './index.css'
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+  })
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
