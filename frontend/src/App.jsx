@@ -21,6 +21,7 @@ import ProfileSettingsPage from './pages/ProfileSettingsPage.jsx'
 import OnboardingFlow from './components/onboarding/OnboardingFlow.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
+import NotFoundPage from './pages/NotFoundPage.jsx'
 
 function Layout({ children }) {
   return (
@@ -118,7 +119,7 @@ export default function App() {
       <Route path="/" element={
         <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />
       } />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }
