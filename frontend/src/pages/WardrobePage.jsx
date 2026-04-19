@@ -1,18 +1,23 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
-import { FiPlus } from 'react-icons/fi'
-import { getItems, deleteItem } from '../api/wardrobe.js'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FiPlus, FiCheckSquare, FiX, FiTrash2 } from 'react-icons/fi'
+import { getItems, deleteItem, bulkDeleteItems, bulkUpdateFormality } from '../api/wardrobe.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import WardrobeGrid from '../components/wardrobe/WardrobeGrid.jsx'
 import UploadModal from '../components/wardrobe/UploadModal.jsx'
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 
 const CATEGORIES = ['all', 'top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit']
+const FORMALITIES = ['casual', 'formal', 'both']
 
 export default function WardrobePage() {
   const [uploadOpen, setUploadOpen] = useState(false)
   const [filter, setFilter] = useState('all')
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const queryClient = useQueryClient()
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -25,8 +30,43 @@ export default function WardrobePage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wardrobe'] }),
   })
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids) => bulkDeleteItems([...ids]),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wardrobe'] })
+      exitSelectMode()
+    },
+  })
+
+  const bulkFormalityMutation = useMutation({
+    mutationFn: ({ ids, formality }) => bulkUpdateFormality([...ids], formality),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wardrobe'] })
+      exitSelectMode()
+    },
+  })
+
   const items = data?.items ?? []
   const filtered = filter === 'all' ? items : items.filter(i => i.category === filter)
+
+  function toggleSelect(id) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false)
+    setSelectedIds(new Set())
+  }
+
+  function selectAll() {
+    setSelectedIds(new Set(filtered.map(i => i.id)))
+  }
+
+  const selCount = selectedIds.size
 
   return (
     <>
@@ -42,10 +82,36 @@ export default function WardrobePage() {
               {isLoading ? 'Loading your wardrobe items...' : `${items.length} item${items.length !== 1 ? 's' : ''} in your collection`}
             </p>
           </div>
-          <button onClick={() => setUploadOpen(true)} className="btn-primary flex items-center gap-2 group">
-            <FiPlus size={16} />
-            <span className="hidden sm:inline">Upload</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {selectMode ? (
+              <>
+                <button
+                  onClick={selCount === filtered.length ? () => setSelectedIds(new Set()) : selectAll}
+                  className="h-9 px-3 rounded-xl text-xs font-medium text-brand-500 dark:text-brand-400 border border-brand-200/60 dark:border-brand-700/40 hover:bg-brand-50 dark:hover:bg-brand-800/40 transition-all"
+                >
+                  {selCount === filtered.length ? 'Deselect All' : 'Select All'}
+                </button>
+                <button onClick={exitSelectMode} className="h-9 px-3 rounded-xl text-xs font-medium btn-secondary flex items-center gap-1.5">
+                  <FiX size={13} /> Done
+                </button>
+              </>
+            ) : (
+              <>
+                {items.length > 0 && (
+                  <button
+                    onClick={() => setSelectMode(true)}
+                    className="h-9 px-3 rounded-xl text-xs font-medium text-brand-500 dark:text-brand-400 border border-brand-200/60 dark:border-brand-700/40 hover:bg-brand-50 dark:hover:bg-brand-800/40 transition-all flex items-center gap-1.5"
+                  >
+                    <FiCheckSquare size={13} /> Select
+                  </button>
+                )}
+                <button onClick={() => setUploadOpen(true)} className="btn-primary flex items-center gap-2 group">
+                  <FiPlus size={16} />
+                  <span className="hidden sm:inline">Upload</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Filter tabs */}
@@ -100,11 +166,61 @@ export default function WardrobePage() {
             items={filtered}
             onDelete={id => deleteMutation.mutate(id)}
             onUpload={() => setUploadOpen(true)}
+            selectMode={selectMode}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
           />
         )}
       </PageWrapper>
 
+      {/* Bulk action bar */}
+      <AnimatePresence>
+        {selectMode && selCount > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 bg-brand-900 dark:bg-brand-100 text-white dark:text-brand-900 rounded-2xl shadow-2xl px-5 py-3"
+          >
+            <span className="text-sm font-semibold mr-1">{selCount} selected</span>
+
+            {/* Bulk formality */}
+            <div className="flex gap-1.5 border-l border-white/20 dark:border-brand-900/20 pl-3">
+              {FORMALITIES.map(f => (
+                <button
+                  key={f}
+                  onClick={() => bulkFormalityMutation.mutate({ ids: selectedIds, formality: f })}
+                  disabled={bulkFormalityMutation.isPending}
+                  className="h-8 px-3 rounded-lg text-xs font-medium bg-white/15 dark:bg-brand-900/15 hover:bg-white/25 dark:hover:bg-brand-900/25 capitalize transition-all disabled:opacity-50"
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+
+            {/* Bulk delete */}
+            <button
+              onClick={() => setConfirmBulkDelete(true)}
+              className="h-8 w-8 rounded-lg flex items-center justify-center bg-red-500/80 hover:bg-red-500 transition-all ml-1"
+              title="Delete selected"
+            >
+              <FiTrash2 size={14} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <UploadModal open={uploadOpen} onClose={() => setUploadOpen(false)} />
+
+      <ConfirmDialog
+        open={confirmBulkDelete}
+        title={`Delete ${selCount} item${selCount !== 1 ? 's' : ''}?`}
+        message={`Remove ${selCount} item${selCount !== 1 ? 's' : ''} from your wardrobe? This cannot be undone.`}
+        danger
+        onConfirm={() => { setConfirmBulkDelete(false); bulkDeleteMutation.mutate(selectedIds) }}
+        onCancel={() => setConfirmBulkDelete(false)}
+      />
     </>
   )
 }

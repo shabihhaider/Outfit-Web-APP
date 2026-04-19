@@ -4,6 +4,8 @@ Tests for:
   POST   /wardrobe/items       — upload
   GET    /wardrobe/items       — list
   DELETE /wardrobe/items/<id>  — delete
+  DELETE /wardrobe/items/bulk  — bulk delete
+  PATCH  /wardrobe/items/bulk  — bulk formality update
   GET    /uploads/<filename>   — serve image (ownership check)
 """
 
@@ -439,3 +441,129 @@ class TestEditItem:
             headers=auth_headers,
         )
         assert resp.status_code == 400
+
+
+# ─── Bulk Delete ──────────────────────────────────────────────────────────────
+
+class TestBulkDelete:
+    def _upload(self, client, headers, minimal_png):
+        data = {
+            "image":     (io.BytesIO(minimal_png), "item.png", "image/png"),
+            "formality": "casual",
+            "gender":    "men",
+        }
+        r = client.post("/wardrobe/items", data=data, headers=headers,
+                        content_type="multipart/form-data")
+        assert r.status_code == 201
+        return r.get_json()["id"]
+
+    def test_bulk_delete_removes_items(self, client, auth_headers, minimal_png):
+        """Bulk-deleting two items removes exactly those two."""
+        id1 = self._upload(client, auth_headers, minimal_png)
+        id2 = self._upload(client, auth_headers, minimal_png)
+
+        resp = client.delete(
+            "/wardrobe/items/bulk",
+            json={"item_ids": [id1, id2]},
+            headers=auth_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["deleted"] == 2
+
+        # Verify they're gone
+        list_resp = client.get("/wardrobe/items", headers=auth_headers)
+        ids_remaining = [i["id"] for i in list_resp.get_json()["items"]]
+        assert id1 not in ids_remaining
+        assert id2 not in ids_remaining
+
+    def test_bulk_delete_ignores_other_users_items(self, client, auth_headers, minimal_png):
+        """Items belonging to another user are silently skipped."""
+        id1 = self._upload(client, auth_headers, minimal_png)
+
+        # Register user B
+        client.post("/auth/register", json={
+            "name": "User B", "email": "bulk_del_b@example.com",
+            "password": "password123", "gender": "men",
+        })
+        login_b = client.post("/auth/login", json={
+            "email": "bulk_del_b@example.com", "password": "password123",
+        })
+        headers_b = {"Authorization": f"Bearer {login_b.get_json()['access_token']}"}
+
+        # User B tries to bulk-delete user A's item
+        resp = client.delete(
+            "/wardrobe/items/bulk",
+            json={"item_ids": [id1]},
+            headers=headers_b,
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["deleted"] == 0  # item not owned by B
+
+    def test_bulk_delete_missing_body(self, client, auth_headers):
+        """Missing item_ids → 400."""
+        resp = client.delete("/wardrobe/items/bulk", json={}, headers=auth_headers)
+        assert resp.status_code == 400
+
+
+# ─── Bulk Formality Update ────────────────────────────────────────────────────
+
+class TestBulkFormalityUpdate:
+    def _upload(self, client, headers, minimal_png, formality="casual"):
+        data = {
+            "image":     (io.BytesIO(minimal_png), "item.png", "image/png"),
+            "formality": formality,
+            "gender":    "men",
+        }
+        r = client.post("/wardrobe/items", data=data, headers=headers,
+                        content_type="multipart/form-data")
+        assert r.status_code == 201
+        return r.get_json()["id"]
+
+    def test_bulk_update_formality(self, client, auth_headers, minimal_png):
+        """Bulk update sets correct formality on all specified items."""
+        id1 = self._upload(client, auth_headers, minimal_png, formality="casual")
+        id2 = self._upload(client, auth_headers, minimal_png, formality="casual")
+
+        resp = client.patch(
+            "/wardrobe/items/bulk",
+            json={"item_ids": [id1, id2], "formality": "formal"},
+            headers=auth_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["updated"] == 2
+
+        # Verify formality changed
+        list_resp = client.get("/wardrobe/items", headers=auth_headers)
+        items = {i["id"]: i for i in list_resp.get_json()["items"]}
+        assert items[id1]["formality"] == "formal"
+        assert items[id2]["formality"] == "formal"
+
+    def test_bulk_update_invalid_formality(self, client, auth_headers, upload_item):
+        """Invalid formality value → 422."""
+        resp = client.patch(
+            "/wardrobe/items/bulk",
+            json={"item_ids": [upload_item["id"]], "formality": "smart_casual"},
+            headers=auth_headers,
+        )
+        assert resp.status_code == 422
+
+    def test_bulk_update_other_users_items_skipped(self, client, auth_headers, minimal_png):
+        """Items belonging to another user are silently skipped."""
+        id1 = self._upload(client, auth_headers, minimal_png)
+
+        client.post("/auth/register", json={
+            "name": "User C", "email": "bulk_upd_c@example.com",
+            "password": "password123", "gender": "men",
+        })
+        login_c = client.post("/auth/login", json={
+            "email": "bulk_upd_c@example.com", "password": "password123",
+        })
+        headers_c = {"Authorization": f"Bearer {login_c.get_json()['access_token']}"}
+
+        resp = client.patch(
+            "/wardrobe/items/bulk",
+            json={"item_ids": [id1], "formality": "formal"},
+            headers=headers_c,
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["updated"] == 0  # not owned by C

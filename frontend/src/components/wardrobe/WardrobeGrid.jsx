@@ -1,7 +1,7 @@
 import WardrobeCard from './WardrobeCard.jsx'
 import EmptyState from '../ui/EmptyState.jsx'
 
-export default function WardrobeGrid({ items, onDelete, onUpload }) {
+export default function WardrobeGrid({ items, onDelete, onUpload, selectMode, selectedIds, onToggleSelect }) {
   if (!items || items.length === 0) {
     return (
       <EmptyState
@@ -16,7 +16,14 @@ export default function WardrobeGrid({ items, onDelete, onUpload }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
       {items.map(item => (
-        <WardrobeCard key={item.id} item={item} onDelete={onDelete} />
+        <WardrobeCard
+          key={item.id}
+          item={item}
+          onDelete={onDelete}
+          selectMode={selectMode}
+          selected={selectedIds?.has(item.id) ?? false}
+          onToggleSelect={onToggleSelect}
+        />
       ))}
     </div>
   )

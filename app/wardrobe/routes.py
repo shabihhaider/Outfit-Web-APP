@@ -11,6 +11,8 @@ Routes (wardrobe_bp):
   GET    /wardrobe/items        — list all items for the authenticated user
   PATCH  /wardrobe/items/<id>   — correct category or formality after upload
   DELETE /wardrobe/items/<id>   — remove an item
+  DELETE /wardrobe/items/bulk   — bulk delete by item_ids
+  PATCH  /wardrobe/items/bulk   — bulk formality update by item_ids
   GET    /wardrobe/stats        — wardrobe statistics and insights
 
 Routes (uploads_bp, public — no JWT):
@@ -331,6 +333,78 @@ def edit_item(item_id: int):
 
     db.session.commit()
     return jsonify(item.to_dict()), 200
+
+
+# ─── DELETE /wardrobe/items/bulk ─────────────────────────────────────────────
+
+@wardrobe_bp.route("/items/bulk", methods=["DELETE"])
+@jwt_required()
+def bulk_delete_items():
+    """
+    DELETE /wardrobe/items/bulk
+    Body (JSON): { "item_ids": [1, 2, 3] }
+    Deletes all specified items that belong to the authenticated user.
+    Items not owned by the user are silently skipped (not an error).
+    """
+    user_id = int(get_jwt_identity())
+    data = request.get_json(silent=True) or {}
+    item_ids = data.get("item_ids", [])
+
+    if not item_ids or not isinstance(item_ids, list):
+        return jsonify({"error": "item_ids must be a non-empty list."}), 400
+
+    items = WardrobeItemDB.query.filter(
+        WardrobeItemDB.id.in_(item_ids),
+        WardrobeItemDB.user_id == user_id,
+    ).all()
+
+    deleted_count = 0
+    for item in items:
+        image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], item.image_filename)
+        try:
+            if os.path.exists(image_path):
+                os.remove(image_path)
+        except OSError as exc:
+            logger.warning("Could not delete image file %s: %s", image_path, exc)
+        from app.storage import delete_file as storage_delete
+        storage_delete(item.image_filename)
+        db.session.delete(item)
+        deleted_count += 1
+
+    db.session.commit()
+    recommendation_cache.invalidate_user(user_id)
+    log_action("bulk_delete_items", user_id=user_id, detail=f"deleted={deleted_count}")
+    return jsonify({"deleted": deleted_count}), 200
+
+
+# ─── PATCH /wardrobe/items/bulk ──────────────────────────────────────────────
+
+@wardrobe_bp.route("/items/bulk", methods=["PATCH"])
+@jwt_required()
+def bulk_update_items():
+    """
+    PATCH /wardrobe/items/bulk
+    Body (JSON): { "item_ids": [1, 2, 3], "formality": "casual" }
+    Updates formality for all specified items that belong to the authenticated user.
+    """
+    user_id = int(get_jwt_identity())
+    data = request.get_json(silent=True) or {}
+    item_ids = data.get("item_ids", [])
+    formality = data.get("formality")
+
+    if not item_ids or not isinstance(item_ids, list):
+        return jsonify({"error": "item_ids must be a non-empty list."}), 400
+    if formality not in VALID_FORMALITIES:
+        return jsonify({"error": f"formality must be one of: {', '.join(VALID_FORMALITIES)}."}), 422
+
+    updated_count = WardrobeItemDB.query.filter(
+        WardrobeItemDB.id.in_(item_ids),
+        WardrobeItemDB.user_id == user_id,
+    ).update({"formality": formality}, synchronize_session=False)
+
+    db.session.commit()
+    log_action("bulk_update_items", user_id=user_id, detail=f"updated={updated_count} formality={formality}")
+    return jsonify({"updated": updated_count}), 200
 
 
 # ─── GET /wardrobe/stats ─────────────────────────────────────────────────────
