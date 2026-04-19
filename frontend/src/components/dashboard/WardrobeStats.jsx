@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { FiBarChart2, FiZap, FiInfo, FiTrendingUp, FiArrowRight } from 'react-icons/fi'
 import { getWardrobeStats } from '../../api/wardrobe.js'
-import { pluralizeCategory } from '../../utils/formatters.js'
+import { pluralizeCategory, scoreToLabel } from '../../utils/formatters.js'
 
 const CAT_COLORS = {
   top: 'bg-sky-500',
@@ -133,7 +133,7 @@ export default function WardrobeStats() {
         {activity.avg_score != null && (
           <div className="bg-brand-50/60 dark:bg-brand-800/30 rounded-xl p-3 text-center border border-brand-100/40 dark:border-brand-800/30">
             <div className="text-xl font-mono font-bold text-brand-900 dark:text-brand-100">{Math.round(activity.avg_score * 100)}%</div>
-            <div className="text-[10px] text-brand-500 dark:text-brand-400 mt-0.5">Avg Score</div>
+            <div className="text-[10px] font-medium text-accent-600 dark:text-accent-400 mt-0.5">{scoreToLabel(activity.avg_score)}</div>
           </div>
         )}
         {(feedback.thumbs_up > 0 || feedback.thumbs_down > 0) && (
