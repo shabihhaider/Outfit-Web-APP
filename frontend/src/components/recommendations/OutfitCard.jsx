@@ -89,7 +89,7 @@ export default function OutfitCard({ outfit, occasion }) {
             </div>
             <div className="flex items-baseline gap-2">
               <span className="data-value text-4xl leading-none">{pct}%</span>
-              <ScoreInfoTooltip />
+              <ScoreInfoTooltip placement="down" />
               <span className={`font-display text-lg font-medium italic ${pct >= 80 ? 'text-emerald-500' : pct >= 70 ? 'text-emerald-500/70' : pct >= 60 ? 'text-amber-500' : 'text-red-400'}`}>
                 {scoreToLabel(outfit.final_score)}
               </span>
