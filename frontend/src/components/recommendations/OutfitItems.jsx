@@ -24,19 +24,18 @@ export default function OutfitItems({ items }) {
               {/* Subtle overlay gradient */}
               <div className="absolute inset-0 bg-gradient-to-t from-brand-900/10 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity" />
               
-              {imageUrl ? (
-                <RetryImage
-                  src={imageUrl}
-                  alt={item.category}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-3xl opacity-40 grayscale">
-                  {CAT_EMOJI[item.category] || '\u{1F454}'}
-                </div>
-              )}
+              <RetryImage
+                src={imageUrl}
+                alt={item.category}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+                fallback={
+                  <div className="w-full h-full flex items-center justify-center text-3xl opacity-40 grayscale">
+                    {CAT_EMOJI[item.category] || '\u{1F454}'}
+                  </div>
+                }
+              />
             </div>
             
             <div className="mt-2 flex flex-col items-center">

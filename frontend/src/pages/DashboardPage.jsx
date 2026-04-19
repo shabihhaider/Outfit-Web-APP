@@ -75,19 +75,18 @@ export default function DashboardPage() {
                   key={i}
                   className="w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-brand-900 bg-brand-100 dark:bg-brand-800"
                 >
-                  {item.image_url ? (
-                    <RetryImage
-                      src={resolveUrl(item.image_url)}
-                      alt={item.category}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-lg opacity-30">
-                      {todayPlan.occasion === 'formal' ? '👔' : '👕'}
-                    </div>
-                  )}
+                  <RetryImage
+                    src={resolveUrl(item.image_url)}
+                    alt={item.category}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover"
+                    fallback={
+                      <div className="w-full h-full flex items-center justify-center text-lg opacity-30">
+                        {todayPlan.occasion === 'formal' ? '👔' : '👕'}
+                      </div>
+                    }
+                  />
                 </div>
               ))}
             </div>

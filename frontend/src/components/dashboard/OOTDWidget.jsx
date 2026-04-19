@@ -143,16 +143,15 @@ export default function OOTDWidget() {
               transition={{ delay: idx * 0.08 }}
               className="flex-shrink-0"
             >
-              <div className="w-20 h-20 rounded-xl overflow-hidden bg-brand-100/60 dark:bg-brand-800/40 border border-brand-100/60 dark:border-brand-700/40 shadow-sm">
-                {item.image_url && (
-                  <RetryImage
-                    src={resolveUrl(item.image_url)}
-                    alt={item.category}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover"
-                  />
-                )}
+              <div className="w-20 h-20 rounded-xl overflow-hidden bg-brand-100/60 dark:bg-brand-800/40 border border-brand-100/60 dark:border-brand-700/40 shadow-sm flex items-center justify-center">
+                <RetryImage
+                  src={resolveUrl(item.image_url)}
+                  alt={item.category}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover"
+                  fallback={<span className="text-3xl opacity-50">👔</span>}
+                />
               </div>
               <p className="text-[11px] text-brand-500 dark:text-brand-400 text-center mt-1.5 capitalize">{item.category}</p>
             </motion.div>

@@ -125,16 +125,15 @@ export default function RecommendationsPage() {
       {/* Anchor item banner */}
       {anchorItem && (
         <div className="card p-4 mb-6 flex items-center gap-4 border-accent-300/40 dark:border-accent-700/40 bg-accent-50/50 dark:bg-accent-900/10">
-          <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-brand-800 border border-accent-200/60 dark:border-accent-700/40">
-            {anchorItem.image_url && (
-              <RetryImage
-                src={resolveUrl(anchorItem.image_url)}
-                alt={anchorItem.category}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover"
-              />
-            )}
+          <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-brand-800 border border-accent-200/60 dark:border-accent-700/40 flex items-center justify-center">
+            <RetryImage
+              src={resolveUrl(anchorItem.image_url)}
+              alt={anchorItem.category}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
+              fallback={<span className="text-2xl opacity-50">👔</span>}
+            />
           </div>
           <div>
             <p className="text-sm font-semibold text-accent-700 dark:text-accent-400">Building outfit around:</p>

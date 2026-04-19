@@ -51,19 +51,18 @@ export default function WardrobeCard({ item, onDelete }) {
       >
         {/* Image */}
         <div className="relative aspect-square bg-brand-100/60 dark:bg-brand-800/40 overflow-hidden">
-          {imageUrl ? (
-            <RetryImage
-              src={imageUrl}
-              alt={`${item.category} item`}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl opacity-60">
-              {CAT_EMOJI[item.category] || '👔'}
-            </div>
-          )}
+          <RetryImage
+            src={imageUrl}
+            alt={`${item.category} item`}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fallback={
+              <div className="w-full h-full flex items-center justify-center text-5xl opacity-60">
+                {CAT_EMOJI[item.category] || '👔'}
+              </div>
+            }
+          />
 
           {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
