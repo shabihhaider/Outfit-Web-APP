@@ -39,7 +39,7 @@ from app.audit import log_action
 from app.cache import recommendation_cache
 from app.extensions import db
 from app.models_db import WardrobeItemDB, OutfitHistory, OutfitFeedback, SavedOutfit
-from app.utils import allowed_file, validate_image_content, validate_clothing_photo, process_image_for_atelier
+from app.utils import allowed_file, validate_image_content, validate_clothing_photo, process_image_for_atelier, normalize_upload
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +153,14 @@ def upload_item():
         )
     else:
         bg_removed = False
-        logger.warning("Atelier: processing failed for %s — using original.", filename)
+        logger.warning("Atelier: processing failed for %s — normalising original.", filename)
+        normalize_upload(save_path)
+        # normalize_upload may rename .jpg extension; find actual saved file
+        base, _ = os.path.splitext(save_path)
+        jpg_path = base + ".jpg"
+        if jpg_path != save_path and os.path.exists(jpg_path):
+            filename  = os.path.basename(jpg_path)
+            save_path = jpg_path
 
     # ── 5c. CLIP Zero-Shot OOD Detection ──────────────────────────────────────
     if not current_app.config.get("SKIP_CLOTHING_PHOTO_CHECK"):

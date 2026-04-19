@@ -6,6 +6,7 @@ Shared helper functions for the Flask layer.
   validate_image_content()    — Pillow verify() to reject non-image files
   validate_clothing_photo()   — confidence threshold check (≥0.45)
   item_db_to_engine()         — convert WardrobeItemDB → engine WardrobeItem
+  normalize_upload()          — EXIF+resize+JPEG for fallback (atelier failed)
   process_image_for_atelier() — normalise uploaded image to clean RGB PNG
 """
 
@@ -14,6 +15,7 @@ from __future__ import annotations
 import io
 import json
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -135,18 +137,58 @@ def item_db_to_engine(item_db) -> "WardrobeItem":  # noqa: F821
     )
 
 
+def normalize_upload(path: str, max_side: int = 800, jpeg_quality: int = 85) -> None:
+    """
+    Lightweight normalisation for uploads that bypass the full Atelier pipeline.
+
+    Applies EXIF rotation correction, caps the longest side to `max_side`, and
+    re-encodes as JPEG (quality=`jpeg_quality`) in-place.  Replaces the original
+    file — so a 5-8 MB phone photo becomes a ~100-300 KB web-ready image.
+
+    Silently no-ops on any error so the upload is never blocked.
+    """
+    try:
+        from PIL import Image, ImageOps
+
+        img = Image.open(path)
+        img = ImageOps.exif_transpose(img)
+
+        w, h = img.size
+        if max(w, h) > max_side:
+            scale = max_side / max(w, h)
+            img = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+
+        if img.mode in ("RGBA", "LA", "P"):
+            img = img.convert("RGB")
+        elif img.mode != "RGB":
+            img = img.convert("RGB")
+
+        # Replace in-place with a JPEG; rename path to .jpg
+        base, _ = os.path.splitext(path)
+        jpg_path = base + ".jpg"
+        img.save(jpg_path, "JPEG", quality=jpeg_quality, optimize=True)
+        if jpg_path != path:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+        logger.info("normalize_upload: saved %s (%dx%d)", jpg_path, img.width, img.height)
+    except Exception as exc:
+        logger.warning("normalize_upload: failed for %s — %s", path, exc)
+
+
 def process_image_for_atelier(
     src_path: str,
     dst_path: str,
-    max_side: int = 1500,
+    max_side: int = 800,
 ) -> tuple[bool, bool]:
     """
     Normalise an uploaded clothing image for the Atelier digital-closet experience.
 
     Pipeline (in order):
       1. Open image and apply EXIF orientation correction.
-      2. Cap the longest side to `max_side` pixels (speed guard — rembg on CPU is
-         O(pixels); a 20 MP phone photo would otherwise block the request ~30 s).
+      2. Cap the longest side to `max_side` pixels (default 800 — sufficient for
+         Retina card display; rembg on CPU is O(pixels) so smaller = faster).
       3. Attempt background removal via rembg (u2net model, self-hosted, ~176 MB).
          Uses already-decoded bytes — no second disk read.
       4. Composite the RGBA result onto a clean white RGB background so every
