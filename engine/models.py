@@ -36,12 +36,10 @@ class Gender(str, Enum):
 
 
 class Occasion(str, Enum):
-    CASUAL       = "casual"
-    FORMAL       = "formal"
-    SMART_CASUAL = "smart_casual"
-    PARTY        = "party"
-    ATHLETIC     = "athletic"
-    DATE_NIGHT   = "date_night"
+    CASUAL   = "casual"
+    FORMAL   = "formal"
+    PARTY    = "party"
+    ATHLETIC = "athletic"
 
 
 class Confidence(str, Enum):

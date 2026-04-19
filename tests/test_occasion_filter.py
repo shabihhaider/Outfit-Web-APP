@@ -53,14 +53,6 @@ class TestOccasionFilter:
 
     # ── New occasions ──────────────────────────────────────────────────────────
 
-    def test_smart_casual_accepts_all_formalities(self):
-        from engine.occasion_filter import filter_by_occasion
-        casual_item  = _make_item(30, Category.TOP, formality=Formality.CASUAL)
-        formal_item  = _make_item(31, Category.TOP, formality=Formality.FORMAL)
-        both_item    = _make_item(32, Category.TOP, formality=Formality.BOTH)
-        result = filter_by_occasion([casual_item, formal_item, both_item], Occasion.SMART_CASUAL)
-        assert len(result) == 3
-
     def test_party_excludes_formal_only_items(self):
         from engine.occasion_filter import filter_by_occasion
         formal_item = _make_item(40, Category.TOP, formality=Formality.FORMAL)
@@ -85,15 +77,7 @@ class TestOccasionFilter:
         result = filter_by_occasion([formal_item], Occasion.ATHLETIC)
         assert result == []
 
-    def test_date_night_accepts_all_formalities(self):
-        from engine.occasion_filter import filter_by_occasion
-        casual_item = _make_item(70, Category.TOP, formality=Formality.CASUAL)
-        formal_item = _make_item(71, Category.TOP, formality=Formality.FORMAL)
-        both_item   = _make_item(72, Category.TOP, formality=Formality.BOTH)
-        result = filter_by_occasion([casual_item, formal_item, both_item], Occasion.DATE_NIGHT)
-        assert len(result) == 3
-
-    def test_all_six_occasions_present_in_rules(self):
+    def test_all_four_occasions_present_in_rules(self):
         from engine.occasion_filter import OCCASION_RULES
-        expected = {"casual", "formal", "smart_casual", "party", "athletic", "date_night"}
+        expected = {"casual", "formal", "party", "athletic"}
         assert expected == set(OCCASION_RULES.keys())

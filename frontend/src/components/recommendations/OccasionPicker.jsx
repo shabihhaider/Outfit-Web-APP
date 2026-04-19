@@ -1,13 +1,11 @@
 import { motion } from 'framer-motion'
-import { FiSun, FiBriefcase, FiCoffee, FiMusic, FiZap, FiHeart } from 'react-icons/fi'
+import { FiSun, FiBriefcase, FiMusic, FiZap } from 'react-icons/fi'
 
 const OCCASIONS = [
-  { value: 'casual',       label: 'Casual',       desc: 'Everyday',         icon: FiSun },
-  { value: 'formal',       label: 'Formal',       desc: 'Professional',     icon: FiBriefcase },
-  { value: 'smart_casual', label: 'Smart Casual', desc: 'Business casual',  icon: FiCoffee },
-  { value: 'party',        label: 'Party',        desc: 'Evening & social', icon: FiMusic },
-  { value: 'athletic',     label: 'Athletic',     desc: 'Sport & gym',      icon: FiZap },
-  { value: 'date_night',   label: 'Date Night',   desc: 'Elevated casual',  icon: FiHeart },
+  { value: 'casual',   label: 'Casual',   desc: 'Everyday',         icon: FiSun },
+  { value: 'formal',   label: 'Formal',   desc: 'Professional',     icon: FiBriefcase },
+  { value: 'party',    label: 'Party',    desc: 'Evening & social', icon: FiMusic },
+  { value: 'athletic', label: 'Athletic', desc: 'Sport & gym',      icon: FiZap },
 ]
 
 export default function OccasionPicker({ value, onChange }) {
