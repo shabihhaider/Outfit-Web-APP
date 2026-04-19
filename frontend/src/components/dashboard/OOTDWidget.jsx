@@ -131,7 +131,7 @@ export default function OOTDWidget() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="flex gap-3 mb-5 overflow-x-auto pb-1"
+          className="flex flex-wrap gap-3 mb-5"
         >
           {outfit.items.map((item, idx) => (
             <motion.div
