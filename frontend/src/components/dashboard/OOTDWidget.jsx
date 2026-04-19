@@ -7,6 +7,7 @@ import { getOOTD } from '../../api/recommendations.js'
 import { saveOutfit } from '../../api/outfits.js'
 import { scoreToPercent } from '../../utils/formatters.js'
 import ConfidenceBadge from '../ui/ConfidenceBadge.jsx'
+import ScoreInfoTooltip from '../ui/ScoreInfoTooltip.jsx'
 import RetryImage from '../ui/RetryImage.jsx'
 import { resolveUrl } from '../../utils/resolveUrl.js'
 
@@ -118,6 +119,7 @@ export default function OOTDWidget() {
         </div>
         <div className="text-right">
           <span className="data-value text-2xl">{pct}%</span>
+          <ScoreInfoTooltip />
           <div className="mt-1">
             <ConfidenceBadge level={outfit.confidence} />
           </div>

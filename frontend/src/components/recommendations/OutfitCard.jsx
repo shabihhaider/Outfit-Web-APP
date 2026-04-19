@@ -7,6 +7,7 @@ import OutfitItems from './OutfitItems.jsx'
 import WhyThisOutfit from './WhyThisOutfit.jsx'
 import FeedbackButtons from './FeedbackButtons.jsx'
 import ConfidenceBadge from '../ui/ConfidenceBadge.jsx'
+import ScoreInfoTooltip from '../ui/ScoreInfoTooltip.jsx'
 import { scoreToPercent } from '../../utils/formatters.js'
 import ShareButton from '../ui/ShareButton.jsx'
 import OutfitTryOnModal from '../tryon/OutfitTryOnModal.jsx'
@@ -88,6 +89,7 @@ export default function OutfitCard({ outfit, occasion }) {
             </div>
             <div className="flex items-baseline gap-2">
               <span className="data-value text-4xl leading-none">{pct}%</span>
+              <ScoreInfoTooltip />
               <span className={`font-display text-lg font-medium italic ${pct >= 75 ? 'text-emerald-500' : pct >= 55 ? 'text-emerald-500/70' : pct >= 40 ? 'text-amber-500' : 'text-red-400'}`}>
                 {pct >= 75 ? 'Great Match' : pct >= 55 ? 'Good Match' : pct >= 40 ? 'Fair Match' : 'Weak Match'}
               </span>
