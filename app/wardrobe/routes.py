@@ -15,8 +15,8 @@ Routes (wardrobe_bp):
   PATCH  /wardrobe/items/bulk   — bulk formality update by item_ids
   GET    /wardrobe/stats        — wardrobe statistics and insights
 
-Routes (uploads_bp, public — no JWT):
-  GET    /uploads/<filename>    — serve an uploaded image (404 if not in DB)
+Routes (uploads_bp — JWT required via header or ?token= param):
+  GET    /uploads/<filename>    — serve an uploaded image (401 if unauthed, 404 if not in DB)
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ import uuid
 from flask import (
     Blueprint, current_app, jsonify, redirect, request, send_from_directory,
 )
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, decode_token
 
 from app.extensions import limiter
 
@@ -530,18 +530,43 @@ def wardrobe_stats():
 @uploads_bp.route("/uploads/<string:filename>")
 def serve_upload(filename: str):
     """
-    GET /uploads/<filename>
+    GET /uploads/<filename>?token=<jwt>
+    Requires authentication via Authorization: Bearer header or ?token= query param.
     Redirects to Supabase CDN when configured, otherwise serves from local disk.
     """
+    from flask_jwt_extended import verify_jwt_in_request
     from app.storage import is_configured, get_public_url
+    from app.models_db import WardrobeItemDB
+
+    # Accept JWT from Authorization header or ?token= query param (<img src> compatibility)
+    token_param = request.args.get("token")
+    if token_param:
+        try:
+            decoded = decode_token(token_param)
+            user_id = decoded["sub"]
+        except Exception:
+            return jsonify(error="Invalid token"), 401
+    else:
+        try:
+            verify_jwt_in_request()
+            user_id = get_jwt_identity()
+        except Exception:
+            return jsonify(error="Authentication required"), 401
+
+    # Verify the file is owned by the requesting user
+    item = WardrobeItemDB.query.filter_by(
+        image_filename=filename, user_id=user_id
+    ).first()
+    if item is None:
+        return jsonify(error="Not found"), 404
 
     if is_configured():
         response = redirect(get_public_url(filename), code=302)
-        response.headers["Cache-Control"] = "public, max-age=86400"
+        response.headers["Cache-Control"] = "private, max-age=86400"
         return response
 
     # Fallback for local dev without Supabase
     upload_dir = current_app.config["UPLOAD_FOLDER"]
     response = send_from_directory(os.path.abspath(upload_dir), filename)
-    response.headers["Cache-Control"] = "public, max-age=86400"
+    response.headers["Cache-Control"] = "private, max-age=86400"
     return response

@@ -6,7 +6,7 @@ Tests for:
   DELETE /wardrobe/items/<id>  — delete
   DELETE /wardrobe/items/bulk  — bulk delete
   PATCH  /wardrobe/items/bulk  — bulk formality update
-  GET    /uploads/<filename>   — serve image (ownership check)
+  GET    /uploads/<filename>   — serve image (JWT required, ownership check)
 """
 
 from __future__ import annotations
@@ -356,19 +356,21 @@ class TestServeUpload:
         # File may not physically exist on disk in tests, but DB record exists → 200 or 404 from disk
         assert resp.status_code in (200, 404)
 
-    def test_serve_upload_no_auth(self, client, upload_item):
-        """After FIX 2: no JWT required — unauthenticated requests are allowed."""
+    def test_serve_upload_no_auth_returns_401(self, client, upload_item):
+        """Unauthenticated requests must be rejected — JWT now required."""
         image_url = upload_item["image_url"]
         filename = image_url.split("/uploads/")[1]
         resp = client.get(f"/uploads/{filename}")
-        if resp.status_code in (200, 302):
-            assert resp.headers.get("Cache-Control") == "public, max-age=86400"
-        # DB record exists, so not 401/403. File may not be on disk → 200 or 404.
-        assert resp.status_code in (200, 404)
+        assert resp.status_code == 401
 
-    def test_serve_upload_not_found(self, client):
-        """Filename not in DB → 404 (no auth needed)."""
+    def test_serve_upload_not_found_no_auth_returns_401(self, client):
+        """Auth check runs before existence check — unauthenticated → 401."""
         resp = client.get("/uploads/nonexistent_file_xyz.jpg")
+        assert resp.status_code == 401
+
+    def test_serve_upload_not_found_authed_returns_404(self, client, auth_headers):
+        """Authenticated request for nonexistent file → 404."""
+        resp = client.get("/uploads/nonexistent_file_xyz.jpg", headers=auth_headers)
         assert resp.status_code == 404
 
 
