@@ -11,6 +11,7 @@ import ScoreInfoTooltip from '../ui/ScoreInfoTooltip.jsx'
 import { scoreToPercent, scoreToLabel } from '../../utils/formatters.js'
 import ShareButton from '../ui/ShareButton.jsx'
 import OutfitTryOnModal from '../tryon/OutfitTryOnModal.jsx'
+import LiveRegion from '../ui/LiveRegion.jsx'
 
 export default function OutfitCard({ outfit, occasion }) {
   const [saved, setSaved] = useState(false)
@@ -64,6 +65,8 @@ export default function OutfitCard({ outfit, occasion }) {
   const pct = scoreToPercent(outfit.final_score)
 
   return (
+    <>
+    <LiveRegion message={saved ? 'Outfit saved to your collection' : saveMutation.isError ? saveError : ''} />
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -248,5 +251,6 @@ export default function OutfitCard({ outfit, occasion }) {
         occasion={occasion}
       />
     </motion.div>
+    </>
   )
 }

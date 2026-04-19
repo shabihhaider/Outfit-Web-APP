@@ -10,6 +10,7 @@ import ConfidenceBadge from '../ui/ConfidenceBadge.jsx'
 import ScoreInfoTooltip from '../ui/ScoreInfoTooltip.jsx'
 import RetryImage from '../ui/RetryImage.jsx'
 import { resolveUrl } from '../../utils/resolveUrl.js'
+import LiveRegion from '../ui/LiveRegion.jsx'
 
 export default function OOTDWidget() {
   const [saved, setSaved] = useState(false)
@@ -50,7 +51,8 @@ export default function OOTDWidget() {
 
   if (isLoading) {
     return (
-      <div className="card p-6">
+      <div className="card p-6" aria-busy="true" aria-label="Loading today's outfit">
+        <LiveRegion message="Loading your daily outfit…" />
         <div className="flex items-center gap-2 mb-4">
           <div className="skeleton h-6 w-32 rounded-lg" />
           <div className="skeleton h-5 w-16 rounded-lg ml-auto" />
