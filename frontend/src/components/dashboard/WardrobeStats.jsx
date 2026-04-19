@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FiBarChart2, FiAlertTriangle, FiInfo, FiTrendingUp } from 'react-icons/fi'
+import { FiBarChart2, FiZap, FiInfo, FiTrendingUp, FiArrowRight } from 'react-icons/fi'
 import { getWardrobeStats } from '../../api/wardrobe.js'
 import { pluralizeCategory } from '../../utils/formatters.js'
 
@@ -93,22 +93,12 @@ export default function WardrobeStats() {
         <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200">Insights</h2>
       </div>
 
-      {/* Capacity */}
+      {/* Item count — capability framing */}
       <div className="mb-6">
-        <div className="flex justify-between text-xs text-brand-500 dark:text-brand-400 mb-1.5">
-          <span>{wardrobe.total_items ?? 0} / {wardrobe.capacity ?? 50} items</span>
-          <span className="font-mono font-semibold">{capacityPct}%</span>
-        </div>
-        <div className="h-1.5 bg-brand-100/60 dark:bg-brand-800/40 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${capacityPct}%` }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className={`h-full rounded-full ${
-              capacityPct >= 90 ? 'bg-red-500' : capacityPct >= 70 ? 'bg-amber-500' : 'bg-accent-500'
-            }`}
-          />
-        </div>
+        <p className="text-xs text-brand-500 dark:text-brand-400 mb-1">
+          <span className="font-semibold text-brand-700 dark:text-brand-300">{wardrobe.total_items ?? 0} items</span>
+          {(wardrobe.total_items ?? 0) > 0 ? ' — ready for recommendations' : ' — upload your first item to get started'}
+        </p>
       </div>
 
       {/* Categories */}
@@ -160,18 +150,26 @@ export default function WardrobeStats() {
 
       {/* Insights */}
       {insights.wardrobe_balance && (
-        <div className="flex items-start gap-2.5 p-3 bg-amber-50/60 dark:bg-amber-900/10 border border-amber-200/40 dark:border-amber-800/30 rounded-xl text-sm text-amber-700 dark:text-amber-300">
-          <FiAlertTriangle size={14} className="mt-0.5 flex-shrink-0" />
+        <div className="flex items-start gap-2.5 p-3 bg-accent-50/60 dark:bg-accent-900/10 border border-accent-200/40 dark:border-accent-800/30 rounded-xl text-sm text-accent-700 dark:text-accent-300">
+          <FiZap size={14} className="mt-0.5 flex-shrink-0" />
           <span>{insights.wardrobe_balance}</span>
         </div>
       )}
 
       {(insights.never_used_item_ids?.length ?? 0) > 0 && (
-        <div className="flex items-start gap-2.5 p-3 mt-2 bg-sky-50/60 dark:bg-sky-900/10 border border-sky-200/40 dark:border-sky-800/30 rounded-xl text-sm text-sky-700 dark:text-sky-300">
-          <FiInfo size={14} className="mt-0.5 flex-shrink-0" />
-          <span>
-            {insights.never_used_item_ids.length} item{insights.never_used_item_ids.length !== 1 ? 's' : ''} never used in any recommendation.
-          </span>
+        <div className="p-3 mt-2 bg-sky-50/60 dark:bg-sky-900/10 border border-sky-200/40 dark:border-sky-800/30 rounded-xl">
+          <div className="flex items-start gap-2.5 text-sm text-sky-700 dark:text-sky-300 mb-2">
+            <FiInfo size={14} className="mt-0.5 flex-shrink-0" />
+            <span>
+              {insights.never_used_item_ids.length} item{insights.never_used_item_ids.length !== 1 ? 's' : ''} waiting to shine — try a new occasion to unlock them.
+            </span>
+          </div>
+          <a
+            href="/recommendations"
+            className="flex items-center gap-1 text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:underline ml-6"
+          >
+            Explore recommendations <FiArrowRight size={11} />
+          </a>
         </div>
       )}
 

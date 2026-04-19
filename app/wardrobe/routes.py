@@ -406,11 +406,11 @@ def wardrobe_stats():
         has_shoes = categories.get("shoes", 0)
 
         if has_tops > 0 and has_bottoms == 0:
-            balance_tip = "You have tops but no bottoms. Add some pants or skirts for complete outfits."
+            balance_tip = "Your tops are ready — adding some pants or skirts will unlock complete outfit recommendations."
         elif has_bottoms > 0 and has_tops == 0:
-            balance_tip = "You have bottoms but no tops. Add some shirts or t-shirts for complete outfits."
+            balance_tip = "Your bottoms are ready — adding some shirts or t-shirts will unlock complete outfit recommendations."
         elif has_shoes == 0 and total_items >= 3:
-            balance_tip = "You don't have any shoes yet. Add footwear to get full outfit recommendations."
+            balance_tip = "Great start! Adding footwear will unlock full 3-piece outfit recommendations."
         else:
             # Check for big imbalances
             max_cat = max(categories, key=categories.get)
@@ -421,8 +421,8 @@ def wardrobe_stats():
                 min_count = min_essentials[min_cat]
                 if max_count >= 3 * min_count and min_count > 0:
                     balance_tip = (
-                        f"You have {max_count} {_pluralize_category(max_cat)} but only {min_count} {_pluralize_category(min_cat)}. "
-                        f"Consider adding more {_pluralize_category(min_cat)} for variety."
+                        f"Your {_pluralize_category(max_cat)} are well-stocked! "
+                        f"Adding more {_pluralize_category(min_cat)} could unlock more complete outfit looks."
                     )
 
     response = jsonify({
