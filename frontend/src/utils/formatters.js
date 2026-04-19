@@ -48,6 +48,16 @@ export function scoreToPercent(score) {
   return Math.round((score ?? 0) * 100)
 }
 
+// Qualitative match label scale (score is 0–1)
+export function scoreToLabel(score) {
+  const pct = scoreToPercent(score)
+  if (pct >= 90) return 'Perfect Match'
+  if (pct >= 80) return 'Strong Match'
+  if (pct >= 70) return 'Good Match'
+  if (pct >= 60) return 'Fair Match'
+  return 'Weak Match'
+}
+
 export function confidenceColor(level) {
   switch (level?.toLowerCase()) {
     case 'high':   return 'confidence-high'
