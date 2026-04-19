@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
-import { FiSave, FiRefreshCw, FiSun, FiThermometer } from 'react-icons/fi'
+import { FiSave, FiRefreshCw, FiSun, FiThermometer, FiPlus } from 'react-icons/fi'
 import { getOOTD } from '../../api/recommendations.js'
 import { saveOutfit } from '../../api/outfits.js'
 import { scoreToPercent } from '../../utils/formatters.js'
@@ -84,6 +84,8 @@ export default function OOTDWidget() {
   }
 
   const pct = scoreToPercent(outfit.final_score)
+  const hasShoes = outfit.items?.some(i => i.category === 'shoes')
+  const hasShoesinWardrobe = data?.stats?.has_shoes
 
   return (
     <motion.div
@@ -153,6 +155,21 @@ export default function OOTDWidget() {
               <p className="text-[11px] text-brand-500 dark:text-brand-400 text-center mt-1.5 capitalize">{item.category}</p>
             </motion.div>
           ))}
+          {!hasShoes && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: outfit.items.length * 0.08 }}
+              className="flex-shrink-0"
+            >
+              <div className="w-20 h-20 rounded-xl overflow-hidden bg-brand-100/40 dark:bg-brand-800/20 border-2 border-dashed border-brand-200/60 dark:border-brand-700/40 flex items-center justify-center">
+                <FiPlus className="text-brand-300 dark:text-brand-600" size={20} />
+              </div>
+              <p className="text-[10px] text-brand-400 dark:text-brand-500 text-center mt-1.5">
+                {hasShoesinWardrobe ? 'No match' : 'Add shoes'}
+              </p>
+            </motion.div>
+          )}
         </motion.div>
       </AnimatePresence>
 
