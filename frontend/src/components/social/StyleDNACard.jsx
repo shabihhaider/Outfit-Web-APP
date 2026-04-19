@@ -80,27 +80,25 @@ export default function StyleDNACard() {
       className="card p-5 overflow-hidden relative"
     >
       {/* Background patterns */}
+      <style>{`
+        @keyframes dnaWave1 { 0%, 100% { opacity: 0.6 } 50% { opacity: 1 } }
+        @keyframes dnaWave2 { 0%, 100% { opacity: 1 } 50% { opacity: 0.6 } }
+      `}</style>
       <div className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-30">
         <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <motion.path
+          <path
             d="M-10,50 Q25,20 50,50 T110,50"
             fill="none"
-            stroke="currentColor"
+            stroke="#f59e0b"
             strokeWidth="0.5"
-            className="text-accent-500"
-            initial={{ opacity: 0.6 }}
-            animate={{ opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            style={{ animation: 'dnaWave1 10s ease-in-out infinite' }}
           />
-          <motion.path
+          <path
             d="M-10,50 Q25,80 50,50 T110,50"
             fill="none"
-            stroke="currentColor"
+            stroke="#9ca3af"
             strokeWidth="0.3"
-            className="text-brand-300 dark:text-brand-600"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: [1, 0.6, 1] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            style={{ animation: 'dnaWave2 10s ease-in-out infinite' }}
           />
         </svg>
       </div>
