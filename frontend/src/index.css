@@ -205,6 +205,18 @@ input[type="range"]::-webkit-slider-thumb {
   border: 0;
 }
 
+/* ─── Style DNA background wave animations ─── */
+@keyframes dnaWave1 {
+  0%, 100% { opacity: 0.6 }
+  50%       { opacity: 1 }
+}
+@keyframes dnaWave2 {
+  0%, 100% { opacity: 1 }
+  50%       { opacity: 0.6 }
+}
+.dna-wave-1 { animation: dnaWave1 10s ease-in-out infinite; }
+.dna-wave-2 { animation: dnaWave2 10s ease-in-out infinite; }
+
 /* ─── Reduced motion preference ─── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
