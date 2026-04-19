@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 recommendations_bp = Blueprint("recommendations", __name__)
 
-VALID_OCCASIONS = {"casual", "formal"}
+VALID_OCCASIONS = {"casual", "formal", "smart_casual", "party", "athletic", "date_night"}
 
 
 def _with_private_cache(response):

@@ -159,7 +159,7 @@ class TestCreatePlan:
 
         resp = client.post("/calendar/plans", json={
             "plan_date": "2026-04-15",
-            "occasion": "party",
+            "occasion": "beach_rave",
             "item_ids": [item["id"]],
         }, headers=auth_headers)
         assert resp.status_code == 422
