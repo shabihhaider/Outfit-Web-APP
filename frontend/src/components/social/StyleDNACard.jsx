@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FiZap, FiTarget, FiSun, FiMoon, FiCoffee, FiActivity, FiGlobe, FiHexagon } from 'react-icons/fi'
+import { FiZap, FiTarget, FiSun, FiMoon, FiCoffee, FiActivity, FiGlobe, FiHexagon, FiArrowRight } from 'react-icons/fi'
+import { Link } from 'react-router-dom'
 import { getMyStyleDNA } from '../../api/social.js'
 
 const PERSONA_ICONS = {
@@ -78,31 +79,7 @@ export default function StyleDNACard() {
       animate={{ opacity: 1, y: 0 }}
       className="card p-5 overflow-hidden relative"
     >
-      {/* Background patterns */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-30">
-        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <motion.path
-            d="M-10,50 Q25,20 50,50 T110,50"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="0.5"
-            className="text-accent-500"
-            animate={{ opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.path
-            d="M-10,50 Q25,80 50,50 T110,50"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="0.3"
-            className="text-brand-300 dark:text-brand-600"
-            animate={{ opacity: [1, 0.6, 1] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </svg>
-      </div>
-
-      <div className="relative z-10">
+<div className="relative z-10">
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center justify-center w-5 h-5 rounded-full bg-accent-100 dark:bg-accent-900/30">
             <FiZap size={11} className="text-accent-600 dark:text-accent-400" />
@@ -138,7 +115,7 @@ export default function StyleDNACard() {
         )}
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-2 text-center">
+        <div className="grid grid-cols-3 gap-2 text-center mb-4">
           <div className="bg-brand-50 dark:bg-brand-800/40 rounded-lg p-2">
             <p className="text-lg font-bold text-brand-900 dark:text-brand-100">{total_items}</p>
             <p className="text-[10px] text-brand-400 uppercase tracking-wide">Items</p>
@@ -152,6 +129,14 @@ export default function StyleDNACard() {
             <p className="text-[10px] text-brand-400 uppercase tracking-wide">Formality</p>
           </div>
         </div>
+
+        {/* CTA */}
+        <Link
+          to="/recommendations"
+          className="flex items-center justify-center gap-1.5 w-full h-9 rounded-xl btn-accent text-sm font-medium"
+        >
+          Build outfits for your style <FiArrowRight size={14} />
+        </Link>
       </div>
     </motion.div>
   )
