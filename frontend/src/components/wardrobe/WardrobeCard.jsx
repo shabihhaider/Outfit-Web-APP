@@ -167,9 +167,9 @@ export default function WardrobeCard({ item, onDelete }) {
 
           <button
             onClick={() => navigate('/recommendations', { state: { anchorItemId: item.id } })}
-            className="w-full text-xs text-accent-600 dark:text-accent-400 font-medium py-2 border border-accent-200/60 dark:border-accent-700/40 rounded-lg hover:bg-accent-50/50 dark:hover:bg-accent-900/15 transition-all flex items-center justify-center gap-1.5 mb-2"
+            className="w-full text-sm font-semibold py-2.5 rounded-lg btn-accent flex items-center justify-center gap-1.5 mb-2"
           >
-            <FiStar size={12} /> Build outfit
+            <FiStar size={13} /> Build outfit
           </button>
           <button
             onClick={() => setTryOnOpen(true)}
