@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FiEdit2, FiTrash2, FiStar, FiUser } from 'react-icons/fi'
+import { FiEdit2, FiTrash2, FiStar, FiUser, FiCheckCircle } from 'react-icons/fi'
 import { patchItem } from '../../api/wardrobe.js'
 import { resolveUrl } from '../../utils/resolveUrl.js'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
@@ -16,7 +16,7 @@ const CAT_EMOJI = {
 const CATEGORIES = ['top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit']
 const FORMALITIES = ['casual', 'formal', 'both']
 
-export default function WardrobeCard({ item, onDelete }) {
+export default function WardrobeCard({ item, onDelete, selectMode = false, selected = false, onToggleSelect }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [tryOnOpen, setTryOnOpen] = useState(false)
@@ -47,7 +47,8 @@ export default function WardrobeCard({ item, onDelete }) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
-        className="card overflow-hidden group"
+        className={`card overflow-hidden group cursor-pointer ${selected ? 'ring-2 ring-accent-500 ring-offset-2' : ''}`}
+        onClick={selectMode ? () => onToggleSelect?.(item.id) : undefined}
       >
         {/* Image */}
         <div className="relative aspect-square bg-brand-100/60 dark:bg-brand-800/40 overflow-hidden">
@@ -67,8 +68,18 @@ export default function WardrobeCard({ item, onDelete }) {
           {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+          {/* Select mode overlay */}
+          {selectMode && (
+            <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-200 ${selected ? 'bg-accent-500/20' : 'bg-transparent hover:bg-brand-900/10'}`}>
+              <FiCheckCircle
+                size={32}
+                className={`transition-all duration-200 ${selected ? 'text-accent-500 opacity-100' : 'text-white opacity-40'}`}
+              />
+            </div>
+          )}
+
           {/* Action buttons — always visible on touch, hover-only on desktop */}
-          <div className="absolute top-2 right-2 flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 sm:translate-y-1 sm:group-hover:translate-y-0">
+          <div className={`absolute top-2 right-2 flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 sm:translate-y-1 sm:group-hover:translate-y-0 ${selectMode ? 'hidden' : ''}`}>
             <button
               onClick={() => setIsEditing(true)}
               className="bg-white/90 dark:bg-brand-800/90 backdrop-blur-sm hover:bg-white dark:hover:bg-brand-700 text-brand-600 dark:text-brand-300 rounded-lg p-2 shadow-sm transition-colors"
@@ -165,18 +176,22 @@ export default function WardrobeCard({ item, onDelete }) {
             </div>
           )}
 
-          <button
-            onClick={() => navigate('/recommendations', { state: { anchorItemId: item.id } })}
-            className="w-full text-sm font-semibold py-2.5 rounded-lg btn-accent flex items-center justify-center gap-1.5 mb-2"
-          >
-            <FiStar size={13} /> Build outfit
-          </button>
-          <button
-            onClick={() => setTryOnOpen(true)}
-            className="w-full text-xs text-brand-500 dark:text-brand-400 font-medium py-2 border border-brand-200/60 dark:border-brand-700/40 rounded-lg hover:bg-brand-50/60 dark:hover:bg-brand-800/40 transition-all flex items-center justify-center gap-1.5"
-          >
-            <FiUser size={12} /> Virtual Try-On
-          </button>
+          {!selectMode && (
+            <>
+              <button
+                onClick={() => navigate('/recommendations', { state: { anchorItemId: item.id } })}
+                className="w-full text-sm font-semibold py-2.5 rounded-lg btn-accent flex items-center justify-center gap-1.5 mb-2"
+              >
+                <FiStar size={13} /> Build outfit
+              </button>
+              <button
+                onClick={() => setTryOnOpen(true)}
+                className="w-full text-xs text-brand-500 dark:text-brand-400 font-medium py-2 border border-brand-200/60 dark:border-brand-700/40 rounded-lg hover:bg-brand-50/60 dark:hover:bg-brand-800/40 transition-all flex items-center justify-center gap-1.5"
+              >
+                <FiUser size={12} /> Virtual Try-On
+              </button>
+            </>
+          )}
         </div>
       </motion.div>
 

@@ -14,6 +14,12 @@ export const deleteItem = (id) =>
 export const patchItem = (id, data) =>
   api.patch(`/wardrobe/items/${id}`, data).then(r => r.data)
 
+export const bulkDeleteItems = (item_ids) =>
+  api.delete('/wardrobe/items/bulk', { data: { item_ids } }).then(r => r.data)
+
+export const bulkUpdateFormality = (item_ids, formality) =>
+  api.patch('/wardrobe/items/bulk', { item_ids, formality }).then(r => r.data)
+
 export const getWardrobeStats = () =>
   api.get('/wardrobe/stats').then(r => r.data)
 
