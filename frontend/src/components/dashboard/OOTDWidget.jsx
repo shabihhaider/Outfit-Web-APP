@@ -10,6 +10,7 @@ import ConfidenceBadge from '../ui/ConfidenceBadge.jsx'
 import ScoreInfoTooltip from '../ui/ScoreInfoTooltip.jsx'
 import RetryImage from '../ui/RetryImage.jsx'
 import { resolveUrl } from '../../utils/resolveUrl.js'
+import { wardrobeItemAlt } from '../../utils/wardrobeItemAlt.js'
 import LiveRegion from '../ui/LiveRegion.jsx'
 
 export default function OOTDWidget() {
@@ -148,7 +149,7 @@ export default function OOTDWidget() {
               <div className="w-20 h-20 rounded-xl overflow-hidden bg-brand-100/60 dark:bg-brand-800/40 border border-brand-100/60 dark:border-brand-700/40 shadow-sm flex items-center justify-center">
                 <RetryImage
                   src={resolveUrl(item.image_url)}
-                  alt={item.category}
+                  alt={wardrobeItemAlt(item)}
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover"

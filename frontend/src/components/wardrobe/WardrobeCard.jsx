@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { FiEdit2, FiTrash2, FiStar, FiUser, FiCheckCircle } from 'react-icons/fi'
 import { patchItem } from '../../api/wardrobe.js'
 import { resolveUrl } from '../../utils/resolveUrl.js'
+import { wardrobeItemAlt } from '../../utils/wardrobeItemAlt.js'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
 import RetryImage from '../ui/RetryImage.jsx'
 import TryOnModal from '../tryon/TryOnModal.jsx'
@@ -54,7 +55,7 @@ export default function WardrobeCard({ item, onDelete, selectMode = false, selec
         <div className="relative aspect-square bg-brand-100/60 dark:bg-brand-800/40 overflow-hidden">
           <RetryImage
             src={imageUrl}
-            alt={`${item.category} item`}
+            alt={wardrobeItemAlt(item)}
             loading="lazy"
             decoding="async"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

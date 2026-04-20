@@ -15,6 +15,7 @@ import OOTDWidget from '../components/dashboard/OOTDWidget.jsx'
 import WardrobeStats from '../components/dashboard/WardrobeStats.jsx'
 import StyleDNACard from '../components/social/StyleDNACard.jsx'
 import { resolveUrl } from '../utils/resolveUrl.js'
+import { wardrobeItemAlt } from '../utils/wardrobeItemAlt.js'
 // import EidPlannerWidget from '../components/social/EidPlannerWidget.jsx'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } }
@@ -77,7 +78,7 @@ export default function DashboardPage() {
                 >
                   <RetryImage
                     src={resolveUrl(item.image_url)}
-                    alt={item.category}
+                    alt={wardrobeItemAlt(item)}
                     loading="lazy"
                     decoding="async"
                     className="w-full h-full object-cover"

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FiX, FiUser } from 'react-icons/fi'
 import TryOnModal from './TryOnModal.jsx'
 import { resolveUrl } from '../../utils/resolveUrl.js'
+import { wardrobeItemAlt } from '../../utils/wardrobeItemAlt.js'
 
 // Hero priority — most visually impactful garments first
 const HERO_PRIORITY = ['dress', 'jumpsuit', 'top', 'outwear', 'bottom', 'shoes']
@@ -99,7 +100,7 @@ export default function OutfitTryOnModal({ open, onClose, items, occasion }) {
                   >
                     <img
                       src={imgUrl}
-                      alt={item.category}
+                      alt={wardrobeItemAlt(item)}
                       className="w-full h-full object-cover"
                     />
 

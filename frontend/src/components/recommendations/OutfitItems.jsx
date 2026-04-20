@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { resolveUrl } from '../../utils/resolveUrl.js'
+import { wardrobeItemAlt } from '../../utils/wardrobeItemAlt.js'
 import RetryImage from '../ui/RetryImage.jsx'
 
 const CAT_EMOJI = { top: '\u{1F455}', bottom: '\u{1F456}', outwear: '\u{1F9E5}', shoes: '\u{1F45F}', dress: '\u{1F457}', jumpsuit: '\u{1F938}' }
@@ -26,7 +27,7 @@ export default function OutfitItems({ items }) {
               
               <RetryImage
                 src={imageUrl}
-                alt={item.category}
+                alt={wardrobeItemAlt(item)}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover"
