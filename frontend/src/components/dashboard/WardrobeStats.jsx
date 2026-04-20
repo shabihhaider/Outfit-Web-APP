@@ -31,17 +31,22 @@ function CategoryBar({ category, count, max, delay }) {
   )
 }
 
-function ColorDot({ hue, sat, val }) {
+function ColorDot({ hue, sat, val, name }) {
   const l = val * (1 - sat / 2)
   const s = l === 0 || l === 1 ? 0 : ((val - l) / Math.min(l, 1 - l)) * 100
   const color = `hsl(${hue}, ${Math.round(s)}%, ${Math.round(l * 100)}%)`
   return (
-    <motion.div
-      whileHover={{ scale: 1.3 }}
-      className="w-6 h-6 rounded-full border border-brand-200/60 dark:border-brand-700/40 shadow-sm cursor-default"
-      style={{ backgroundColor: color }}
-      title={`H:${Math.round(hue)} S:${(sat * 100).toFixed(0)}% V:${(val * 100).toFixed(0)}%`}
-    />
+    <div className="flex flex-col items-center gap-1">
+      <motion.div
+        whileHover={{ scale: 1.3 }}
+        className="w-6 h-6 rounded-full border border-brand-200/60 dark:border-brand-700/40 shadow-sm cursor-default"
+        style={{ backgroundColor: color }}
+        title={name ?? `H:${Math.round(hue)} S:${(sat * 100).toFixed(0)}% V:${(val * 100).toFixed(0)}%`}
+      />
+      {name && (
+        <span className="text-[9px] text-brand-500 dark:text-brand-400 font-medium leading-none">{name}</span>
+      )}
+    </div>
   )
 }
 
@@ -114,7 +119,7 @@ export default function WardrobeStats() {
           <p className="label-xs mb-2">Color Palette</p>
           <div className="flex flex-wrap gap-1.5">
             {colors.map((c, i) => (
-              <ColorDot key={i} hue={c.hue} sat={c.sat} val={c.val} />
+              <ColorDot key={i} hue={c.hue} sat={c.sat} val={c.val} name={c.name} />
             ))}
           </div>
         </div>

@@ -21,8 +21,10 @@ Routes (uploads_bp — JWT required via header or ?token= param):
 
 from __future__ import annotations
 
+import colorsys
 import json
 import logging
+import math
 import os
 import uuid
 
@@ -61,6 +63,49 @@ UPLOAD_TIPS = [
 def _pluralize_category(category: str) -> str:
     """Pluralize wardrobe category names with small irregular overrides."""
     return IRREGULAR_PLURALS.get(category, f"{category}s")
+
+
+# ─── Fashion color vocabulary ─────────────────────────────────────────────────
+# ~20 human-readable names mapped to representative RGB values.
+# Used to label wardrobe palette swatches in the Insights dashboard.
+
+_FASHION_COLORS: dict[str, tuple[int, int, int]] = {
+    "White":    (255, 255, 255),
+    "Ivory":    (255, 255, 240),
+    "Cream":    (255, 253, 208),
+    "Beige":    (245, 245, 220),
+    "Tan":      (210, 180, 140),
+    "Camel":    (193, 154, 107),
+    "Brown":    (139, 90, 43),
+    "Burgundy": (128, 0, 32),
+    "Red":      (220, 20, 60),
+    "Olive":    (107, 142, 35),
+    "Forest":   (34, 139, 34),
+    "Teal":     (0, 128, 128),
+    "Navy":     (0, 0, 128),
+    "Blue":     (70, 130, 180),
+    "Lavender": (230, 230, 250),
+    "Grey":     (128, 128, 128),
+    "Charcoal": (54, 69, 79),
+    "Black":    (0, 0, 0),
+}
+
+
+def _nearest_color_name(hue: float, sat: float, val: float) -> str:
+    """
+    Map an HSV colour (hue 0–360, sat/val 0–1) to the nearest fashion
+    colour name using Euclidean distance in RGB space.
+    """
+    r, g, b = colorsys.hsv_to_rgb(hue / 360.0, sat, val)
+    r8, g8, b8 = round(r * 255), round(g * 255), round(b * 255)
+    return min(
+        _FASHION_COLORS,
+        key=lambda name: math.sqrt(
+            (r8 - _FASHION_COLORS[name][0]) ** 2
+            + (g8 - _FASHION_COLORS[name][1]) ** 2
+            + (b8 - _FASHION_COLORS[name][2]) ** 2
+        ),
+    )
 
 
 # ─── POST /wardrobe/items ─────────────────────────────────────────────────────
@@ -474,7 +519,12 @@ def wardrobe_stats():
 
     # ── Color data ───────────────────────────────────────────────────────────
     colors = [
-        {"hue": i.color_hue, "sat": i.color_sat, "val": i.color_val}
+        {
+            "hue": i.color_hue,
+            "sat": i.color_sat,
+            "val": i.color_val,
+            "name": _nearest_color_name(i.color_hue, i.color_sat, i.color_val),
+        }
         for i in items
     ]
 

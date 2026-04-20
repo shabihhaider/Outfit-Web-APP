@@ -390,3 +390,50 @@ class TestOOTD:
         assert "color_score" in body["outfit"]
         assert "weather_score" in body["outfit"]
         assert "synergy_score" in body["outfit"]  # Added synergy score validation
+
+
+# ─── Color naming unit tests ──────────────────────────────────────────────────
+
+class TestNearestColorName:
+    """Unit tests for _nearest_color_name — no Flask context required."""
+
+    def setup_method(self):
+        from app.wardrobe.routes import _nearest_color_name
+        self._fn = _nearest_color_name
+
+    def _hsv(self, r, g, b):
+        """Convert RGB (0-255) to HSV (hue 0-360, sat/val 0-1)."""
+        import colorsys
+        h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+        return h * 360, s, v
+
+    def test_beige(self):
+        assert self._fn(*self._hsv(245, 245, 220)) == "Beige"
+
+    def test_navy(self):
+        assert self._fn(*self._hsv(0, 0, 128)) == "Navy"
+
+    def test_black(self):
+        assert self._fn(*self._hsv(0, 0, 0)) == "Black"
+
+    def test_white(self):
+        assert self._fn(*self._hsv(255, 255, 255)) == "White"
+
+    def test_red(self):
+        assert self._fn(*self._hsv(220, 20, 60)) == "Red"
+
+
+class TestStatsColorNames:
+    """Integration: /wardrobe/stats returns color objects with a `name` field."""
+
+    def test_stats_colors_have_name(self, flask_app, client, auth_headers, minimal_png):
+        with flask_app.app_context():
+            _upload_item(client, auth_headers, minimal_png, category="top")
+
+        resp = client.get("/wardrobe/stats", headers=auth_headers)
+        assert resp.status_code == 200
+        colors = resp.get_json()["wardrobe"]["colors"]
+        assert len(colors) == 1
+        assert "name" in colors[0]
+        assert isinstance(colors[0]["name"], str)
+        assert len(colors[0]["name"]) > 0
