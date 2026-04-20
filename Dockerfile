@@ -29,9 +29,16 @@ COPY migrations/ migrations/
 COPY run.py .
 COPY entrypoint.sh .
 
-# Runtime directories
-RUN mkdir -p uploads instance && chmod 777 uploads instance
-RUN chmod +x entrypoint.sh
+# Non-root app user — UID 1000 matches HF Spaces runtime expectation
+RUN groupadd -r appuser && useradd -r -g appuser -u 1000 appuser
+
+# Runtime directories — owned by app user, no world-write
+RUN mkdir -p uploads instance \
+    && chown -R appuser:appuser uploads instance \
+    && chmod 755 uploads instance \
+    && chmod +x entrypoint.sh
+
+USER appuser
 
 # Hugging Face Spaces default port
 EXPOSE 7860
