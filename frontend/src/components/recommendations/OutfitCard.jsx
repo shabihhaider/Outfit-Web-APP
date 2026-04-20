@@ -134,21 +134,21 @@ export default function OutfitCard({ outfit, occasion }) {
             </button>
             <div className="flex gap-2 sm:gap-4">
               <div className="flex flex-col items-end">
-                <span className="text-[9px] font-bold uppercase tracking-tighter text-brand-300">Style</span>
+                <span className="text-[9px] font-bold uppercase tracking-tighter text-brand-400 dark:text-brand-300">Style</span>
                 <span className="text-xs font-mono font-bold text-brand-600 dark:text-brand-300">
                   {scoreToPercent(outfit.model2_score)}%
                 </span>
               </div>
               {outfit.cohesion_score != null && (
                 <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-bold uppercase tracking-tighter text-brand-300">Cohesion</span>
+                  <span className="text-[9px] font-bold uppercase tracking-tighter text-brand-400 dark:text-brand-300">Cohesion</span>
                   <span className="text-xs font-mono font-bold text-brand-600 dark:text-brand-300">
                     {scoreToPercent(outfit.cohesion_score)}%
                   </span>
                 </div>
               )}
               <div className="flex flex-col items-end">
-                <span className="text-[9px] font-bold uppercase tracking-tighter text-brand-300">Weather</span>
+                <span className="text-[9px] font-bold uppercase tracking-tighter text-brand-400 dark:text-brand-300">Weather</span>
                 <span className="text-xs font-mono font-bold text-brand-600 dark:text-brand-300">
                   {scoreToPercent(outfit.weather_score)}%
                 </span>
@@ -219,7 +219,7 @@ export default function OutfitCard({ outfit, occasion }) {
                 onKeyDown={e => e.key === 'Enter' && handleConfirmSave()}
                 placeholder="e.g. Monday Office Look"
                 maxLength={60}
-                className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-300 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400 mb-2"
+                className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-400 dark:placeholder:text-brand-500 focus:outline-none focus:ring-2 focus:ring-accent-400 mb-2"
               />
               {saveError && (
                 <p className="text-xs text-red-500 dark:text-red-400 mb-3 px-1">{saveError}</p>

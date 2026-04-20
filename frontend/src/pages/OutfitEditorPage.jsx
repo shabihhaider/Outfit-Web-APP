@@ -247,7 +247,7 @@ export default function OutfitEditorPage() {
               ))}
               {sidebarItems.length === 0 && (
                 <div className="col-span-2 py-10 text-center">
-                  <p className="text-[10px] uppercase font-bold tracking-widest text-brand-300">Empty</p>
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-brand-400 dark:text-brand-300">Empty</p>
                 </div>
               )}
             </div>
@@ -412,7 +412,7 @@ export default function OutfitEditorPage() {
 
               {canvasItems.length < 2 ? (
                 <div className="h-[200px] flex flex-col items-center justify-center text-center opacity-40">
-                   <FiCpu size={32} className="mb-4 text-brand-300" />
+                   <FiCpu size={32} className="mb-4 text-brand-400 dark:text-brand-300" />
                    <p className="text-[11px] font-bold uppercase tracking-[0.2em]">Awaiting Analysis</p>
                 </div>
               ) : scoreData ? (
