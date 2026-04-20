@@ -196,6 +196,7 @@ export default function WardrobePage() {
             selectMode={selectMode}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
+            filter={filter}
           />
         )}
 

@@ -221,10 +221,11 @@ export default function OOTDWidget() {
               refetch()
             }
           }}
+          title="Generate a different outfit recommendation"
           className="text-sm font-medium px-4 py-2.5 rounded-xl btn-secondary flex items-center justify-center gap-2"
         >
           <FiRefreshCw size={14} />
-          Different
+          Try Another
         </button>
       </div>
     </motion.div>
