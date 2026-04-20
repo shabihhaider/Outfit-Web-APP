@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
@@ -16,7 +16,10 @@ import LiveRegion from '../ui/LiveRegion.jsx'
 export default function OOTDWidget() {
   const [saved, setSaved] = useState(false)
   const [outfitIndex, setOutfitIndex] = useState(0)
+  const saveTimerRef = useRef(null)
   const queryClient = useQueryClient()
+
+  useEffect(() => () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }, [])
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['ootd'],
@@ -26,29 +29,43 @@ export default function OOTDWidget() {
   })
 
   const saveMutation = useMutation({
-    mutationFn: () => {
-      const outfit = allOutfits[outfitIndex] ?? data?.outfit
-      if (!outfit) return Promise.reject(new Error('No outfit to save'))
-      const items = outfit.items?.map(i => i.id) ?? []
-      const cats = outfit.items?.map(i => i.category).map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(' + ') ?? 'Outfit'
-      const now = new Date()
-      const dateStr = now.toLocaleString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-      const name = `${outfit.occasion.charAt(0).toUpperCase() + outfit.occasion.slice(1)} ${cats} · ${dateStr}`
-      return saveOutfit({
-        name,
-        occasion: outfit.occasion,
-        item_ids: items,
-        final_score: outfit.final_score,
-        confidence: outfit.confidence,
-      })
-    },
-    onSuccess: () => {
-      setSaved(true)
-      queryClient.invalidateQueries({ queryKey: ['saved'] })
-      toast.success('Outfit saved to your collection!')
-    },
+    mutationFn: (payload) => saveOutfit(payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['saved'] }),
     onError: () => toast.error('Could not save outfit. Try again.'),
   })
+
+  function handleSave() {
+    if (saved || saveTimerRef.current) return
+    const outfit = allOutfits[outfitIndex] ?? data?.outfit
+    if (!outfit) return
+    const items = outfit.items?.map(i => i.id) ?? []
+    const cats = outfit.items?.map(i => i.category).map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(' + ') ?? 'Outfit'
+    const now = new Date()
+    const dateStr = now.toLocaleString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const payload = {
+      name: `${outfit.occasion.charAt(0).toUpperCase() + outfit.occasion.slice(1)} ${cats} · ${dateStr}`,
+      occasion: outfit.occasion,
+      item_ids: items,
+      final_score: outfit.final_score,
+      confidence: outfit.confidence,
+    }
+    setSaved(true)
+    toast.success('Outfit saved to your collection!', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          clearTimeout(saveTimerRef.current)
+          saveTimerRef.current = null
+          setSaved(false)
+        },
+      },
+      duration: 5000,
+    })
+    saveTimerRef.current = setTimeout(() => {
+      saveTimerRef.current = null
+      saveMutation.mutate(payload)
+    }, 5000)
+  }
 
   if (isLoading) {
     return (
@@ -199,8 +216,8 @@ export default function OOTDWidget() {
       {/* Actions */}
       <div className="flex gap-2">
         <button
-          onClick={() => saveMutation.mutate()}
-          disabled={saved || saveMutation.isPending}
+          onClick={handleSave}
+          disabled={saved || !!saveTimerRef.current}
           className={`text-sm font-medium px-4 py-2.5 rounded-xl transition-all flex-1 flex items-center justify-center gap-2 ${
             saved
               ? 'bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-700/40'

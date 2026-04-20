@@ -1,25 +1,30 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiTrash2, FiStar, FiChevronRight, FiGrid, FiList, FiShare2, FiUser } from 'react-icons/fi'
+import { toast } from 'sonner'
+import { FiTrash2, FiStar, FiGrid, FiList, FiShare2, FiUser } from 'react-icons/fi'
 import { getSaved, deleteSaved } from '../api/outfits.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import OutfitItems from '../components/recommendations/OutfitItems.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
-import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import PublishModal from '../components/social/PublishModal.jsx'
 import OutfitTryOnModal from '../components/tryon/OutfitTryOnModal.jsx'
 import { formatDate } from '../utils/formatters.js'
 import { useNavigate } from 'react-router-dom'
 
 export default function SavedOutfitsPage() {
-  const [deleteTarget,  setDeleteTarget]  = useState(null)
+  const [pendingDeleteIds, setPendingDeleteIds] = useState(new Set())
   const [publishTarget, setPublishTarget] = useState(null)
   const [tryOnTarget,   setTryOnTarget]   = useState(null)
   const [viewMode,      setViewMode]      = useState('grid')
+  const deleteTimersRef = useRef({})
   const queryClient = useQueryClient()
   const navigate    = useNavigate()
+
+  useEffect(() => () => {
+    Object.values(deleteTimersRef.current).forEach(clearTimeout)
+  }, [])
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['saved'],
@@ -28,18 +33,46 @@ export default function SavedOutfitsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: deleteSaved,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved'] })
-      setDeleteTarget(null)
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['saved'] }),
+    onError: () => toast.error('Could not delete outfit. Try again.'),
   })
 
-  const outfits = data?.saved ?? data?.saved_outfits ?? data?.outfits ?? []
+  function handleDelete(id) {
+    if (pendingDeleteIds.has(id) || deleteTimersRef.current[id]) return
+    setPendingDeleteIds(prev => new Set([...prev, id]))
+    toast('Outfit removed', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          clearTimeout(deleteTimersRef.current[id])
+          delete deleteTimersRef.current[id]
+          setPendingDeleteIds(prev => {
+            const next = new Set(prev)
+            next.delete(id)
+            return next
+          })
+        },
+      },
+      duration: 5000,
+    })
+    deleteTimersRef.current[id] = setTimeout(() => {
+      delete deleteTimersRef.current[id]
+      setPendingDeleteIds(prev => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+      deleteMutation.mutate(id)
+    }, 5000)
+  }
+
+  const allOutfits = data?.saved ?? data?.saved_outfits ?? data?.outfits ?? []
+  const outfits = allOutfits.filter(o => !pendingDeleteIds.has(o.id))
 
   return (
     <>
       <PageWrapper>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6"
@@ -53,15 +86,15 @@ export default function SavedOutfitsPage() {
               {isLoading ? 'Loading your saved outfits...' : `${outfits.length} saved outfit${outfits.length !== 1 ? 's' : ''}`}
             </p>
           </div>
-          
+
           <div className="flex bg-brand-50/60 dark:bg-brand-900/20 p-1 rounded-2xl border border-brand-100 dark:border-brand-800">
-            <button 
+            <button
               onClick={() => setViewMode('grid')}
               className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-brand-800 shadow-sm text-brand-900 dark:text-brand-100' : 'text-brand-500 hover:text-brand-600'}`}
             >
               <FiGrid size={20} />
             </button>
-            <button 
+            <button
               onClick={() => setViewMode('list')}
               className={`p-2.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-brand-800 shadow-sm text-brand-900 dark:text-brand-100' : 'text-brand-500 hover:text-brand-600'}`}
             >
@@ -97,8 +130,8 @@ export default function SavedOutfitsPage() {
         )}
 
         {!isLoading && outfits.length > 0 && (
-          <div className={viewMode === 'grid' 
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" 
+          <div className={viewMode === 'grid'
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
             : "max-w-4xl mx-auto space-y-6"
           }>
             <AnimatePresence>
@@ -122,7 +155,7 @@ export default function SavedOutfitsPage() {
                       </h3>
                     </div>
                     <button
-                      onClick={() => setDeleteTarget(outfit.id)}
+                      onClick={() => handleDelete(outfit.id)}
                       className="w-10 h-10 rounded-xl bg-red-50/50 dark:bg-red-900/10 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-red-500 hover:text-white"
                     >
                       <FiTrash2 size={16} />
@@ -135,9 +168,9 @@ export default function SavedOutfitsPage() {
 
                   <div className="flex items-center justify-between pt-4 border-t border-brand-100/60 dark:border-brand-800/40">
                     <div className="flex items-center gap-2">
-                       <span className="badge-casual px-3 py-1 bg-brand-100 dark:bg-brand-800 text-[10px] uppercase font-bold tracking-widest">
-                         {outfit.occasion}
-                       </span>
+                      <span className="badge-casual px-3 py-1 bg-brand-100 dark:bg-brand-800 text-[10px] uppercase font-bold tracking-widest">
+                        {outfit.occasion}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -162,15 +195,6 @@ export default function SavedOutfitsPage() {
           </div>
         )}
       </PageWrapper>
-
-      <ConfirmDialog
-        open={!!deleteTarget}
-        title="Archival Deletion"
-        message="Are you certain you wish to purge this composition from your permanent archive?"
-        danger
-        onConfirm={() => deleteMutation.mutate(deleteTarget)}
-        onCancel={() => setDeleteTarget(null)}
-      />
 
       <PublishModal
         open={!!publishTarget}
