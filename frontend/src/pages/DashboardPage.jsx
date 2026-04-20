@@ -30,7 +30,7 @@ export default function DashboardPage() {
     queryFn: getItems,
   })
 
-  const { data: historyData } = useQuery({
+  const { data: historyData, isLoading: hLoading } = useQuery({
     queryKey: ['history'],
     queryFn: getHistory,
   })
@@ -197,46 +197,67 @@ export default function DashboardPage() {
         {/* Recent history + Stats */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div variants={fadeUp} className="lg:col-span-2">
-            {recentHistory.length > 0 && (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200">Recent</h2>
-                  <button
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-2xl font-semibold text-brand-800 dark:text-brand-200">Recent</h2>
+              {recentHistory.length > 0 && (
+                <button
+                  onClick={() => navigate('/outfits/history')}
+                  className="text-sm text-brand-500 hover:text-accent-700 dark:hover:text-accent-700 transition-colors flex items-center gap-1"
+                >
+                  View all <FiArrowRight size={14} />
+                </button>
+              )}
+            </div>
+
+            {hLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[0, 1, 2].map(i => (
+                  <div key={i} className="card p-4 space-y-3">
+                    <div className="skeleton h-4 w-20 rounded" />
+                    <div className="skeleton h-3 w-32 rounded" />
+                    <div className="skeleton h-3 w-16 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : recentHistory.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {recentHistory.map((entry, idx) => (
+                  <motion.div
+                    key={entry.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: idx * 0.08 }}
+                    className="card-hover p-4"
                     onClick={() => navigate('/outfits/history')}
-                    className="text-sm text-brand-500 hover:text-accent-700 dark:hover:text-accent-700 transition-colors flex items-center gap-1"
                   >
-                    View all <FiArrowRight size={14} />
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {recentHistory.map((entry, idx) => (
-                    <motion.div
-                      key={entry.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: idx * 0.08 }}
-                      className="card-hover p-4"
-                      onClick={() => navigate('/outfits/history')}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="badge-casual capitalize">{entry.occasion}</span>
-                        <span className="text-xs text-brand-500 dark:text-brand-400">{formatDate(entry.created_at)}</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="badge-casual capitalize">{entry.occasion}</span>
+                      <span className="text-xs text-brand-500 dark:text-brand-400">{formatDate(entry.created_at)}</span>
+                    </div>
+                    <div className="flex gap-1 flex-wrap">
+                      {entry.items?.slice(0, 3).map((item, i) => (
+                        <span key={i} className={`badge-${item.category}`}>{item.category}</span>
+                      ))}
+                    </div>
+                    {entry.final_score != null && (
+                      <div className="mt-3 text-sm text-brand-500 dark:text-brand-400">
+                        <span className="data-value text-sm">{scoreToPercent(entry.final_score)}%</span>
+                        <span className="ml-1">compatible</span>
                       </div>
-                      <div className="flex gap-1 flex-wrap">
-                        {entry.items?.slice(0, 3).map((item, i) => (
-                          <span key={i} className={`badge-${item.category}`}>{item.category}</span>
-                        ))}
-                      </div>
-                      {entry.final_score != null && (
-                        <div className="mt-3 text-sm text-brand-500 dark:text-brand-400">
-                          <span className="data-value text-sm">{scoreToPercent(entry.final_score)}%</span>
-                          <span className="ml-1">compatible</span>
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
-                </div>
-              </>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="card p-8 flex flex-col items-center justify-center text-center gap-3">
+                <p className="text-brand-500 dark:text-brand-400 text-sm">No recent outfits yet.</p>
+                <button
+                  onClick={() => navigate('/recommendations')}
+                  className="btn-primary text-sm"
+                >
+                  Get a recommendation
+                </button>
+              </div>
             )}
           </motion.div>
 

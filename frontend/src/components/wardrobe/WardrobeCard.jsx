@@ -164,9 +164,10 @@ export default function WardrobeCard({ item, onDelete, selectMode = false, selec
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
+                title="Correct the category or formality classification for this item"
                 className="text-[10px] text-brand-500 dark:text-brand-400 hover:text-accent-700 dark:hover:text-accent-700 underline decoration-dotted transition-colors ml-auto"
               >
-                Fix?
+                Edit ✎
               </button>
             )}
           </div>
