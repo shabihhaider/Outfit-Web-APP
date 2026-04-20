@@ -6,6 +6,7 @@ import { FiZap } from 'react-icons/fi'
 import { getRecommendations, getAroundItem } from '../api/recommendations.js'
 import { getItems } from '../api/wardrobe.js'
 import { resolveUrl } from '../utils/resolveUrl.js'
+import { wardrobeItemAlt } from '../utils/wardrobeItemAlt.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import OccasionPicker from '../components/recommendations/OccasionPicker.jsx'
 import LocationToggle from '../components/recommendations/LocationToggle.jsx'
@@ -129,7 +130,7 @@ export default function RecommendationsPage() {
           <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-brand-800 border border-accent-200/60 dark:border-accent-700/40 flex items-center justify-center">
             <RetryImage
               src={resolveUrl(anchorItem.image_url)}
-              alt={anchorItem.category}
+              alt={wardrobeItemAlt(anchorItem)}
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover"

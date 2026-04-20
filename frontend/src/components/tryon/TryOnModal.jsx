@@ -6,6 +6,7 @@ import { FiX, FiUploadCloud, FiUser, FiRefreshCw, FiCheck, FiAlertTriangle, FiDo
 import { getPersonPhoto, uploadPersonPhoto, submitTryOn, getJobStatus } from '../../api/vto.js'
 import LoadingSpinner from '../ui/LoadingSpinner.jsx'
 import { resolveUrl } from '../../utils/resolveUrl.js'
+import { wardrobeItemAlt } from '../../utils/wardrobeItemAlt.js'
 
 const POLL_INTERVAL_MS = 3000
 
@@ -284,7 +285,7 @@ export default function TryOnModal({ open, onClose, item }) {
                     <p className="label-xs mb-2">{item.category} to try</p>
                     <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-brand-50 dark:bg-brand-800/60 border border-brand-200/60 dark:border-brand-700/40">
                       {itemImageUrl
-                        ? <img src={itemImageUrl} alt={item.category} className="w-full h-full object-cover" />
+                        ? <img src={itemImageUrl} alt={wardrobeItemAlt(item)} className="w-full h-full object-cover" />
                         : <div className="w-full h-full flex items-center justify-center text-brand-500 text-4xl">👕</div>
                       }
                     </div>

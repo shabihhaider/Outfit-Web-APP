@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext.jsx'
 import VibeTagPill from './VibeTagPill.jsx'
 import OutfitTryOnModal from '../tryon/OutfitTryOnModal.jsx'
 import { resolveUrl } from '../../utils/resolveUrl.js'
+import { wardrobeItemAlt } from '../../utils/wardrobeItemAlt.js'
 
 export default function PostDetailModal({ post, open, onClose, onRemixClick, onVibeClick }) {
   const { user } = useAuth()
@@ -186,7 +187,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                     {fullPost.items.map((item, i) => (
                       <div key={i} className="aspect-square rounded-lg overflow-hidden bg-brand-100 dark:bg-brand-800 border border-brand-200 dark:border-brand-700">
                         {item.image_url ? (
-                          <img src={resolveUrl(item.image_url)} alt={item.category} className="w-full h-full object-cover" />
+                          <img src={resolveUrl(item.image_url)} alt={wardrobeItemAlt(item)} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-xl opacity-30">
                             <span className="select-none">?</span>
