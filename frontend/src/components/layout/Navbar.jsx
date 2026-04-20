@@ -103,6 +103,7 @@ export default function Navbar() {
               <button
                 onClick={() => setNotifOpen(o => !o)}
                 className="relative flex items-center justify-center w-9 h-9 rounded-xl text-brand-500 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-200 transition-colors hover:bg-brand-100/60 dark:hover:bg-brand-800/30"
+                aria-label={unreadCount > 0 ? `Notifications, ${unreadCount > 9 ? '9+' : unreadCount} unread` : 'Notifications'}
                 title="Notifications"
               >
                 <FiBell size={17} />
