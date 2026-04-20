@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense, useRef, useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 import AuthGuard from './guards/AuthGuard.jsx'
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
@@ -34,6 +34,16 @@ function PageSpinner() {
 }
 
 function Layout({ children }) {
+  const mainRef = useRef(null)
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    // Move focus to <main> on every route change so screen readers announce
+    // the new page content. tabIndex={-1} allows programmatic focus without
+    // adding the element to the tab order.
+    mainRef.current?.focus()
+  }, [pathname])
+
   return (
     <div className="min-h-screen bg-brand-50 dark:bg-brand-950">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-brand-900 focus:text-white focus:rounded-lg focus:text-sm focus:font-medium">
@@ -41,7 +51,7 @@ function Layout({ children }) {
       </a>
       <Navbar />
       <InitialWarmupOverlay />
-      <main id="main-content">
+      <main id="main-content" ref={mainRef} tabIndex={-1} className="outline-none">
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
