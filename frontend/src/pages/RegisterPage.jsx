@@ -65,7 +65,7 @@ export default function RegisterPage() {
 
           <div className="space-y-3">
             {['AI category detection', 'Weather-aware recommendations', '3-occasion scoring engine'].map((feature, i) => (
-              <div key={i} className="flex items-center gap-3 text-brand-300 text-sm">
+              <div key={i} className="flex items-center gap-3 text-brand-500 dark:text-brand-300 text-sm">
                 <div className="w-5 h-5 rounded-full bg-accent-500/20 flex items-center justify-center flex-shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-accent-400" />
                 </div>

@@ -143,7 +143,7 @@ export default function RemixResultModal({ open, onClose, post }) {
                             </div>
                           </div>
 
-                          <FiArrowRight size={16} className="text-brand-300 flex-shrink-0" />
+                          <FiArrowRight size={16} className="text-brand-400 dark:text-brand-300 flex-shrink-0" />
 
                           {/* Candidate options */}
                           {match.candidates.length === 0 ? (

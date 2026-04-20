@@ -107,7 +107,7 @@ function AccountTab({ profile, qc, updateUser }) {
           maxLength={150}
           rows={3}
           placeholder="A short bio about your style…"
-          className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-300 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400 resize-none"
+          className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-400 dark:placeholder:text-brand-500 focus:outline-none focus:ring-2 focus:ring-accent-400 resize-none"
         />
         <p className="text-[10px] text-brand-500 text-right mt-1">{form.bio.length}/150</p>
       </div>
@@ -327,7 +327,7 @@ function VtoTab() {
           ) : currentPhoto ? (
             <img src={currentPhoto} alt="Current VTO photo" className="w-full h-full object-cover" />
           ) : (
-            <div className="flex flex-col items-center gap-3 text-brand-300 dark:text-brand-600">
+            <div className="flex flex-col items-center gap-3 text-brand-400 dark:text-brand-600">
               <FiUser size={48} />
               <p className="text-xs font-medium text-center px-4">No body photo uploaded yet</p>
             </div>
@@ -455,7 +455,7 @@ function PrivacyTab() {
               </p>
               <p className="text-xs text-brand-500 mt-0.5">{consent.description}</p>
               {consent.granted && consent.granted_at && (
-                <p className="text-[10px] text-brand-300 mt-1">
+                <p className="text-[10px] text-brand-400 dark:text-brand-300 mt-1">
                   Granted: {new Date(consent.granted_at).toLocaleDateString()} (v{consent.version})
                 </p>
               )}
@@ -516,14 +516,14 @@ function PrivacyTab() {
             value={pwForm.current_password}
             onChange={e => setPwForm(p => ({ ...p, current_password: e.target.value }))}
             placeholder="Current password"
-            className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-300 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400"
+            className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-400 dark:placeholder:text-brand-500 focus:outline-none focus:ring-2 focus:ring-accent-400"
           />
           <input
             type="password"
             value={pwForm.new_password}
             onChange={e => setPwForm(p => ({ ...p, new_password: e.target.value }))}
             placeholder="New password (min 8 characters)"
-            className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-300 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400"
+            className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-400 dark:placeholder:text-brand-500 focus:outline-none focus:ring-2 focus:ring-accent-400"
           />
         </div>
         {pwError && (
@@ -608,7 +608,7 @@ function Field({ label, value, onChange, placeholder }) {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-300 dark:placeholder:text-brand-600 focus:outline-none focus:ring-2 focus:ring-accent-400"
+        className="w-full px-4 py-3 rounded-2xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900 text-brand-900 dark:text-brand-100 text-sm placeholder:text-brand-400 dark:placeholder:text-brand-500 focus:outline-none focus:ring-2 focus:ring-accent-400"
       />
     </div>
   )
