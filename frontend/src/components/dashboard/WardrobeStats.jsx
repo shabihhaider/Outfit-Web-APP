@@ -122,22 +122,22 @@ export default function WardrobeStats() {
 
       {/* Activity */}
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="bg-brand-50/60 dark:bg-brand-800/30 rounded-xl p-3 text-center border border-brand-100/40 dark:border-brand-800/30">
+        <div className="stat-box">
           <div className="text-xl font-mono font-bold text-brand-900 dark:text-brand-100">{activity.total_recommendations ?? 0}</div>
           <div className="text-[10px] text-brand-500 dark:text-brand-400 mt-0.5">Recommendations</div>
         </div>
-        <div className="bg-brand-50/60 dark:bg-brand-800/30 rounded-xl p-3 text-center border border-brand-100/40 dark:border-brand-800/30">
+        <div className="stat-box">
           <div className="text-xl font-mono font-bold text-brand-900 dark:text-brand-100">{activity.saved_outfits ?? 0}</div>
           <div className="text-[10px] text-brand-500 dark:text-brand-400 mt-0.5">Saved</div>
         </div>
         {activity.avg_score != null && (
-          <div className="bg-brand-50/60 dark:bg-brand-800/30 rounded-xl p-3 text-center border border-brand-100/40 dark:border-brand-800/30">
+          <div className="stat-box">
             <div className="text-xl font-mono font-bold text-brand-900 dark:text-brand-100">{Math.round(activity.avg_score * 100)}%</div>
             <div className="text-[10px] font-medium text-accent-700 dark:text-accent-400 mt-0.5">{scoreToLabel(activity.avg_score)}</div>
           </div>
         )}
         {(feedback.thumbs_up > 0 || feedback.thumbs_down > 0) && (
-          <div className="bg-brand-50/60 dark:bg-brand-800/30 rounded-xl p-3 text-center border border-brand-100/40 dark:border-brand-800/30">
+          <div className="stat-box">
             <div className="text-lg font-mono font-bold">
               <span className="text-emerald-600 dark:text-emerald-400">{feedback.thumbs_up ?? 0}</span>
               <span className="text-brand-300 dark:text-brand-600 mx-0.5">/</span>

@@ -82,6 +82,12 @@
            dark:hover:border-brand-700 dark:hover:shadow-lg dark:hover:shadow-brand-950/20;
   }
 
+  /* ─── Stat box (metric / counter cell inside a card) ─── */
+  .stat-box {
+    @apply bg-brand-50/70 dark:bg-brand-800/35 rounded-xl border border-brand-100/50
+           dark:border-brand-800/35 p-3 text-center;
+  }
+
   /* ─── Glass Card (premium variant) ─── */
   .card-glass {
     @apply bg-white/60 backdrop-blur-md rounded-2xl border border-white/40

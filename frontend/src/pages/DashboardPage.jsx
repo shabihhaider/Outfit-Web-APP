@@ -133,7 +133,7 @@ export default function DashboardPage() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: i * 0.05, duration: 0.3 }}
-                      className="text-center p-3 bg-brand-50/80 dark:bg-brand-800/40 rounded-xl border border-brand-100/60 dark:border-brand-800/40"
+                      className="stat-box"
                     >
                       <div className="text-3xl font-mono font-bold text-brand-900 dark:text-brand-100">{count}</div>
                       <div className="label-xs mt-1">{pluralizeCategory(cat)}</div>
