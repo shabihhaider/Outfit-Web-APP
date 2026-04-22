@@ -11,12 +11,10 @@ Routes (wardrobe_bp):
   GET    /wardrobe/items        — list all items for the authenticated user
   PATCH  /wardrobe/items/<id>   — correct category or formality after upload
   DELETE /wardrobe/items/<id>   — remove an item
-  DELETE /wardrobe/items/bulk   — bulk delete by item_ids
-  PATCH  /wardrobe/items/bulk   — bulk formality update by item_ids
   GET    /wardrobe/stats        — wardrobe statistics and insights
 
-Routes (uploads_bp — JWT required via header or ?token= param):
-  GET    /uploads/<filename>    — serve an uploaded image (401 if unauthed, 404 if not in DB)
+Routes (uploads_bp, public — no JWT):
+  GET    /uploads/<filename>    — serve an uploaded image (404 if not in DB)
 """
 
 from __future__ import annotations
@@ -29,7 +27,7 @@ import uuid
 from flask import (
     Blueprint, current_app, jsonify, redirect, request, send_from_directory,
 )
-from flask_jwt_extended import jwt_required, get_jwt_identity, decode_token
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.extensions import limiter
 
@@ -39,7 +37,7 @@ from app.audit import log_action
 from app.cache import recommendation_cache
 from app.extensions import db
 from app.models_db import WardrobeItemDB, OutfitHistory, OutfitFeedback, SavedOutfit
-from app.utils import allowed_file, validate_image_content, validate_clothing_photo, process_image_for_atelier, normalize_upload
+from app.utils import allowed_file, validate_image_content, validate_clothing_photo, process_image_for_atelier
 
 logger = logging.getLogger(__name__)
 
@@ -86,11 +84,11 @@ def upload_item():
     """
     user_id = int(get_jwt_identity())
 
-    # ── 1. Wardrobe size guard ────────────────────────────────────────────────
-    item_count = WardrobeItemDB.query.filter_by(user_id=user_id).count()
+    # ── 1. Wardrobe size guard (archived items don't count toward cap) ────────
+    item_count = WardrobeItemDB.query.filter_by(user_id=user_id, is_archived=False).count()
     if item_count >= 50:
         return jsonify({
-            "error": "Wardrobe is full. Maximum 50 items allowed. Please delete some items first."
+            "error": "Wardrobe is full. Maximum 50 items allowed. Archive some items to make room."
         }), 400
 
     # ── 2. File presence + extension ─────────────────────────────────────────
@@ -153,14 +151,7 @@ def upload_item():
         )
     else:
         bg_removed = False
-        logger.warning("Atelier: processing failed for %s — normalising original.", filename)
-        normalize_upload(save_path)
-        # normalize_upload may rename .jpg extension; find actual saved file
-        base, _ = os.path.splitext(save_path)
-        jpg_path = base + ".jpg"
-        if jpg_path != save_path and os.path.exists(jpg_path):
-            filename  = os.path.basename(jpg_path)
-            save_path = jpg_path
+        logger.warning("Atelier: processing failed for %s — using original.", filename)
 
     # ── 5c. CLIP Zero-Shot OOD Detection ──────────────────────────────────────
     if not current_app.config.get("SKIP_CLOTHING_PHOTO_CHECK"):
@@ -247,54 +238,30 @@ def upload_item():
 
 # ─── GET /wardrobe/items ──────────────────────────────────────────────────────
 
-_VALID_CATEGORIES = {"top", "bottom", "outwear", "shoes", "dress", "jumpsuit"}
-_MAX_LIMIT = 50
-
-
 @wardrobe_bp.route("/items", methods=["GET"])
 @jwt_required()
 def list_items():
-    """
-    GET /wardrobe/items?page=1&limit=20&category=top
-    Returns paginated wardrobe items for the authenticated user.
+    """GET /wardrobe/items — return wardrobe items for the authenticated user.
 
     Query params:
-      page     — 1-based page number (default: 1)
-      limit    — items per page, max 50 (default: 20)
-      category — filter by category (optional)
+      archived=true  — return archived items only
+      category=<cat> — filter by category (active items only)
     """
     user_id = int(get_jwt_identity())
+    show_archived = request.args.get("archived", "").lower() == "true"
+    category = request.args.get("category", "").strip().lower()
 
-    try:
-        page  = max(1, int(request.args.get("page", 1)))
-        limit = min(_MAX_LIMIT, max(1, int(request.args.get("limit", 20))))
-    except (TypeError, ValueError):
-        return jsonify({"error": "page and limit must be integers"}), 400
+    query = WardrobeItemDB.query.filter_by(user_id=user_id, is_archived=show_archived)
+    if not show_archived and category and category in VALID_CATEGORIES:
+        query = query.filter_by(category=category)
+    items = query.order_by(WardrobeItemDB.created_at.desc()).all()
 
-    category = request.args.get("category", "").strip().lower() or None
-    if category and category not in _VALID_CATEGORIES:
-        return jsonify({"error": f"Invalid category '{category}'"}), 400
-
-    query = (
-        WardrobeItemDB.query
-        .filter_by(user_id=user_id)
-        .order_by(WardrobeItemDB.created_at.desc())
-    )
-    if category:
-        query = query.filter(WardrobeItemDB.category == category)
-
-    total   = query.count()
-    pages   = max(1, -(-total // limit))          # ceiling division
-    items   = query.offset((page - 1) * limit).limit(limit).all()
+    active_count = WardrobeItemDB.query.filter_by(user_id=user_id, is_archived=False).count()
 
     response = jsonify({
-        "items":    [item.to_dict() for item in items],
-        "total":    total,
-        "page":     page,
-        "pages":    pages,
-        "limit":    limit,
-        "has_next": page < pages,
-        "has_prev": page > 1,
+        "items":        [item.to_dict() for item in items],
+        "count":        len(items),
+        "active_count": active_count,
     })
     response.headers["Cache-Control"] = "private, max-age=60, stale-while-revalidate=300"
     response.headers["Vary"] = "Authorization"
@@ -381,76 +348,41 @@ def edit_item(item_id: int):
     return jsonify(item.to_dict()), 200
 
 
-# ─── DELETE /wardrobe/items/bulk ─────────────────────────────────────────────
+# ─── PATCH /wardrobe/items/<id>/archive ──────────────────────────────────────
 
-@wardrobe_bp.route("/items/bulk", methods=["DELETE"])
+@wardrobe_bp.route("/items/<int:item_id>/archive", methods=["PATCH"])
 @jwt_required()
-def bulk_delete_items():
+def archive_item(item_id: int):
     """
-    DELETE /wardrobe/items/bulk
-    Body (JSON): { "item_ids": [1, 2, 3] }
-    Deletes all specified items that belong to the authenticated user.
-    Items not owned by the user are silently skipped (not an error).
+    PATCH /wardrobe/items/<id>/archive
+    Body (JSON): {archived: true|false}
+    Archives or unarchives an item. Archived items are excluded from
+    recommendations and not shown in the main wardrobe grid.
+    Unarchiving when wardrobe is at 50 active items is rejected.
     """
     user_id = int(get_jwt_identity())
-    data = request.get_json(silent=True) or {}
-    item_ids = data.get("item_ids", [])
+    item    = db.session.get(WardrobeItemDB, item_id)
 
-    if not item_ids or not isinstance(item_ids, list):
-        return jsonify({"error": "item_ids must be a non-empty list."}), 400
+    if item is None:
+        return jsonify({"error": "Item not found."}), 404
+    if item.user_id != user_id:
+        return jsonify({"error": "Access forbidden."}), 403
 
-    items = WardrobeItemDB.query.filter(
-        WardrobeItemDB.id.in_(item_ids),
-        WardrobeItemDB.user_id == user_id,
-    ).all()
+    data     = request.get_json(silent=True) or {}
+    archived = data.get("archived")
+    if not isinstance(archived, bool):
+        return jsonify({"error": "Body must include 'archived' (boolean)."}), 400
 
-    deleted_count = 0
-    for item in items:
-        image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], item.image_filename)
-        try:
-            if os.path.exists(image_path):
-                os.remove(image_path)
-        except OSError as exc:
-            logger.warning("Could not delete image file %s: %s", image_path, exc)
-        from app.storage import delete_file as storage_delete
-        storage_delete(item.image_filename)
-        db.session.delete(item)
-        deleted_count += 1
+    if not archived:
+        # Unarchiving: check active item cap
+        active_count = WardrobeItemDB.query.filter_by(user_id=user_id, is_archived=False).count()
+        if active_count >= 50:
+            return jsonify({"error": "Cannot unarchive: wardrobe is already at capacity (50 items)."}), 400
 
+    item.is_archived = archived
     db.session.commit()
     recommendation_cache.invalidate_user(user_id)
-    log_action("bulk_delete_items", user_id=user_id, detail=f"deleted={deleted_count}")
-    return jsonify({"deleted": deleted_count}), 200
-
-
-# ─── PATCH /wardrobe/items/bulk ──────────────────────────────────────────────
-
-@wardrobe_bp.route("/items/bulk", methods=["PATCH"])
-@jwt_required()
-def bulk_update_items():
-    """
-    PATCH /wardrobe/items/bulk
-    Body (JSON): { "item_ids": [1, 2, 3], "formality": "casual" }
-    Updates formality for all specified items that belong to the authenticated user.
-    """
-    user_id = int(get_jwt_identity())
-    data = request.get_json(silent=True) or {}
-    item_ids = data.get("item_ids", [])
-    formality = data.get("formality")
-
-    if not item_ids or not isinstance(item_ids, list):
-        return jsonify({"error": "item_ids must be a non-empty list."}), 400
-    if formality not in VALID_FORMALITIES:
-        return jsonify({"error": f"formality must be one of: {', '.join(VALID_FORMALITIES)}."}), 422
-
-    updated_count = WardrobeItemDB.query.filter(
-        WardrobeItemDB.id.in_(item_ids),
-        WardrobeItemDB.user_id == user_id,
-    ).update({"formality": formality}, synchronize_session=False)
-
-    db.session.commit()
-    log_action("bulk_update_items", user_id=user_id, detail=f"updated={updated_count} formality={formality}")
-    return jsonify({"updated": updated_count}), 200
+    return jsonify(item.to_dict()), 200
 
 
 # ─── GET /wardrobe/stats ─────────────────────────────────────────────────────
@@ -526,11 +458,11 @@ def wardrobe_stats():
         has_shoes = categories.get("shoes", 0)
 
         if has_tops > 0 and has_bottoms == 0:
-            balance_tip = "Your tops are ready — adding some pants or skirts will unlock complete outfit recommendations."
+            balance_tip = "You have tops but no bottoms. Add some pants or skirts for complete outfits."
         elif has_bottoms > 0 and has_tops == 0:
-            balance_tip = "Your bottoms are ready — adding some shirts or t-shirts will unlock complete outfit recommendations."
+            balance_tip = "You have bottoms but no tops. Add some shirts or t-shirts for complete outfits."
         elif has_shoes == 0 and total_items >= 3:
-            balance_tip = "Great start! Adding footwear will unlock full 3-piece outfit recommendations."
+            balance_tip = "You don't have any shoes yet. Add footwear to get full outfit recommendations."
         else:
             # Check for big imbalances
             max_cat = max(categories, key=categories.get)
@@ -541,8 +473,8 @@ def wardrobe_stats():
                 min_count = min_essentials[min_cat]
                 if max_count >= 3 * min_count and min_count > 0:
                     balance_tip = (
-                        f"Your {_pluralize_category(max_cat)} are well-stocked! "
-                        f"Adding more {_pluralize_category(min_cat)} could unlock more complete outfit looks."
+                        f"You have {max_count} {_pluralize_category(max_cat)} but only {min_count} {_pluralize_category(min_cat)}. "
+                        f"Consider adding more {_pluralize_category(min_cat)} for variety."
                     )
 
     response = jsonify({
@@ -576,43 +508,18 @@ def wardrobe_stats():
 @uploads_bp.route("/uploads/<string:filename>")
 def serve_upload(filename: str):
     """
-    GET /uploads/<filename>?token=<jwt>
-    Requires authentication via Authorization: Bearer header or ?token= query param.
+    GET /uploads/<filename>
     Redirects to Supabase CDN when configured, otherwise serves from local disk.
     """
-    from flask_jwt_extended import verify_jwt_in_request
     from app.storage import is_configured, get_public_url
-    from app.models_db import WardrobeItemDB
-
-    # Accept JWT from Authorization header or ?token= query param (<img src> compatibility)
-    token_param = request.args.get("token")
-    if token_param:
-        try:
-            decoded = decode_token(token_param)
-            user_id = decoded["sub"]
-        except Exception:
-            return jsonify(error="Invalid token"), 401
-    else:
-        try:
-            verify_jwt_in_request()
-            user_id = get_jwt_identity()
-        except Exception:
-            return jsonify(error="Authentication required"), 401
-
-    # Verify the file is owned by the requesting user
-    item = WardrobeItemDB.query.filter_by(
-        image_filename=filename, user_id=user_id
-    ).first()
-    if item is None:
-        return jsonify(error="Not found"), 404
 
     if is_configured():
         response = redirect(get_public_url(filename), code=302)
-        response.headers["Cache-Control"] = "private, max-age=86400"
+        response.headers["Cache-Control"] = "public, max-age=86400"
         return response
 
     # Fallback for local dev without Supabase
     upload_dir = current_app.config["UPLOAD_FOLDER"]
     response = send_from_directory(os.path.abspath(upload_dir), filename)
-    response.headers["Cache-Control"] = "private, max-age=86400"
+    response.headers["Cache-Control"] = "public, max-age=86400"
     return response

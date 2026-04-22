@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useMemo } from 'react'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiPlus, FiCheckSquare, FiX, FiTrash2, FiLoader, FiSearch, FiSliders } from 'react-icons/fi'
+import { FiPlus, FiCheckSquare, FiX, FiTrash2, FiLoader, FiSearch, FiSliders, FiAlertTriangle, FiArchive } from 'react-icons/fi'
 import { getItems, deleteItem, bulkDeleteItems, bulkUpdateFormality } from '../api/wardrobe.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import WardrobeGrid from '../components/wardrobe/WardrobeGrid.jsx'
@@ -9,7 +9,9 @@ import UploadModal from '../components/wardrobe/UploadModal.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 
-const CATEGORIES = ['all', 'top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit']
+const CATEGORIES = ['all', 'top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit', 'archived']
+const ITEM_CAP   = 50
+const ITEM_WARN  = 40
 const FORMALITIES = ['casual', 'formal', 'both']
 const SORT_OPTIONS = [
   { key: 'newest',          label: 'Newest First' },
@@ -83,6 +85,10 @@ export default function WardrobePage() {
   // Flatten all loaded pages
   const items = data?.pages.flatMap(p => p.items) ?? []
   const totalItems = data?.pages[0]?.total ?? 0
+  const activeCount = data?.pages[0]?.active_count ?? items.length
+  const isArchivedTab = filter === 'archived'
+  const wardrobeAtCap = activeCount >= ITEM_CAP
+  const wardrobeNearCap = activeCount >= ITEM_WARN && activeCount < ITEM_CAP
 
   const filteredItems = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
@@ -128,7 +134,8 @@ export default function WardrobePage() {
 
   // Category counts from loaded items (updates as more pages load)
   function catCount(cat) {
-    if (cat === 'all') return totalItems
+    if (cat === 'archived') return ''  // count unknown until that tab is active
+    if (cat === 'all') return totalItems || activeCount
     if (filter === cat) return totalItems
     if (filter !== 'all') return 0
     return items.filter(i => i.category === cat).length
@@ -147,9 +154,11 @@ export default function WardrobePage() {
             <p className="text-brand-500 dark:text-brand-400 mt-1">
               {isLoading
                 ? 'Loading your wardrobe items...'
+                : isArchivedTab
+                ? `${items.length} archived item${items.length !== 1 ? 's' : ''}`
                 : hasActiveFilters
-                ? `${filteredItems.length} of ${items.length} items`
-                : `${totalItems || items.length} item${(totalItems || items.length) !== 1 ? 's' : ''} in your collection`}
+                ? `${filteredItems.length} of ${activeCount} items`
+                : `${activeCount} / ${ITEM_CAP} items`}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -175,7 +184,12 @@ export default function WardrobePage() {
                     <FiCheckSquare size={13} /> Select
                   </button>
                 )}
-                <button onClick={() => setUploadOpen(true)} className="btn-primary flex items-center gap-2 group">
+                <button
+                  onClick={() => !wardrobeAtCap && !isArchivedTab && setUploadOpen(true)}
+                  disabled={wardrobeAtCap || isArchivedTab}
+                  title={wardrobeAtCap ? `Wardrobe full (${ITEM_CAP}/${ITEM_CAP}). Archive items to make room.` : undefined}
+                  className="btn-primary flex items-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <FiPlus size={16} />
                   <span className="hidden sm:inline">Upload</span>
                 </button>
@@ -214,8 +228,29 @@ export default function WardrobePage() {
           })}
         </div>
 
+        {/* Limit warning banners */}
+        {!isLoading && !isArchivedTab && wardrobeAtCap && (
+          <div className="flex items-start gap-2.5 p-3 mb-4 bg-red-50/80 dark:bg-red-900/15 border border-red-200/60 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-300">
+            <FiAlertTriangle size={15} className="mt-0.5 flex-shrink-0" />
+            <span>
+              Wardrobe full ({activeCount}/{ITEM_CAP}). Archive items you no longer wear to make room for new ones.
+            </span>
+            <button onClick={() => handleFilterChange('archived')} className="ml-auto flex-shrink-0 flex items-center gap-1 text-xs font-semibold underline whitespace-nowrap">
+              <FiArchive size={12} /> View archived
+            </button>
+          </div>
+        )}
+        {!isLoading && !isArchivedTab && wardrobeNearCap && (
+          <div className="flex items-start gap-2.5 p-3 mb-4 bg-amber-50/80 dark:bg-amber-900/15 border border-amber-200/60 dark:border-amber-800/40 rounded-xl text-sm text-amber-700 dark:text-amber-300">
+            <FiAlertTriangle size={15} className="mt-0.5 flex-shrink-0" />
+            <span>
+              Approaching limit ({activeCount}/{ITEM_CAP}). Consider archiving items you no longer wear.
+            </span>
+          </div>
+        )}
+
         {/* Search + sort + formality controls */}
-        {!isLoading && items.length > 0 && (
+        {!isLoading && items.length > 0 && !isArchivedTab && (
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             {/* Search */}
             <div className="relative flex-1">
@@ -254,7 +289,7 @@ export default function WardrobePage() {
         )}
 
         {/* Formality filter chips */}
-        {!isLoading && items.length > 0 && (
+        {!isLoading && items.length > 0 && !isArchivedTab && (
           <div className="flex items-center gap-2 flex-wrap mb-6">
             <span className="text-xs text-brand-500 dark:text-brand-400 font-medium">Formality:</span>
             {['all', ...FORMALITIES].map(f => (
@@ -305,6 +340,7 @@ export default function WardrobePage() {
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
             filter={filter}
+            isArchived={isArchivedTab}
           />
         )}
 

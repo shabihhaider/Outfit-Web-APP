@@ -138,6 +138,7 @@ class WardrobeItemDB(db.Model):
     color_val = db.Column(db.Float, nullable=False)        # 0.0–1.0 → maps to dominant_val in engine
     model_confidence = db.Column(db.Float, nullable=True)         # Model 1 top class probability (0.0–1.0)
     clip_confidence = db.Column(db.Float, nullable=True)         # CLIP sub-category confidence (0.0–1.0)
+    is_archived = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self, image_url: str | None = None) -> dict:
@@ -150,6 +151,7 @@ class WardrobeItemDB(db.Model):
             "image_url": image_url or _image_url(self.image_filename),
             "model_confidence": self.model_confidence,
             "clip_confidence": self.clip_confidence,
+            "is_archived": bool(self.is_archived),
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 

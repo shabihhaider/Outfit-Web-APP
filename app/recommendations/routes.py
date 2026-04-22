@@ -233,7 +233,7 @@ def recommend():
 
     items_db = (
         WardrobeItemDB.query
-        .filter_by(user_id=user_id)
+        .filter_by(user_id=user_id, is_archived=False)
         .order_by(WardrobeItemDB.created_at.desc())
         .all()
     )
@@ -302,7 +302,7 @@ def recommend_around_item(item_id: int):
 
     items_db = (
         WardrobeItemDB.query
-        .filter_by(user_id=user_id)
+        .filter_by(user_id=user_id, is_archived=False)
         .order_by(WardrobeItemDB.created_at.desc())
         .all()
     )

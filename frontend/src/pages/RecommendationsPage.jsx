@@ -6,7 +6,6 @@ import { FiZap } from 'react-icons/fi'
 import { getRecommendations, getAroundItem } from '../api/recommendations.js'
 import { getItems } from '../api/wardrobe.js'
 import { resolveUrl } from '../utils/resolveUrl.js'
-import { wardrobeItemAlt } from '../utils/wardrobeItemAlt.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import OccasionPicker from '../components/recommendations/OccasionPicker.jsx'
 import LocationToggle from '../components/recommendations/LocationToggle.jsx'
@@ -16,7 +15,6 @@ import LoadingSpinner from '../components/ui/LoadingSpinner.jsx'
 import RetryImage from '../components/ui/RetryImage.jsx'
 import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
-import LiveRegion from '../components/ui/LiveRegion.jsx'
 
 function OutfitSkeleton() {
   return (
@@ -127,19 +125,20 @@ export default function RecommendationsPage() {
       {/* Anchor item banner */}
       {anchorItem && (
         <div className="card p-4 mb-6 flex items-center gap-4 border-accent-300/40 dark:border-accent-700/40 bg-accent-50/50 dark:bg-accent-900/10">
-          <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-brand-800 border border-accent-200/60 dark:border-accent-700/40 flex items-center justify-center">
-            <RetryImage
-              src={resolveUrl(anchorItem.image_url)}
-              alt={wardrobeItemAlt(anchorItem)}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover"
-              fallback={<span className="text-2xl opacity-50">👔</span>}
-            />
+          <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-brand-800 border border-accent-200/60 dark:border-accent-700/40">
+            {anchorItem.image_url && (
+              <RetryImage
+                src={resolveUrl(anchorItem.image_url)}
+                alt={anchorItem.category}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
           <div>
             <p className="text-sm font-semibold text-accent-700 dark:text-accent-400">Building outfit around:</p>
-            <p className="text-xs text-accent-700 dark:text-accent-400 capitalize">{anchorItem.category} · {anchorItem.formality}</p>
+            <p className="text-xs text-accent-600 dark:text-accent-500 capitalize">{anchorItem.category} · {anchorItem.formality}</p>
           </div>
         </div>
       )}
@@ -169,20 +168,8 @@ export default function RecommendationsPage() {
 
         {/* Right: results */}
         <div className="lg:col-span-2 space-y-5">
-          <LiveRegion
-            message={
-              mutation.isPending
-                ? 'Loading recommendations…'
-                : mutation.isError
-                ? 'Could not load recommendations.'
-                : results
-                ? `${outfits.length} outfit recommendation${outfits.length !== 1 ? 's' : ''} found`
-                : ''
-            }
-          />
-
           {mutation.isPending && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5" aria-busy="true" aria-label="Loading recommendations">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
               <p className="text-sm text-brand-500 dark:text-brand-400">Building your recommendation and loading wardrobe images...</p>
               <OutfitSkeleton />
               <OutfitSkeleton />

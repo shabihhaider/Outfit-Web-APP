@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { FiEdit2, FiTrash2, FiStar, FiUser, FiCheckCircle } from 'react-icons/fi'
-import { patchItem } from '../../api/wardrobe.js'
+import { FiEdit2, FiTrash2, FiStar, FiUser, FiCheckCircle, FiArchive } from 'react-icons/fi'
+import { patchItem, archiveItem } from '../../api/wardrobe.js'
 import { resolveUrl } from '../../utils/resolveUrl.js'
 import { wardrobeItemAlt } from '../../utils/wardrobeItemAlt.js'
 import ConfirmDialog from '../ui/ConfirmDialog.jsx'
@@ -17,7 +17,7 @@ const CAT_EMOJI = {
 const CATEGORIES = ['top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit']
 const FORMALITIES = ['casual', 'formal', 'both']
 
-export default function WardrobeCard({ item, onDelete, selectMode = false, selected = false, onToggleSelect }) {
+export default function WardrobeCard({ item, onDelete, onArchive, selectMode = false, selected = false, onToggleSelect }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [tryOnOpen, setTryOnOpen] = useState(false)
@@ -33,6 +33,11 @@ export default function WardrobeCard({ item, onDelete, selectMode = false, selec
       queryClient.invalidateQueries({ queryKey: ['wardrobe'] })
       setIsEditing(false)
     }
+  })
+
+  const archiveMutation = useMutation({
+    mutationFn: (archived) => archiveItem(item.id, archived),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wardrobe'] }),
   })
 
   const imageUrl = resolveUrl(item.image_url)
@@ -81,20 +86,41 @@ export default function WardrobeCard({ item, onDelete, selectMode = false, selec
 
           {/* Action buttons — always visible on touch, hover-only on desktop */}
           <div className={`absolute top-2 right-2 flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 sm:translate-y-1 sm:group-hover:translate-y-0 ${selectMode ? 'hidden' : ''}`}>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="bg-white/90 dark:bg-brand-800/90 backdrop-blur-sm hover:bg-white dark:hover:bg-brand-700 text-brand-600 dark:text-brand-300 rounded-lg p-2 shadow-sm transition-colors"
-              title="Edit item"
-            >
-              <FiEdit2 size={13} />
-            </button>
-            <button
-              onClick={() => setConfirmOpen(true)}
-              className="bg-white/90 dark:bg-brand-800/90 backdrop-blur-sm hover:bg-red-50 dark:hover:bg-red-900/40 text-red-500 rounded-lg p-2 shadow-sm transition-colors"
-              title="Delete item"
-            >
-              <FiTrash2 size={13} />
-            </button>
+            {item.is_archived ? (
+              <button
+                onClick={() => archiveMutation.mutate(false)}
+                disabled={archiveMutation.isPending}
+                className="bg-white/90 dark:bg-brand-800/90 backdrop-blur-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/40 text-emerald-600 rounded-lg p-2 shadow-sm transition-colors"
+                title="Unarchive item"
+              >
+                <FiArchive size={13} />
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="bg-white/90 dark:bg-brand-800/90 backdrop-blur-sm hover:bg-white dark:hover:bg-brand-700 text-brand-600 dark:text-brand-300 rounded-lg p-2 shadow-sm transition-colors"
+                  title="Edit item"
+                >
+                  <FiEdit2 size={13} />
+                </button>
+                <button
+                  onClick={() => archiveMutation.mutate(true)}
+                  disabled={archiveMutation.isPending}
+                  className="bg-white/90 dark:bg-brand-800/90 backdrop-blur-sm hover:bg-amber-50 dark:hover:bg-amber-900/40 text-amber-600 rounded-lg p-2 shadow-sm transition-colors"
+                  title="Archive item (excluded from recommendations)"
+                >
+                  <FiArchive size={13} />
+                </button>
+                <button
+                  onClick={() => setConfirmOpen(true)}
+                  className="bg-white/90 dark:bg-brand-800/90 backdrop-blur-sm hover:bg-red-50 dark:hover:bg-red-900/40 text-red-500 rounded-lg p-2 shadow-sm transition-colors"
+                  title="Delete item"
+                >
+                  <FiTrash2 size={13} />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
