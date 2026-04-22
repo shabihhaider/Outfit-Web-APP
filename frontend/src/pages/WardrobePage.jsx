@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiPlus, FiCheckSquare, FiX, FiTrash2, FiLoader } from 'react-icons/fi'
+import { FiPlus, FiCheckSquare, FiX, FiTrash2, FiLoader, FiSearch, FiSliders } from 'react-icons/fi'
 import { getItems, deleteItem, bulkDeleteItems, bulkUpdateFormality } from '../api/wardrobe.js'
 import PageWrapper from '../components/layout/PageWrapper.jsx'
 import WardrobeGrid from '../components/wardrobe/WardrobeGrid.jsx'
@@ -11,6 +11,27 @@ import ErrorMessage from '../components/ui/ErrorMessage.jsx'
 
 const CATEGORIES = ['all', 'top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit']
 const FORMALITIES = ['casual', 'formal', 'both']
+const SORT_OPTIONS = [
+  { key: 'newest',          label: 'Newest First' },
+  { key: 'oldest',          label: 'Oldest First' },
+  { key: 'confidence_desc', label: 'Highest Confidence' },
+  { key: 'confidence_asc',  label: 'Lowest Confidence' },
+]
+
+function sortItems(items, key) {
+  const arr = [...items]
+  switch (key) {
+    case 'oldest':
+      return arr.sort((a, b) => (a.id ?? 0) - (b.id ?? 0))
+    case 'confidence_desc':
+      return arr.sort((a, b) => (b.model_confidence ?? 0) - (a.model_confidence ?? 0))
+    case 'confidence_asc':
+      return arr.sort((a, b) => (a.model_confidence ?? 0) - (b.model_confidence ?? 0))
+    case 'newest':
+    default:
+      return arr.sort((a, b) => (b.id ?? 0) - (a.id ?? 0))
+  }
+}
 
 export default function WardrobePage() {
   const [uploadOpen, setUploadOpen] = useState(false)
@@ -18,6 +39,9 @@ export default function WardrobePage() {
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [formalityFilter, setFormalityFilter] = useState('all')
+  const [sortKey, setSortKey] = useState('newest')
   const queryClient = useQueryClient()
 
   const {
@@ -60,6 +84,24 @@ export default function WardrobePage() {
   const items = data?.pages.flatMap(p => p.items) ?? []
   const totalItems = data?.pages[0]?.total ?? 0
 
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    return sortItems(
+      items
+        .filter(item => formalityFilter === 'all' || item.formality === formalityFilter)
+        .filter(item => !q || (item.sub_category ?? item.category ?? '').toLowerCase().includes(q)),
+      sortKey
+    )
+  }, [items, searchQuery, formalityFilter, sortKey])
+
+  const hasActiveFilters = searchQuery.trim() !== '' || formalityFilter !== 'all' || sortKey !== 'newest'
+
+  function clearFilters() {
+    setSearchQuery('')
+    setFormalityFilter('all')
+    setSortKey('newest')
+  }
+
   function handleFilterChange(cat) {
     setFilter(cat)
     exitSelectMode()
@@ -79,7 +121,7 @@ export default function WardrobePage() {
   }
 
   function selectAll() {
-    setSelectedIds(new Set(items.map(i => i.id)))
+    setSelectedIds(new Set(filteredItems.map(i => i.id)))
   }
 
   const selCount = selectedIds.size
@@ -87,7 +129,6 @@ export default function WardrobePage() {
   // Category counts from loaded items (updates as more pages load)
   function catCount(cat) {
     if (cat === 'all') return totalItems
-    // When a category filter is active, total comes from API; otherwise count client-side
     if (filter === cat) return totalItems
     if (filter !== 'all') return 0
     return items.filter(i => i.category === cat).length
@@ -106,17 +147,19 @@ export default function WardrobePage() {
             <p className="text-brand-500 dark:text-brand-400 mt-1">
               {isLoading
                 ? 'Loading your wardrobe items...'
-                : `${totalItems} item${totalItems !== 1 ? 's' : ''} in your collection`}
+                : hasActiveFilters
+                ? `${filteredItems.length} of ${items.length} items`
+                : `${totalItems || items.length} item${(totalItems || items.length) !== 1 ? 's' : ''} in your collection`}
             </p>
           </div>
           <div className="flex items-center gap-2">
             {selectMode ? (
               <>
                 <button
-                  onClick={selCount === items.length ? () => setSelectedIds(new Set()) : selectAll}
+                  onClick={selCount === filteredItems.length ? () => setSelectedIds(new Set()) : selectAll}
                   className="h-9 px-3 rounded-xl text-xs font-medium text-brand-500 dark:text-brand-400 border border-brand-200/60 dark:border-brand-700/40 hover:bg-brand-50 dark:hover:bg-brand-800/40 transition-all"
                 >
-                  {selCount === items.length ? 'Deselect All' : 'Select All'}
+                  {selCount === filteredItems.length ? 'Deselect All' : 'Select All'}
                 </button>
                 <button onClick={exitSelectMode} className="h-9 px-3 rounded-xl text-xs font-medium btn-secondary flex items-center gap-1.5">
                   <FiX size={13} /> Done
@@ -141,8 +184,8 @@ export default function WardrobePage() {
           </div>
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2 flex-wrap mb-8">
+        {/* Category tabs */}
+        <div className="flex gap-2 flex-wrap mb-4">
           {CATEGORIES.map(cat => {
             const count = catCount(cat)
             return (
@@ -165,13 +208,78 @@ export default function WardrobePage() {
                   />
                 )}
                 <span className="capitalize">{cat}</span>
-                <span className={`text-xs font-mono ${filter === cat ? 'text-brand-500 dark:text-brand-400' : 'text-brand-500 dark:text-brand-400'}`}>
-                  {count}
-                </span>
+                <span className="text-xs font-mono text-brand-500 dark:text-brand-400">{count}</span>
               </motion.button>
             )
           })}
         </div>
+
+        {/* Search + sort + formality controls */}
+        {!isLoading && items.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            {/* Search */}
+            <div className="relative flex-1">
+              <FiSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search by type (e.g. kurta, polo)…"
+                className="w-full pl-8 pr-8 py-2 rounded-xl border border-brand-200/60 dark:border-brand-700/40 bg-white dark:bg-brand-900 text-sm text-brand-800 dark:text-brand-200 placeholder:text-brand-400 dark:placeholder:text-brand-500 focus:outline-none focus:ring-2 focus:ring-accent-400/40 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-400 hover:text-brand-600 transition-colors"
+                >
+                  <FiX size={13} />
+                </button>
+              )}
+            </div>
+
+            {/* Sort */}
+            <div className="relative">
+              <FiSliders size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-400 pointer-events-none" />
+              <select
+                value={sortKey}
+                onChange={e => setSortKey(e.target.value)}
+                className="pl-8 pr-8 py-2 rounded-xl border border-brand-200/60 dark:border-brand-700/40 bg-white dark:bg-brand-900 text-sm text-brand-700 dark:text-brand-200 focus:outline-none focus:ring-2 focus:ring-accent-400/40 transition-all appearance-none cursor-pointer"
+              >
+                {SORT_OPTIONS.map(opt => (
+                  <option key={opt.key} value={opt.key}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        {/* Formality filter chips */}
+        {!isLoading && items.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap mb-6">
+            <span className="text-xs text-brand-500 dark:text-brand-400 font-medium">Formality:</span>
+            {['all', ...FORMALITIES].map(f => (
+              <button
+                key={f}
+                onClick={() => setFormalityFilter(f)}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-all ${
+                  formalityFilter === f
+                    ? 'bg-brand-900 text-white border-brand-900 dark:bg-brand-100 dark:text-brand-900 dark:border-brand-100'
+                    : 'border-brand-200/60 dark:border-brand-700/40 text-brand-500 dark:text-brand-400 hover:border-brand-400 dark:hover:border-brand-500'
+                }`}
+              >
+                {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="text-xs px-3 py-1.5 rounded-full font-medium border border-dashed border-brand-300 dark:border-brand-600 text-brand-500 dark:text-brand-400 hover:border-red-400 hover:text-red-500 transition-all flex items-center gap-1"
+              >
+                <FiX size={11} /> Clear filters
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Content */}
         {isLoading && (
@@ -190,7 +298,7 @@ export default function WardrobePage() {
         {error && <ErrorMessage message="Could not load wardrobe." onRetry={refetch} />}
         {!isLoading && !error && (
           <WardrobeGrid
-            items={items}
+            items={filteredItems}
             onDelete={id => deleteMutation.mutate(id)}
             onUpload={() => setUploadOpen(true)}
             selectMode={selectMode}
