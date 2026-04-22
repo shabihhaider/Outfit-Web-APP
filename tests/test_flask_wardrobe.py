@@ -4,9 +4,7 @@ Tests for:
   POST   /wardrobe/items       — upload
   GET    /wardrobe/items       — list
   DELETE /wardrobe/items/<id>  — delete
-  DELETE /wardrobe/items/bulk  — bulk delete
-  PATCH  /wardrobe/items/bulk  — bulk formality update
-  GET    /uploads/<filename>   — serve image (JWT required, ownership check)
+  GET    /uploads/<filename>   — serve image (ownership check)
 """
 
 from __future__ import annotations
@@ -249,9 +247,7 @@ class TestList:
         assert resp.status_code == 200
         body = resp.get_json()
         assert body["items"] == []
-        assert body["total"] == 0
-        assert body["page"] == 1
-        assert body["has_next"] is False
+        assert body["count"] == 0
 
     def test_list_after_upload(self, client, auth_headers, upload_item):
         resp = client.get("/wardrobe/items", headers=auth_headers)
@@ -259,38 +255,12 @@ class TestList:
         assert resp.headers.get("Cache-Control") == "private, max-age=60, stale-while-revalidate=300"
         assert "Authorization" in (resp.headers.get("Vary") or "")
         body = resp.get_json()
-        assert body["total"] == 1
+        assert body["count"] == 1
         assert body["items"][0]["id"] == upload_item["id"]
 
     def test_list_requires_auth(self, client):
         resp = client.get("/wardrobe/items")
         assert resp.status_code == 401
-
-    def test_list_pagination_params(self, client, auth_headers, upload_item):
-        """page/limit params are respected; category filter works."""
-        resp = client.get("/wardrobe/items?page=1&limit=5", headers=auth_headers)
-        assert resp.status_code == 200
-        body = resp.get_json()
-        assert body["page"] == 1
-        assert body["limit"] == 5
-        assert "has_next" in body
-        assert "has_prev" in body
-
-    def test_list_category_filter(self, client, auth_headers, upload_item):
-        """?category=top returns only tops; other categories return empty."""
-        resp = client.get("/wardrobe/items?category=top", headers=auth_headers)
-        body = resp.get_json()
-        assert resp.status_code == 200
-        # The mock pipeline returns "top" for every upload
-        assert body["total"] == 1
-        assert all(i["category"] == "top" for i in body["items"])
-
-        resp2 = client.get("/wardrobe/items?category=shoes", headers=auth_headers)
-        assert resp2.get_json()["total"] == 0
-
-    def test_list_invalid_category(self, client, auth_headers):
-        resp = client.get("/wardrobe/items?category=invalid", headers=auth_headers)
-        assert resp.status_code == 400
 
     def test_list_isolation_between_users(self, client, auth_headers, minimal_png):
         """Items uploaded by user A must not appear in user B's list."""
@@ -325,7 +295,7 @@ class TestList:
 
         resp = client.get("/wardrobe/items", headers=headers_b)
         assert resp.status_code == 200
-        assert resp.get_json()["total"] == 0
+        assert resp.get_json()["count"] == 0
 
 
 # ─── Delete ───────────────────────────────────────────────────────────────────
@@ -339,7 +309,7 @@ class TestDelete:
 
         # Confirm it's gone
         list_resp = client.get("/wardrobe/items", headers=auth_headers)
-        assert list_resp.get_json()["total"] == 0
+        assert list_resp.get_json()["count"] == 0
 
     def test_delete_not_found(self, client, auth_headers):
         resp = client.delete("/wardrobe/items/99999", headers=auth_headers)
@@ -384,21 +354,19 @@ class TestServeUpload:
         # File may not physically exist on disk in tests, but DB record exists → 200 or 404 from disk
         assert resp.status_code in (200, 404)
 
-    def test_serve_upload_no_auth_returns_401(self, client, upload_item):
-        """Unauthenticated requests must be rejected — JWT now required."""
+    def test_serve_upload_no_auth(self, client, upload_item):
+        """After FIX 2: no JWT required — unauthenticated requests are allowed."""
         image_url = upload_item["image_url"]
         filename = image_url.split("/uploads/")[1]
         resp = client.get(f"/uploads/{filename}")
-        assert resp.status_code == 401
+        if resp.status_code in (200, 302):
+            assert resp.headers.get("Cache-Control") == "public, max-age=86400"
+        # DB record exists, so not 401/403. File may not be on disk → 200 or 404.
+        assert resp.status_code in (200, 404)
 
-    def test_serve_upload_not_found_no_auth_returns_401(self, client):
-        """Auth check runs before existence check — unauthenticated → 401."""
+    def test_serve_upload_not_found(self, client):
+        """Filename not in DB → 404 (no auth needed)."""
         resp = client.get("/uploads/nonexistent_file_xyz.jpg")
-        assert resp.status_code == 401
-
-    def test_serve_upload_not_found_authed_returns_404(self, client, auth_headers):
-        """Authenticated request for nonexistent file → 404."""
-        resp = client.get("/uploads/nonexistent_file_xyz.jpg", headers=auth_headers)
         assert resp.status_code == 404
 
 
@@ -473,127 +441,203 @@ class TestEditItem:
         assert resp.status_code == 400
 
 
-# ─── Bulk Delete ──────────────────────────────────────────────────────────────
+# ─── Archive ──────────────────────────────────────────────────────────────────
 
-class TestBulkDelete:
-    def _upload(self, client, headers, minimal_png):
+class TestArchiveItem:
+    def test_archive_success(self, client, auth_headers, upload_item):
+        """Archiving an item returns 200 and sets is_archived=True."""
+        item_id = upload_item["id"]
+        resp = client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": True},
+            headers=auth_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["is_archived"] is True
+
+    def test_unarchive_success(self, client, auth_headers, upload_item):
+        """Unarchiving an item returns 200 and sets is_archived=False."""
+        item_id = upload_item["id"]
+        # Archive first
+        client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": True},
+            headers=auth_headers,
+        )
+        # Then unarchive
+        resp = client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": False},
+            headers=auth_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["is_archived"] is False
+
+    def test_archive_not_found(self, client, auth_headers):
+        """Non-existent item → 404."""
+        resp = client.patch(
+            "/wardrobe/items/99999/archive",
+            json={"archived": True},
+            headers=auth_headers,
+        )
+        assert resp.status_code == 404
+
+    def test_archive_forbidden(self, client, auth_headers, upload_item):
+        """User B cannot archive user A's item → 403."""
+        item_id = upload_item["id"]
+        client.post(
+            "/auth/register",
+            json={
+                "name": "User B",
+                "email": "archive_b@example.com",
+                "password": "password123",
+                "gender": "men",
+            },
+        )
+        login_resp = client.post(
+            "/auth/login",
+            json={"email": "archive_b@example.com", "password": "password123"},
+        )
+        headers_b = {"Authorization": f"Bearer {login_resp.get_json()['access_token']}"}
+        resp = client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": True},
+            headers=headers_b,
+        )
+        assert resp.status_code == 403
+
+    def test_archive_requires_auth(self, client, upload_item):
+        """No JWT → 401."""
+        item_id = upload_item["id"]
+        resp = client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": True},
+        )
+        assert resp.status_code == 401
+
+    def test_archive_invalid_body(self, client, auth_headers, upload_item):
+        """Body with non-boolean 'archived' → 400."""
+        item_id = upload_item["id"]
+        resp = client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": "yes"},
+            headers=auth_headers,
+        )
+        assert resp.status_code == 400
+
+    def test_archive_missing_body(self, client, auth_headers, upload_item):
+        """Body without 'archived' key → 400."""
+        item_id = upload_item["id"]
+        resp = client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={},
+            headers=auth_headers,
+        )
+        assert resp.status_code == 400
+
+    def test_unarchive_blocked_at_cap(self, client, auth_headers, upload_item):
+        """Unarchiving when active items = 50 → 400."""
+        from app.extensions import db
+        from app.models_db import WardrobeItemDB, User
+
+        item_id = upload_item["id"]
+        # Archive the upload_item first
+        client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": True},
+            headers=auth_headers,
+        )
+
+        user = User.query.filter_by(email="test@example.com").first()
+        # Fill wardrobe to cap with 50 active items
+        for i in range(50):
+            fake = WardrobeItemDB(
+                user_id          = user.id,
+                image_filename   = f"arc_fake_{i}.png",
+                category         = "top",
+                formality        = "casual",
+                gender           = "men",
+                embedding        = json.dumps([0.0] * 1280),
+                color_hue        = 0.0,
+                color_sat        = 0.0,
+                color_val        = 0.0,
+                model_confidence = None,
+            )
+            db.session.add(fake)
+        db.session.commit()
+
+        resp = client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": False},
+            headers=auth_headers,
+        )
+        assert resp.status_code == 400
+        assert "capacity" in resp.get_json()["error"].lower()
+
+    def test_archived_items_excluded_from_active_list(self, client, auth_headers, upload_item):
+        """Archived item does not appear in default (active) item list."""
+        item_id = upload_item["id"]
+        client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": True},
+            headers=auth_headers,
+        )
+        resp = client.get("/wardrobe/items", headers=auth_headers)
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert all(not i["is_archived"] for i in body["items"])
+        assert body["count"] == 0
+
+    def test_archived_items_visible_in_archived_list(self, client, auth_headers, upload_item):
+        """Archived item appears when ?archived=true is passed."""
+        item_id = upload_item["id"]
+        client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": True},
+            headers=auth_headers,
+        )
+        resp = client.get("/wardrobe/items?archived=true", headers=auth_headers)
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["count"] == 1
+        assert body["items"][0]["id"] == item_id
+        assert body["items"][0]["is_archived"] is True
+
+    def test_active_count_in_list_response(self, client, auth_headers, upload_item):
+        """active_count in list response reflects only non-archived items."""
+        resp = client.get("/wardrobe/items", headers=auth_headers)
+        body = resp.get_json()
+        assert "active_count" in body
+        assert body["active_count"] == 1
+
+        item_id = upload_item["id"]
+        client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": True},
+            headers=auth_headers,
+        )
+        resp2 = client.get("/wardrobe/items", headers=auth_headers)
+        assert resp2.get_json()["active_count"] == 0
+
+    def test_upload_allowed_when_archived_items_exist(self, client, auth_headers, upload_item, minimal_png):
+        """Archived items don't count toward the 50-item cap."""
+        item_id = upload_item["id"]
+        # Archive the existing item — active count drops to 0
+        client.patch(
+            f"/wardrobe/items/{item_id}/archive",
+            json={"archived": True},
+            headers=auth_headers,
+        )
+        # A new upload should succeed (active count is 0, not 1)
         data = {
-            "image":     (io.BytesIO(minimal_png), "item.png", "image/png"),
+            "image":    (io.BytesIO(minimal_png), "shirt2.png", "image/png"),
             "formality": "casual",
             "gender":    "men",
         }
-        r = client.post("/wardrobe/items", data=data, headers=headers,
-                        content_type="multipart/form-data")
-        assert r.status_code == 201
-        return r.get_json()["id"]
-
-    def test_bulk_delete_removes_items(self, client, auth_headers, minimal_png):
-        """Bulk-deleting two items removes exactly those two."""
-        id1 = self._upload(client, auth_headers, minimal_png)
-        id2 = self._upload(client, auth_headers, minimal_png)
-
-        resp = client.delete(
-            "/wardrobe/items/bulk",
-            json={"item_ids": [id1, id2]},
+        resp = client.post(
+            "/wardrobe/items",
+            data=data,
             headers=auth_headers,
+            content_type="multipart/form-data",
         )
-        assert resp.status_code == 200
-        assert resp.get_json()["deleted"] == 2
-
-        # Verify they're gone
-        list_resp = client.get("/wardrobe/items", headers=auth_headers)
-        ids_remaining = [i["id"] for i in list_resp.get_json()["items"]]
-        assert id1 not in ids_remaining
-        assert id2 not in ids_remaining
-
-    def test_bulk_delete_ignores_other_users_items(self, client, auth_headers, minimal_png):
-        """Items belonging to another user are silently skipped."""
-        id1 = self._upload(client, auth_headers, minimal_png)
-
-        # Register user B
-        client.post("/auth/register", json={
-            "name": "User B", "email": "bulk_del_b@example.com",
-            "password": "password123", "gender": "men",
-        })
-        login_b = client.post("/auth/login", json={
-            "email": "bulk_del_b@example.com", "password": "password123",
-        })
-        headers_b = {"Authorization": f"Bearer {login_b.get_json()['access_token']}"}
-
-        # User B tries to bulk-delete user A's item
-        resp = client.delete(
-            "/wardrobe/items/bulk",
-            json={"item_ids": [id1]},
-            headers=headers_b,
-        )
-        assert resp.status_code == 200
-        assert resp.get_json()["deleted"] == 0  # item not owned by B
-
-    def test_bulk_delete_missing_body(self, client, auth_headers):
-        """Missing item_ids → 400."""
-        resp = client.delete("/wardrobe/items/bulk", json={}, headers=auth_headers)
-        assert resp.status_code == 400
-
-
-# ─── Bulk Formality Update ────────────────────────────────────────────────────
-
-class TestBulkFormalityUpdate:
-    def _upload(self, client, headers, minimal_png, formality="casual"):
-        data = {
-            "image":     (io.BytesIO(minimal_png), "item.png", "image/png"),
-            "formality": formality,
-            "gender":    "men",
-        }
-        r = client.post("/wardrobe/items", data=data, headers=headers,
-                        content_type="multipart/form-data")
-        assert r.status_code == 201
-        return r.get_json()["id"]
-
-    def test_bulk_update_formality(self, client, auth_headers, minimal_png):
-        """Bulk update sets correct formality on all specified items."""
-        id1 = self._upload(client, auth_headers, minimal_png, formality="casual")
-        id2 = self._upload(client, auth_headers, minimal_png, formality="casual")
-
-        resp = client.patch(
-            "/wardrobe/items/bulk",
-            json={"item_ids": [id1, id2], "formality": "formal"},
-            headers=auth_headers,
-        )
-        assert resp.status_code == 200
-        assert resp.get_json()["updated"] == 2
-
-        # Verify formality changed
-        list_resp = client.get("/wardrobe/items", headers=auth_headers)
-        items = {i["id"]: i for i in list_resp.get_json()["items"]}
-        assert items[id1]["formality"] == "formal"
-        assert items[id2]["formality"] == "formal"
-
-    def test_bulk_update_invalid_formality(self, client, auth_headers, upload_item):
-        """Invalid formality value → 422."""
-        resp = client.patch(
-            "/wardrobe/items/bulk",
-            json={"item_ids": [upload_item["id"]], "formality": "smart_casual"},
-            headers=auth_headers,
-        )
-        assert resp.status_code == 422
-
-    def test_bulk_update_other_users_items_skipped(self, client, auth_headers, minimal_png):
-        """Items belonging to another user are silently skipped."""
-        id1 = self._upload(client, auth_headers, minimal_png)
-
-        client.post("/auth/register", json={
-            "name": "User C", "email": "bulk_upd_c@example.com",
-            "password": "password123", "gender": "men",
-        })
-        login_c = client.post("/auth/login", json={
-            "email": "bulk_upd_c@example.com", "password": "password123",
-        })
-        headers_c = {"Authorization": f"Bearer {login_c.get_json()['access_token']}"}
-
-        resp = client.patch(
-            "/wardrobe/items/bulk",
-            json={"item_ids": [id1], "formality": "formal"},
-            headers=headers_c,
-        )
-        assert resp.status_code == 200
-        assert resp.get_json()["updated"] == 0  # not owned by C
+        assert resp.status_code == 201

@@ -10,8 +10,17 @@ const CATEGORY_LABELS = {
   jumpsuit: { noun: 'jumpsuits',  upload: 'Upload a Jumpsuit' },
 }
 
-export default function WardrobeGrid({ items, onDelete, onUpload, selectMode, selectedIds, onToggleSelect, filter }) {
+export default function WardrobeGrid({ items, onDelete, onUpload, selectMode, selectedIds, onToggleSelect, filter, isArchived }) {
   if (!items || items.length === 0) {
+    if (isArchived) {
+      return (
+        <EmptyState
+          icon="📦"
+          title="No archived items"
+          description="Items you archive will appear here. Archived items don't count toward your 50-item limit."
+        />
+      )
+    }
     const cat = filter && filter !== 'all' ? CATEGORY_LABELS[filter] : null
     return (
       <EmptyState
