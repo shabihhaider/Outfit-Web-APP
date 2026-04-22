@@ -88,5 +88,8 @@ jobs:
       - name: Lint
         run: npx eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 25
 
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
