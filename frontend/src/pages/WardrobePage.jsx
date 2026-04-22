@@ -149,7 +149,7 @@ export default function WardrobePage() {
                 ? 'Loading your wardrobe items...'
                 : hasActiveFilters
                 ? `${filteredItems.length} of ${items.length} items`
-                : `${totalItems} item${totalItems !== 1 ? 's' : ''} in your collection`}
+                : `${totalItems || items.length} item${(totalItems || items.length) !== 1 ? 's' : ''} in your collection`}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export default function WardrobePage() {
         </div>
 
         {/* Search + sort + formality controls */}
-        {!isLoading && totalItems > 0 && (
+        {!isLoading && items.length > 0 && (
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             {/* Search */}
             <div className="relative flex-1">
@@ -254,7 +254,7 @@ export default function WardrobePage() {
         )}
 
         {/* Formality filter chips */}
-        {!isLoading && totalItems > 0 && (
+        {!isLoading && items.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap mb-6">
             <span className="text-xs text-brand-500 dark:text-brand-400 font-medium">Formality:</span>
             {['all', ...FORMALITIES].map(f => (
