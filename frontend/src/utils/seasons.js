@@ -47,8 +47,8 @@ export function getActiveSeason(date = new Date()) {
  * @param {Date} date
  */
 export function getUpcomingSeasons(withinDays = 30, date = new Date()) {
-  const m = date.getMonth() + 1
-  const d = date.getDate()
+  const _m = date.getMonth() + 1
+  const _d = date.getDate()
   const upcoming = []
   for (const s of SEASONS) {
     const [sm, sd] = s.start
