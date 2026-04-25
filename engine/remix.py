@@ -104,10 +104,11 @@ def remix_outfit(
     RemixResult with per-category matches and coverage metrics.
     """
     from app.models_db import WardrobeItemDB
+    from app.extensions import db
 
     # Resolve source items (ignore deleted ones)
     source_items = [
-        WardrobeItemDB.query.get(iid)
+        db.session.get(WardrobeItemDB, iid)
         for iid in source_item_ids
     ]
     source_items = [i for i in source_items if i is not None]
