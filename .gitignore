@@ -121,3 +121,7 @@ view_fashn_api.py
 
 # Deployment
 hf-deploy/
+
+# Dev utilities (not part of the app)
+migration-space/
+scripts/

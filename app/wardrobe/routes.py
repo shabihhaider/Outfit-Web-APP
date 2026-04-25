@@ -246,21 +246,36 @@ def list_items():
     Query params:
       archived=true  — return archived items only
       category=<cat> — filter by category (active items only)
+      page=<int>     — page number (1-based, default 1)
+      limit=<int>    — items per page (default 20, max 100)
     """
     user_id = int(get_jwt_identity())
     show_archived = request.args.get("archived", "").lower() == "true"
     category = request.args.get("category", "").strip().lower()
 
+    try:
+        page  = max(1, int(request.args.get("page",  1)))
+        limit = min(100, max(1, int(request.args.get("limit", 20))))
+    except (ValueError, TypeError):
+        page, limit = 1, 20
+
     query = WardrobeItemDB.query.filter_by(user_id=user_id, is_archived=show_archived)
     if not show_archived and category and category in VALID_CATEGORIES:
         query = query.filter_by(category=category)
-    items = query.order_by(WardrobeItemDB.created_at.desc()).all()
+    query = query.order_by(WardrobeItemDB.created_at.desc())
+
+    total = query.count()
+    items = query.offset((page - 1) * limit).limit(limit).all()
 
     active_count = WardrobeItemDB.query.filter_by(user_id=user_id, is_archived=False).count()
 
     response = jsonify({
         "items":        [item.to_dict() for item in items],
         "count":        len(items),
+        "total":        total,
+        "page":         page,
+        "limit":        limit,
+        "has_next":     (page * limit) < total,
         "active_count": active_count,
     })
     response.headers["Cache-Control"] = "private, max-age=60, stale-while-revalidate=300"
@@ -300,6 +315,82 @@ def delete_item(item_id: int):
     recommendation_cache.invalidate_user(user_id)
     log_action("delete_item", user_id=user_id, detail=f"item_id={item_id}")
     return jsonify({"message": "Item deleted."}), 200
+
+
+# ─── DELETE /wardrobe/items/bulk ──────────────────────────────────────────────
+
+@wardrobe_bp.route("/items/bulk", methods=["DELETE"])
+@jwt_required()
+def bulk_delete_items():
+    """
+    DELETE /wardrobe/items/bulk
+    Body (JSON): {item_ids: [int, ...]}
+    Deletes all listed items that belong to the authenticated user.
+    Items belonging to other users are silently skipped (no 403).
+    """
+    user_id = int(get_jwt_identity())
+    data     = request.get_json(silent=True) or {}
+    item_ids = data.get("item_ids", [])
+
+    if not isinstance(item_ids, list) or not item_ids:
+        return jsonify({"error": "item_ids must be a non-empty list."}), 400
+
+    items = WardrobeItemDB.query.filter(
+        WardrobeItemDB.id.in_(item_ids),
+        WardrobeItemDB.user_id == user_id,
+    ).all()
+
+    deleted_ids = []
+    for item in items:
+        image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], item.image_filename)
+        try:
+            if os.path.exists(image_path):
+                os.remove(image_path)
+        except OSError as exc:
+            logger.warning("Could not delete image file %s: %s", image_path, exc)
+        from app.storage import delete_file as storage_delete
+        storage_delete(item.image_filename)
+        deleted_ids.append(item.id)
+        db.session.delete(item)
+
+    db.session.commit()
+    recommendation_cache.invalidate_user(user_id)
+    log_action("bulk_delete_items", user_id=user_id, detail=f"deleted={deleted_ids}")
+    return jsonify({"deleted": len(deleted_ids), "ids": deleted_ids}), 200
+
+
+# ─── PATCH /wardrobe/items/bulk ───────────────────────────────────────────────
+
+@wardrobe_bp.route("/items/bulk", methods=["PATCH"])
+@jwt_required()
+def bulk_update_formality():
+    """
+    PATCH /wardrobe/items/bulk
+    Body (JSON): {item_ids: [int, ...], formality: str}
+    Updates formality for all listed items that belong to the authenticated user.
+    """
+    user_id = int(get_jwt_identity())
+    data      = request.get_json(silent=True) or {}
+    item_ids  = data.get("item_ids", [])
+    formality = (data.get("formality") or "").strip().lower()
+
+    if not isinstance(item_ids, list) or not item_ids:
+        return jsonify({"error": "item_ids must be a non-empty list."}), 400
+    if formality not in VALID_FORMALITIES:
+        return jsonify({"error": f"formality must be one of: {', '.join(VALID_FORMALITIES)}."}), 422
+
+    items = WardrobeItemDB.query.filter(
+        WardrobeItemDB.id.in_(item_ids),
+        WardrobeItemDB.user_id == user_id,
+    ).all()
+
+    for item in items:
+        item.formality = formality
+
+    db.session.commit()
+    recommendation_cache.invalidate_user(user_id)
+    log_action("bulk_update_formality", user_id=user_id, detail=f"ids={[i.id for i in items]} formality={formality}")
+    return jsonify({"updated": len(items)}), 200
 
 
 # ─── PATCH /wardrobe/items/<id> ───────────────────────────────────────────────

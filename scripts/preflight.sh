@@ -25,8 +25,16 @@ PASS=0
 FAIL=0
 PYTHON="${PYTHON:-python}"
 
-# Resolve python (prefer 3.11)
-if command -v py &>/dev/null; then
+# Resolve python — prefer project venv (guaranteed correct deps) over system Python
+if [ -f "$ROOT/venv/Scripts/python" ]; then
+  PYTHON="$ROOT/venv/Scripts/python"
+elif [ -f "$ROOT/.venv/Scripts/python" ]; then
+  PYTHON="$ROOT/.venv/Scripts/python"
+elif [ -f "$ROOT/venv/bin/python" ]; then
+  PYTHON="$ROOT/venv/bin/python"
+elif [ -f "$ROOT/.venv/bin/python" ]; then
+  PYTHON="$ROOT/.venv/bin/python"
+elif command -v py &>/dev/null; then
   PYTHON="py -3.11"
 elif command -v python3.11 &>/dev/null; then
   PYTHON="python3.11"
