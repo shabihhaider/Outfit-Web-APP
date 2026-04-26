@@ -596,9 +596,10 @@ def _check_rule_violations(items: list) -> list[str]:
         dupes = [cat.value for cat, count in Counter(categories).items() if count > 1]
         violations.append(f"Duplicate categories: {', '.join(dupes)}.")
 
-    strict = {item.formality for item in items if item.formality != Formality.BOTH}
-    if Formality.CASUAL in strict and Formality.FORMAL in strict:
-        violations.append("Cannot mix casual and formal items in one outfit.")
+    # Note: cross-formality mixing (casual + formal) is intentionally ALLOWED.
+    # Smart casual (casual shirt + formal trousers, blazer + jeans) is the most
+    # common modern dress code. Genuinely bad combos are caught by Tier B
+    # sub-category blocked pairs in engine/hard_rules.py (e.g. hoodie + dress_trousers).
 
     return violations
 
