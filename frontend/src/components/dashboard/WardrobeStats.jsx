@@ -77,8 +77,6 @@ export default function WardrobeStats() {
   const colors = wardrobe.colors ?? []
   const feedback = activity.feedback ?? {}
   const maxCount = Math.max(...Object.values(categories), 1)
-  const capacityPct = Math.round(((wardrobe.total_items ?? 0) / (wardrobe.capacity ?? 50)) * 100)
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

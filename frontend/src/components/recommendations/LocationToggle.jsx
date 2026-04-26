@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiMapPin, FiNavigation } from 'react-icons/fi'
+import { FiNavigation } from 'react-icons/fi'
 import LoadingSpinner from '../ui/LoadingSpinner.jsx'
 
 export default function LocationToggle({ onTempChange }) {

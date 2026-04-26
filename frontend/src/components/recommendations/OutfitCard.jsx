@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiBookmark, FiCheck, FiShare2, FiInfo, FiX, FiUser } from 'react-icons/fi'
+import { FiBookmark, FiCheck, FiInfo, FiX, FiUser } from 'react-icons/fi'
 import { saveOutfit } from '../../api/outfits.js'
 import OutfitItems from './OutfitItems.jsx'
 import WhyThisOutfit from './WhyThisOutfit.jsx'

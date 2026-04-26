@@ -17,7 +17,7 @@ const CAT_EMOJI = {
 const CATEGORIES = ['top', 'bottom', 'outwear', 'shoes', 'dress', 'jumpsuit']
 const FORMALITIES = ['casual', 'formal', 'both']
 
-export default function WardrobeCard({ item, onDelete, onArchive, selectMode = false, selected = false, onToggleSelect }) {
+export default function WardrobeCard({ item, onDelete, _onArchive, selectMode = false, selected = false, onToggleSelect }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [tryOnOpen, setTryOnOpen] = useState(false)
