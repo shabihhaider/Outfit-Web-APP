@@ -57,7 +57,7 @@ export default function StyleDNACard() {
 
   if (isError || !data) return null
 
-  const { persona_name, vibe_slug, tagline, dominant_tones, formality_mix, category_mix, total_items } = data
+  const { persona_name, tagline, dominant_tones, formality_mix, category_mix, total_items } = data
 
   if (total_items < 3) {
     return (

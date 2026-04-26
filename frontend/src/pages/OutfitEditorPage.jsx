@@ -44,7 +44,7 @@ export default function OutfitEditorPage() {
     queryFn: getItems,
   })
 
-  const items = wardrobeData?.items ?? []
+  const items = useMemo(() => wardrobeData?.items ?? [], [wardrobeData])
   const canvasItemIds = useMemo(() => new Set(canvasItems.map(i => i.id)), [canvasItems])
 
   // Pre-load canvas when navigated from a Remix action
@@ -199,7 +199,7 @@ export default function OutfitEditorPage() {
 
             <div className="flex flex-wrap gap-1.5 mb-5">
               {CATEGORIES.map(cat => {
-                const count = cat === 'all'
+                const _count = cat === 'all'
                   ? items.filter(i => !canvasItemIds.has(i.id)).length
                   : items.filter(i => i.category === cat && !canvasItemIds.has(i.id)).length
                 return (
@@ -306,7 +306,7 @@ export default function OutfitEditorPage() {
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 sm:gap-6">
                   <AnimatePresence mode="popLayout">
-                    {canvasItems.map((item, idx) => (
+                    {canvasItems.map((item, _idx) => (
                       <motion.div
                         key={item.id}
                         layout

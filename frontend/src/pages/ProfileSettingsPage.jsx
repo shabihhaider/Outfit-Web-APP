@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
 import { FiCamera, FiUser, FiSave, FiCheck, FiAlertCircle, FiShield, FiDownload, FiTrash2, FiLock } from 'react-icons/fi'
 import { getMyProfile, updateProfile, uploadAvatar } from '../api/social.js'
 import { getPersonPhoto, uploadPersonPhoto } from '../api/vto.js'
@@ -18,7 +17,7 @@ const TABS = [
 ]
 
 export default function ProfileSettingsPage() {
-  const { user: authUser, updateUser } = useAuth()
+  const { updateUser } = useAuth()
   const qc = useQueryClient()
   const [tab, setTab] = useState('account')
 

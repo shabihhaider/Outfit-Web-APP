@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiX, FiArrowRight, FiRefreshCw, FiAlertCircle } from 'react-icons/fi'
 import { remixPost } from '../../api/social.js'
@@ -9,8 +9,6 @@ import { resolveUrl } from '../../utils/resolveUrl.js'
 
 export default function RemixResultModal({ open, onClose, post }) {
   const navigate = useNavigate()
-  const qc = useQueryClient()
-
   const [result,        setResult]        = useState(null)
   const [publishOpen,   setPublishOpen]   = useState(false)
   const [selectedItems, setSelectedItems] = useState({})  // category → item_id

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiPlus, FiCheckSquare, FiX, FiTrash2, FiLoader, FiSearch, FiSliders, FiAlertTriangle, FiArchive } from 'react-icons/fi'
@@ -83,7 +83,7 @@ export default function WardrobePage() {
   })
 
   // Flatten all loaded pages
-  const items = data?.pages.flatMap(p => p.items) ?? []
+  const items = useMemo(() => data?.pages.flatMap(p => p.items) ?? [], [data])
   const totalItems = data?.pages[0]?.total ?? 0
   const activeCount = data?.pages[0]?.active_count ?? items.length
   const isArchivedTab = filter === 'archived'
