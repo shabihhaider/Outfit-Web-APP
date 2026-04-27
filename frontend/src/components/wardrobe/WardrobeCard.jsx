@@ -212,12 +212,14 @@ export default function WardrobeCard({ item, onDelete, _onArchive, selectMode = 
               >
                 <FiStar size={13} /> Build outfit
               </button>
-              <button
-                onClick={() => setTryOnOpen(true)}
-                className="w-full text-xs text-brand-500 dark:text-brand-400 font-medium py-2 border border-brand-200/60 dark:border-brand-700/40 rounded-lg hover:bg-brand-50/60 dark:hover:bg-brand-800/40 transition-all flex items-center justify-center gap-1.5"
-              >
-                <FiUser size={12} /> Virtual Try-On
-              </button>
+              {item.category !== 'shoes' && (
+                <button
+                  onClick={() => setTryOnOpen(true)}
+                  className="w-full text-xs text-brand-500 dark:text-brand-400 font-medium py-2 border border-brand-200/60 dark:border-brand-700/40 rounded-lg hover:bg-brand-50/60 dark:hover:bg-brand-800/40 transition-all flex items-center justify-center gap-1.5"
+                >
+                  <FiUser size={12} /> Virtual Try-On
+                </button>
+              )}
             </>
           )}
         </div>
