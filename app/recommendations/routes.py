@@ -135,6 +135,7 @@ def _format_outfits_response(
     filename_map: dict[int, str],
     temp_celsius: float,
     occasion: str,
+    history_ids: list[int] | None = None,
 ) -> dict:
     """Build the JSON-serialisable response dict for recommendation results."""
     has_low_confidence = any(o.confidence == "low" for o in outfits)
@@ -150,7 +151,7 @@ def _format_outfits_response(
                 "category":  eng_item.category.value,
                 "image_url": _img_url(img_filename),
             })
-        formatted_outfits.append({
+        entry = {
             "rank":           rank,
             "final_score":    round(outfit.final_score, 4),
             "confidence":     outfit.confidence,
@@ -161,7 +162,10 @@ def _format_outfits_response(
             "synergy_score":  round(outfit.synergy_score, 4),
             "items":          outfit_items,
             "template":       outfit.template_id.value if outfit.template_id else None,
-        })
+        }
+        if history_ids and rank <= len(history_ids):
+            entry["history_id"] = history_ids[rank - 1]
+        formatted_outfits.append(entry)
 
     return {
         "outfits":            formatted_outfits,
@@ -172,13 +176,16 @@ def _format_outfits_response(
     }
 
 
-def _log_history(user_id: int, occasion: str, temp_celsius: float, outfits: list) -> None:
+def _log_history(user_id: int, occasion: str, temp_celsius: float, outfits: list) -> list[int]:
     """
     Persist each outfit in `outfits` to outfit_history.
     Called after a successful recommendation — failures are logged but do NOT
     abort the recommendation response.
+
+    Returns list of history entry IDs (used by FeedbackButtons in the frontend).
     """
     try:
+        entries = []
         for outfit in outfits:
             entry = OutfitHistory(
                 user_id          = user_id,
@@ -190,11 +197,14 @@ def _log_history(user_id: int, occasion: str, temp_celsius: float, outfits: list
                 template         = getattr(outfit.template_id, 'value', str(outfit.template_id)) if outfit.template_id else '',
             )
             db.session.add(entry)
+            entries.append(entry)
         db.session.commit()
         logger.info("Logged %d outfit(s) to history for user %s", len(outfits), user_id)
+        return [e.id for e in entries]
     except Exception as exc:
         db.session.rollback()
         logger.error("Failed to log outfit history: %s", exc, exc_info=True)
+        return []
 
 
 # ─── POST /recommendations ────────────────────────────────────────────────────
@@ -255,11 +265,11 @@ def recommend():
         return jsonify({"error": "Recommendation engine failed. Please try again."}), 500
 
     # 6. Auto-log each outfit to history
-    _log_history(user_id, occasion, temp_celsius, outfits)
+    history_ids = _log_history(user_id, occasion, temp_celsius, outfits)
 
     # 7. Format, cache, and return response
     filename_map = {item.id: item.image_filename for item in items_db}
-    response_data = _format_outfits_response(outfits, filename_map, temp_celsius, occasion)
+    response_data = _format_outfits_response(outfits, filename_map, temp_celsius, occasion, history_ids)
     recommendation_cache.put(user_id, occasion, temp_celsius, response_data)
     return _with_private_cache(jsonify(response_data)), 200
 

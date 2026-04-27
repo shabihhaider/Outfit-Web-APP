@@ -327,7 +327,7 @@ def _run_weight_optimization(app, positives: int, negatives: int) -> None:
                 "  Pearson correlation: %.4f\n"
                 "  Positive: %d | Negative: %d\n"
                 "  Interpretation: %.1f%% of the time, scored-higher outfit also got thumbs-up.\n"
-                "  Current weights: model2=0.45, color=0.25, weather=0.15, cohesion=0.15\n"
+                "  Current weights: model2=0.35, synergy=0.20, color=0.20, weather=0.15, cohesion=0.10\n"
                 "  %s",
                 len(rows), auc, corr, positives, negatives, auc * 100,
                 "Weights performing well (AUC > 0.65)." if auc > 0.65
