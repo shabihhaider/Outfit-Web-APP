@@ -587,7 +587,7 @@ def score_outfit_endpoint():
 
 def _check_rule_violations(items: list) -> list[str]:
     """Return human-readable descriptions of hard rule violations."""
-    from engine.models import Category, Formality
+    from engine.models import Category
 
     violations = []
     categories = [item.category for item in items]
