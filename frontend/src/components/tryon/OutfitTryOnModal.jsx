@@ -6,8 +6,11 @@ import TryOnModal from './TryOnModal.jsx'
 import { resolveUrl } from '../../utils/resolveUrl.js'
 import { wardrobeItemAlt } from '../../utils/wardrobeItemAlt.js'
 
+// Categories that FASHN VTON supports (shoes cannot be virtually tried on)
+const VTO_SUPPORTED = new Set(['top', 'outwear', 'bottom', 'dress', 'jumpsuit'])
+
 // Hero priority — most visually impactful garments first
-const HERO_PRIORITY = ['dress', 'jumpsuit', 'top', 'outwear', 'bottom', 'shoes']
+const HERO_PRIORITY = ['dress', 'jumpsuit', 'top', 'outwear', 'bottom']
 
 function pickHero(items) {
   if (!items?.length) return null
@@ -22,9 +25,9 @@ export default function OutfitTryOnModal({ open, onClose, items, occasion }) {
   const [selectedItem, setSelectedItem] = useState(null)
   const [tryOnOpen, setTryOnOpen] = useState(false)
 
-  // Filter to items that have an id (needed for backend VTO job)
+  // Filter to items that VTO can actually process (shoes are not supported)
   const tryableItems = useMemo(
-    () => (items ?? []).filter(i => i.id && i.image_url),
+    () => (items ?? []).filter(i => i.id && i.image_url && VTO_SUPPORTED.has(i.category)),
     [items]
   )
 
