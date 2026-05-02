@@ -42,7 +42,8 @@ def _after_request(response):
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self'; "
-        "style-src 'self'; "
+        "style-src 'self' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: blob: https:; "
         "connect-src 'self'; "
         "frame-ancestors 'none'; "

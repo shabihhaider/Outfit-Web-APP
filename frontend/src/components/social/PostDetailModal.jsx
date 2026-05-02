@@ -136,7 +136,10 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                         (p?.user?.name?.[0] || username[0]).toUpperCase()
                       )}
                     </div>
-                    <span className="truncate">@{username}</span>
+                    <span className="truncate leading-tight">
+                      {p?.user?.name || `@${username}`}
+                      {p?.user?.name && <span className="block text-xs font-normal text-brand-400 dark:text-brand-500">@{username}</span>}
+                    </span>
                   </button>
 
                   {/* Follow button */}

@@ -476,6 +476,13 @@ def get_public_profile(username: str):
 
     user = User.query.filter_by(username=username).first()
     if user is None:
+        # Handle fallback "user_<id>" slugs for accounts with no username set
+        m = re.match(r"^user_(\d+)$", username)
+        if m:
+            candidate = User.query.get(int(m.group(1)))
+            if candidate and not candidate.username:
+                user = candidate
+    if user is None:
         return jsonify({"error": "User not found."}), 404
 
     # Determine viewer
