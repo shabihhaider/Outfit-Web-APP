@@ -67,29 +67,29 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
   })
 
   const followMutation = useMutation({
-    mutationFn: () => following ? unfollowUser(p.user_id) : followUser(p.user_id),
-    onMutate: () => {
+    // Pass intent as variable so mutationFn never reads stale closure state.
+    // onMutate flips `following` before mutationFn runs, so a plain closure
+    // over `following` would always call the WRONG endpoint.
+    mutationFn: (shouldFollow) => shouldFollow ? followUser(p.user_id) : unfollowUser(p.user_id),
+    onMutate: (shouldFollow) => {
       const prev = following
-      setFollowing(v => !v)
+      setFollowing(shouldFollow)
       return { prev }
     },
-    onError: (err, _vars, ctx) => {
-      // 409 = "Already following" — stale cache showed Follow when we're actually
-      // following already. Keep "Following" rather than reverting to the wrong state.
-      if (err?.response?.status === 409 && !ctx?.prev) {
+    onError: (err, shouldFollow, ctx) => {
+      // 409 = "Already following" — keep Following rather than reverting.
+      if (err?.response?.status === 409 && shouldFollow) {
         setFollowing(true)
       } else {
-        setFollowing(ctx?.prev ?? (v => !v))
+        setFollowing(ctx?.prev ?? !shouldFollow)
       }
     },
-    onSuccess: (_data, _vars, ctx) => {
-      const nowFollowing = !ctx.prev
-      // Re-assert correct state — background post refetch (staleTime:0) may have
-      // raced and reverted the optimistic update before the API call finished.
-      setFollowing(nowFollowing)
-      // Patch the cached post so the useEffect([fullPost]) sync uses the right value
+    onSuccess: (_data, shouldFollow) => {
+      // Re-assert and patch cache — background refetch (staleTime:0) may race
+      // and revert the optimistic update before the API call finishes.
+      setFollowing(shouldFollow)
       qc.setQueryData(['post', p.id], old =>
-        old ? { ...old, is_following_author: nowFollowing } : old
+        old ? { ...old, is_following_author: shouldFollow } : old
       )
       qc.invalidateQueries({ queryKey: ['feed'] })
     },
@@ -155,7 +155,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
                   {/* Follow button */}
                   {!isOwn && (
                     <button
-                      onClick={() => followMutation.mutate()}
+                      onClick={() => followMutation.mutate(!following)}
                       disabled={followMutation.isPending}
                       className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
                         following
