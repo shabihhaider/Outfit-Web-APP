@@ -7,12 +7,18 @@ export default function FollowButton({ userId, initialIsFollowing = false, onCha
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing)
   const qc = useQueryClient()
 
+  const invalidateAll = () => {
+    qc.invalidateQueries({ queryKey: ['social-profile'] })
+    qc.invalidateQueries({ queryKey: ['feed'] })
+    qc.invalidateQueries({ queryKey: ['post'] })
+  }
+
   const followMutation = useMutation({
     mutationFn: () => followUser(userId),
     onMutate: () => setIsFollowing(true),   // optimistic
     onError:  () => setIsFollowing(false),
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['social-profile'] })
+      invalidateAll()
       onChanged?.('followed', data)
     },
   })
@@ -22,7 +28,7 @@ export default function FollowButton({ userId, initialIsFollowing = false, onCha
     onMutate: () => setIsFollowing(false),  // optimistic
     onError:  () => setIsFollowing(true),
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['social-profile'] })
+      invalidateAll()
       onChanged?.('unfollowed', data)
     },
   })

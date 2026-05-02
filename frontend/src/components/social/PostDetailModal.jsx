@@ -92,6 +92,7 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
         old ? { ...old, is_following_author: shouldFollow } : old
       )
       qc.invalidateQueries({ queryKey: ['feed'] })
+      qc.invalidateQueries({ queryKey: ['social-profile'] })
     },
   })
 

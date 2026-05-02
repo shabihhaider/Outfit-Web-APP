@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
@@ -20,12 +20,12 @@ export default function PublicProfilePage() {
   const [remixTarget,  setRemixTarget] = useState(null)
   const [isFollowing,  setIsFollowing] = useState(null)
 
+  // Reset local follow override when switching profiles
+  useEffect(() => { setIsFollowing(null) }, [username])
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['social-profile', username],
     queryFn:  () => getPublicProfile(username),
-    onSuccess: (d) => {
-      if (isFollowing === null) setIsFollowing(d.is_following)
-    },
   })
 
   const { data: compatData } = useQuery({
