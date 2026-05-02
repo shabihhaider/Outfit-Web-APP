@@ -82,7 +82,17 @@ export default function PostDetailModal({ post, open, onClose, onRemixClick, onV
         setFollowing(ctx?.prev ?? (v => !v))
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['feed'] }) },
+    onSuccess: (_data, _vars, ctx) => {
+      const nowFollowing = !ctx.prev
+      // Re-assert correct state — background post refetch (staleTime:0) may have
+      // raced and reverted the optimistic update before the API call finished.
+      setFollowing(nowFollowing)
+      // Patch the cached post so the useEffect([fullPost]) sync uses the right value
+      qc.setQueryData(['post', p.id], old =>
+        old ? { ...old, is_following_author: nowFollowing } : old
+      )
+      qc.invalidateQueries({ queryKey: ['feed'] })
+    },
   })
 
   if (!open || !post) return null
