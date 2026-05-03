@@ -77,6 +77,21 @@ def validate_clothing_photo(content: bytes) -> tuple[bool, str]:
     try:
         img = Image.open(io.BytesIO(content)).convert("RGB")
 
+        # ── Minimum dimensions ────────────────────────────────────────────────
+        w, h = img.size
+        if min(w, h) < 80:
+            return False, (
+                f"Image is too small ({w}×{h} px). "
+                "Please upload a clear photo of a clothing item."
+            )
+
+        # ── Extreme aspect ratio (panoramas / banner screenshots) ─────────────
+        if max(w, h) / min(w, h) > 4.0:
+            return False, (
+                "Image has an unusual shape. "
+                "Please upload a portrait or square clothing photo."
+            )
+
         # Downsample to 64×64 for fast analysis
         thumb = img.resize((64, 64), Image.LANCZOS)
         pixels = list(thumb.getdata())

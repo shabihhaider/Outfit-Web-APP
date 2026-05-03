@@ -6,6 +6,8 @@ import { uploadItem } from '../../api/wardrobe.js'
 import LoadingSpinner from '../ui/LoadingSpinner.jsx'
 
 const FORMALITIES = ['casual', 'formal', 'both']
+const MAX_FILE_SIZE = 10 * 1024 * 1024   // 10 MB (matches server MAX_CONTENT_LENGTH)
+const MIN_FILE_SIZE = 5 * 1024           // 5 KB
 
 export default function UploadModal({ open, onClose }) {
   const [file, setFile] = useState(null)
@@ -42,6 +44,14 @@ export default function UploadModal({ open, onClose }) {
   const handleFileSelect = useCallback((selectedFile) => {
     if (!selectedFile) return
     setError('')
+    if (selectedFile.size > MAX_FILE_SIZE) {
+      setError('File is too large (max 15 MB). Please compress or resize the image.')
+      return
+    }
+    if (selectedFile.size < MIN_FILE_SIZE) {
+      setError('File is too small. Please select a proper clothing photo.')
+      return
+    }
     setFile(selectedFile)
     const url = URL.createObjectURL(selectedFile)
     setPreview(url)
@@ -165,7 +175,7 @@ export default function UploadModal({ open, onClose }) {
                     <div className="py-12 flex flex-col items-center text-brand-500 dark:text-brand-400">
                       <FiUploadCloud size={32} className="mb-3 text-brand-300 dark:text-brand-600" />
                       <p className="text-sm font-medium text-brand-500 dark:text-brand-400">Drop image here or click to browse</p>
-                      <p className="text-xs mt-1 text-brand-500 dark:text-brand-400">PNG, JPG, WEBP up to 10MB</p>
+                      <p className="text-xs mt-1 text-brand-500 dark:text-brand-400">PNG or JPG, 5 KB – 10 MB</p>
                     </div>
                   )}
                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleFileSelect(e.target.files[0])} />

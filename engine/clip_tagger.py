@@ -241,7 +241,9 @@ class CLIPSubCategoryTagger:
             "a screenshot or text",
             "scenery or a landscape",
             "a random object that is not clothing",
-            "a vehicle or car"
+            "a vehicle or car",
+            "a photo of food or a meal",
+            "a cartoon, illustration, or drawing, not a real photo",
         ]
 
         all_prompts = positive_prompts + negative_prompts
