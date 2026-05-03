@@ -31,6 +31,11 @@ export default function OutfitItems({ items }) {
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover"
+                  fallback={
+                    <div className="w-full h-full flex items-center justify-center text-3xl opacity-40 grayscale">
+                      {CAT_EMOJI[item.category] || '\u{1F454}'}
+                    </div>
+                  }
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-3xl opacity-40 grayscale">

@@ -40,9 +40,18 @@ export default function RecommendationsPage() {
     const saved = sessionStorage.getItem('rec_weather')
     return saved ? JSON.parse(saved) : { temp_celsius: 25 }
   })
+  const CACHE_VERSION = 'v2'
   const [results, setResultsRaw] = useState(() => {
     const cached = sessionStorage.getItem('rec_results')
-    return cached ? JSON.parse(cached) : null
+    if (!cached) return null
+    try {
+      const parsed = JSON.parse(cached)
+      if (parsed._v !== CACHE_VERSION) {
+        sessionStorage.removeItem('rec_results')
+        return null
+      }
+      return parsed
+    } catch { return null }
   })
   const [detectedTemp, setDetectedTemp] = useState(null)
   const [locationName, setLocationName] = useState(null)
@@ -51,7 +60,7 @@ export default function RecommendationsPage() {
 
   function setResults(val) {
     setResultsRaw(val)
-    if (val) sessionStorage.setItem('rec_results', JSON.stringify(val))
+    if (val) sessionStorage.setItem('rec_results', JSON.stringify({ ...val, _v: CACHE_VERSION }))
   }
 
   function setOccasion(val) {
