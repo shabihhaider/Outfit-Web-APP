@@ -7,15 +7,12 @@ import { useAuth } from '../../context/AuthContext.jsx'
 import LoadingSpinner from '../ui/LoadingSpinner.jsx'
 
 const FORMALITIES = ['casual', 'formal', 'both']
-const GENDERS = ['men', 'women', 'unisex']
 
 export default function UploadModal({ open, onClose }) {
   const { user } = useAuth()
-  const defaultGender = user?.gender || ''
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [formality, setFormality] = useState('casual')
-  const [gender, setGender] = useState(defaultGender)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [uploadData, setUploadData] = useState(null)
@@ -65,12 +62,11 @@ export default function UploadModal({ open, onClose }) {
     setError('')
     if (!file) { setError('Please select an image.'); return }
     if (!formality) { setError('Please select a formality.'); return }
-    if (!gender) { setError('Please select a gender.'); return }
 
     const fd = new FormData()
     fd.append('image', file)
     fd.append('formality', formality)
-    fd.append('gender', gender)
+    fd.append('gender', 'unisex')
     mutation.mutate(fd)
   }
 
@@ -78,7 +74,6 @@ export default function UploadModal({ open, onClose }) {
     setFile(null)
     setPreview(null)
     setFormality('casual')
-    setGender(defaultGender)
     setError('')
     setSuccess('')
     setUploadData(null)
@@ -199,27 +194,6 @@ export default function UploadModal({ open, onClose }) {
                         }`}
                       >
                         {f.charAt(0).toUpperCase() + f.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Gender */}
-                <div>
-                  <label className="block text-sm font-medium text-brand-600 dark:text-brand-400 mb-2">Gender</label>
-                  <div className="flex gap-2">
-                    {GENDERS.map(g => (
-                      <button
-                        key={g}
-                        type="button"
-                        onClick={() => setGender(g)}
-                        className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all duration-200 ${
-                          gender === g
-                            ? 'bg-brand-900 text-white border-brand-900 dark:bg-brand-100 dark:text-brand-900 dark:border-brand-100 shadow-md'
-                            : 'border-brand-200 dark:border-brand-700 text-brand-600 dark:text-brand-400 hover:border-brand-400 dark:hover:border-brand-500'
-                        }`}
-                      >
-                        {g.charAt(0).toUpperCase() + g.slice(1)}
                       </button>
                     ))}
                   </div>

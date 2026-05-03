@@ -115,12 +115,12 @@ def upload_item():
 
     # ── 4. Validate form fields ───────────────────────────────────────────────
     formality = (request.form.get("formality") or "").strip().lower()
-    gender    = (request.form.get("gender")    or "").strip().lower()
+    gender    = (request.form.get("gender")    or "unisex").strip().lower()
 
     if formality not in VALID_FORMALITIES:
         return jsonify({"error": f"formality must be one of: {', '.join(VALID_FORMALITIES)}."}), 422
     if gender not in VALID_GENDERS:
-        return jsonify({"error": f"gender must be one of: {', '.join(VALID_GENDERS)}."}), 422
+        gender = "unisex"  # safe fallback for unknown values
 
     # ── 5. Save file ──────────────────────────────────────────────────────────
     ext = file.filename.rsplit(".", 1)[1].lower()

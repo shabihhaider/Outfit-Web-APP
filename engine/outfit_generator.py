@@ -61,19 +61,17 @@ def _apply_gender_filter(
     gender_filter: Union[Gender, str],
 ) -> list[WardrobeItem]:
     """
-    Keep only items appropriate for the user's gender preference.
-    UNISEX items are always included. Requesting "unisex" keeps everything.
+    No-op. Retained for API compatibility with callers and tests.
+
+    OutfitAI is a personal wardrobe app: every item the user uploaded is theirs
+    to wear. Filtering by the gendered marketing label of a garment is the wrong
+    abstraction here — that belongs in shared-inventory apps (e.g. Rent the Runway),
+    not in a wardrobe where all items already belong to one person.
+
+    Profile gender (users.gender) is preserved for future personalization features
+    (silhouette guidance, fit recommendations). It no longer acts as a hard filter.
     """
-    # Normalize: accept both Gender enum and plain string
-    gender_key = gender_filter.value if isinstance(gender_filter, Gender) else str(gender_filter)
-
-    if gender_key == Gender.UNISEX or gender_key == "unisex":
-        return items  # No filtering — keep all items
-
-    return [
-        item for item in items
-        if item.gender == gender_key or item.gender == Gender.UNISEX
-    ]
+    return items
 
 
 def _check_wardrobe_minimum(items: list[WardrobeItem]) -> None:
@@ -122,10 +120,9 @@ def generate_recommendations(
     Raises:
         InsufficientWardrobeError: If no valid outfit can be formed after filtering.
     """
-    # Step 1: Gender filter
+    # Step 1: Gender filter (disabled — personal wardrobe, all items are the user's)
     items = _apply_gender_filter(wardrobe, gender_filter)
-    logger.info("After gender filter (%s): %d items — %s",
-                gender_filter, len(items),
+    logger.info("Wardrobe: %d items — %s", len(items),
                 {cat: sum(1 for i in items if i.category == cat)
                  for cat in ["top", "bottom", "outwear", "shoes", "dress", "jumpsuit"]})
 

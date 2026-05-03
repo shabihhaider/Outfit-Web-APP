@@ -89,11 +89,14 @@ class TestUpload:
         )
         assert resp.status_code == 422
 
-    def test_upload_invalid_gender(self, client, auth_headers, minimal_png):
+    def test_upload_unknown_gender_falls_back_to_unisex(self, client, auth_headers, minimal_png):
+        # Gender is optional; unknown values fall back to "unisex".
+        # Personal wardrobe does not gender-gate items — the field is kept
+        # for future personalization features only.
         data = {
             "image":    (io.BytesIO(minimal_png), "shirt.png", "image/png"),
             "formality": "casual",
-            "gender":    "alien",   # invalid
+            "gender":    "alien",   # unknown → coerced to unisex
         }
         resp = client.post(
             "/wardrobe/items",
@@ -101,7 +104,8 @@ class TestUpload:
             headers=auth_headers,
             content_type="multipart/form-data",
         )
-        assert resp.status_code == 422
+        assert resp.status_code == 201
+        assert resp.get_json()["gender"] == "unisex"
 
     def test_upload_fake_image(self, client, auth_headers):
         """A text file with .jpg extension must be rejected by Pillow verify."""
