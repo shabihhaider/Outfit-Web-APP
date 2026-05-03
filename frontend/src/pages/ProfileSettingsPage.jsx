@@ -71,7 +71,6 @@ function AccountTab({ profile, qc, updateUser }) {
     name:     profile?.name     ?? '',
     username: profile?.username ?? '',
     bio:      profile?.bio      ?? '',
-    gender:   profile?.gender   || 'unisex',
     is_public: profile?.is_public ?? true,
   })
   const [saved, setSaved] = useState(false)
@@ -82,7 +81,7 @@ function AccountTab({ profile, qc, updateUser }) {
     onSuccess: (data) => {
       setSaved(true)
       setError('')
-      updateUser({ name: data.name, username: data.username, bio: data.bio, gender: data.gender })
+      updateUser({ name: data.name, username: data.username, bio: data.bio })
       qc.invalidateQueries({ queryKey: ['my-profile'] })
       setTimeout(() => setSaved(false), 2500)
     },
@@ -111,24 +110,6 @@ function AccountTab({ profile, qc, updateUser }) {
         <p className="text-[10px] text-brand-500 text-right mt-1">{form.bio.length}/150</p>
       </div>
 
-      <div>
-        <label className="block text-xs font-bold uppercase tracking-widest text-brand-500 mb-2">Gender</label>
-        <div className="flex gap-2">
-          {['men', 'women', 'unisex'].map(g => (
-            <button
-              key={g}
-              onClick={() => setForm(p => ({ ...p, gender: g }))}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-medium capitalize border transition-all ${
-                form.gender === g
-                  ? 'bg-brand-900 dark:bg-brand-100 text-white dark:text-brand-900 border-brand-900 dark:border-brand-100'
-                  : 'border-brand-200 dark:border-brand-700 text-brand-600 dark:text-brand-400 hover:border-brand-400'
-              }`}
-            >
-              {g}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <div className="flex items-center justify-between">
         <div>
