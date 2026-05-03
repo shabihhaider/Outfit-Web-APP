@@ -3,13 +3,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiX, FiUploadCloud, FiCheck, FiZap } from 'react-icons/fi'
 import { uploadItem } from '../../api/wardrobe.js'
-import { useAuth } from '../../context/AuthContext.jsx'
 import LoadingSpinner from '../ui/LoadingSpinner.jsx'
 
 const FORMALITIES = ['casual', 'formal', 'both']
 
 export default function UploadModal({ open, onClose }) {
-  const { user } = useAuth()
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [formality, setFormality] = useState('casual')
@@ -29,7 +27,6 @@ export default function UploadModal({ open, onClose }) {
       setFile(null)
       setPreview(null)
       setFormality('casual')
-      setGender(defaultGender)
       setTimeout(() => {
         setSuccess('');
         setUploadData(null);

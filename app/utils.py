@@ -104,6 +104,16 @@ def validate_clothing_photo(content: bytes) -> tuple[bool, str]:
                 "Please upload a photograph of a clothing item."
             )
 
+        # 3. Dark-mode screenshot detection — dark background + bright text/elements
+        # (e.g. code editors, quiz apps, dark UI screenshots)
+        near_black = np.all(arr < 50, axis=1).sum() / len(arr)
+        bright_spots = (arr.mean(axis=1) > 180).sum() / len(arr)
+        if near_black > 0.45 and bright_spots > 0.10:
+            return False, (
+                "Image appears to be a dark-mode screenshot. "
+                "Please upload a photograph of a clothing item."
+            )
+
         return True, ""
     except Exception as exc:
         logger.debug("Clothing photo validation error: %s", exc)
