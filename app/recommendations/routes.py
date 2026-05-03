@@ -215,7 +215,7 @@ def _log_history(user_id: int, occasion: str, temp_celsius: float, outfits: list
 def recommend():
     """
     POST /recommendations
-    Body (JSON): {occasion, lat?, lon?} or {occasion, temp_celsius?}
+    Body (JSON): {occasion, lat?, lon?, top_n?} or {occasion, temp_celsius?, top_n?}
     """
     user_id = int(get_jwt_identity())
     data    = request.get_json(silent=True) or {}
@@ -224,6 +224,12 @@ def recommend():
     occasion = str(data.get("occasion", "")).strip().lower()
     if occasion not in VALID_OCCASIONS:
         return jsonify({"error": f"occasion must be one of: {', '.join(VALID_OCCASIONS)}."}), 422
+
+    # top_n: client may request up to 12; default 6, hard cap 12
+    try:
+        top_n = max(1, min(int(data.get("top_n", 6)), 12))
+    except (TypeError, ValueError):
+        top_n = 6
 
     # 2. Resolve temperature
     temp_celsius, err = _resolve_temperature(data, current_app.pipeline)
@@ -257,6 +263,7 @@ def recommend():
             occasion      = occasion,
             temp_celsius  = temp_celsius,
             gender_filter = user.gender,
+            top_n         = top_n,
         )
     except InsufficientWardrobeError:
         return jsonify({"error": _missing_categories_hint(items_db)}), 422
@@ -293,6 +300,12 @@ def recommend_around_item(item_id: int):
     if occasion not in VALID_OCCASIONS:
         return jsonify({"error": f"occasion must be one of: {', '.join(VALID_OCCASIONS)}."}), 422
 
+    # top_n: client may request up to 12; default 6, hard cap 12
+    try:
+        top_n = max(1, min(int(data.get("top_n", 6)), 12))
+    except (TypeError, ValueError):
+        top_n = 6
+
     # 2. Verify anchor item ownership
     anchor_db = db.session.get(WardrobeItemDB, item_id)
     if anchor_db is None:
@@ -327,6 +340,7 @@ def recommend_around_item(item_id: int):
             temp_celsius    = temp_celsius,
             gender_filter   = user.gender,
             anchor_item_id  = item_id,
+            top_n           = top_n,
         )
     except InsufficientWardrobeError:
         return jsonify({"error": _missing_categories_hint(items_db)}), 422

@@ -250,3 +250,54 @@ class TestRecommendations:
         )
         assert resp.status_code == 200
         assert resp.get_json()["outfits"][0]["template"] == "A"
+
+    def test_top_n_propagated_to_pipeline(self, client, flask_app, auth_headers):
+        """top_n from request body must be forwarded to pipeline.recommend()."""
+        flask_app.pipeline.recommend.reset_mock()
+        flask_app.pipeline.recommend.return_value = []
+
+        # 11°C → bucket 10 (unique across all tests)
+        client.post(
+            "/recommendations",
+            json={"occasion": "casual", "temp_celsius": 11.0, "top_n": 9},
+            headers=auth_headers,
+        )
+
+        assert flask_app.pipeline.recommend.call_args is not None, \
+            "pipeline.recommend was not called — likely a cache hit from a prior test"
+        call_kwargs = flask_app.pipeline.recommend.call_args.kwargs
+        assert call_kwargs.get("top_n") == 9
+
+    def test_top_n_capped_at_12(self, client, flask_app, auth_headers):
+        """top_n values above 12 must be clamped to 12."""
+        flask_app.pipeline.recommend.reset_mock()
+        flask_app.pipeline.recommend.return_value = []
+
+        # 42°C → bucket 40 (unique across all tests)
+        client.post(
+            "/recommendations",
+            json={"occasion": "casual", "temp_celsius": 42.0, "top_n": 999},
+            headers=auth_headers,
+        )
+
+        assert flask_app.pipeline.recommend.call_args is not None, \
+            "pipeline.recommend was not called — likely a cache hit from a prior test"
+        call_kwargs = flask_app.pipeline.recommend.call_args.kwargs
+        assert call_kwargs.get("top_n") == 12
+
+    def test_top_n_defaults_to_6(self, client, flask_app, auth_headers):
+        """Omitting top_n in the request body must default to 6."""
+        flask_app.pipeline.recommend.reset_mock()
+        flask_app.pipeline.recommend.return_value = []
+
+        # 53°C → bucket 55 (unique across all tests)
+        client.post(
+            "/recommendations",
+            json={"occasion": "casual", "temp_celsius": 53.0},
+            headers=auth_headers,
+        )
+
+        assert flask_app.pipeline.recommend.call_args is not None, \
+            "pipeline.recommend was not called — likely a cache hit from a prior test"
+        call_kwargs = flask_app.pipeline.recommend.call_args.kwargs
+        assert call_kwargs.get("top_n") == 6
