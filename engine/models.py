@@ -176,7 +176,7 @@ class RecommendationRequest(BaseModel):
     temp_celsius: float = Field(..., ge=-20.0, le=60.0,
                                 description="Temperature in Celsius. Lahore range: -2 to 48.")
     gender_filter: Gender
-    top_n: int = Field(default=3, ge=1, le=10)
+    top_n: int = Field(default=6, ge=1, le=20)
 
 
 class RecommendationResponse(BaseModel):

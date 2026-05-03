@@ -254,4 +254,14 @@ def generate_recommendations(
         boosted.append((c.final_score + bonus, c))
 
     boosted.sort(key=lambda x: x[0], reverse=True)
-    return [c for _, c in boosted[:top_n]]
+
+    # Deduplicate: same item combination can appear via different templates
+    seen: set[frozenset[int]] = set()
+    deduped: list[tuple[float, OutfitCandidate]] = []
+    for score, c in boosted:
+        key = frozenset(i.item_id for i in c.items)
+        if key not in seen:
+            seen.add(key)
+            deduped.append((score, c))
+
+    return [c for _, c in deduped[:top_n]]

@@ -46,6 +46,8 @@ export default function RecommendationsPage() {
   })
   const [detectedTemp, setDetectedTemp] = useState(null)
   const [locationName, setLocationName] = useState(null)
+  const INITIAL_VISIBLE = 6
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE)
 
   function setResults(val) {
     setResultsRaw(val)
@@ -106,7 +108,8 @@ export default function RecommendationsPage() {
 
   function handleGetOutfits() {
     if (!occasion) return
-    mutation.mutate({ occasion, ...weatherParams })
+    setVisibleCount(INITIAL_VISIBLE)
+    mutation.mutate({ occasion, ...weatherParams, top_n: 12 })
   }
 
   const outfits = results?.outfits ?? results?.recommendations ?? []
@@ -171,9 +174,7 @@ export default function RecommendationsPage() {
           {mutation.isPending && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
               <p className="text-sm text-brand-500 dark:text-brand-400">Building your recommendation and loading wardrobe images...</p>
-              <OutfitSkeleton />
-              <OutfitSkeleton />
-              <OutfitSkeleton />
+              {Array.from({ length: INITIAL_VISIBLE }, (_, i) => <OutfitSkeleton key={i} />)}
             </motion.div>
           )}
 
@@ -204,9 +205,19 @@ export default function RecommendationsPage() {
                   description="Try a different occasion or upload more clothing items to your wardrobe."
                 />
               ) : (
-                outfits.map((outfit, i) => (
-                  <OutfitCard key={i} outfit={{...outfit, temperature_used: results.temperature_used}} occasion={occasion} />
-                ))
+                <>
+                  {outfits.slice(0, visibleCount).map((outfit, i) => (
+                    <OutfitCard key={i} outfit={{...outfit, temperature_used: results.temperature_used}} occasion={occasion} />
+                  ))}
+                  {outfits.length > visibleCount && (
+                    <button
+                      onClick={() => setVisibleCount(v => v + 6)}
+                      className="w-full py-3 rounded-xl border border-brand-200 dark:border-brand-700 text-sm font-medium text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-800/50 transition-colors"
+                    >
+                      Show More Outfits ({outfits.length - visibleCount} remaining)
+                    </button>
+                  )}
+                </>
               )}
             </>
           )}
