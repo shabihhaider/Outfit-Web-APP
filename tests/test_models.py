@@ -102,7 +102,7 @@ class TestRecommendationRequest:
             temp_celsius=30.0,
             gender_filter=Gender.WOMEN,
         )
-        assert req.top_n == 3  # default
+        assert req.top_n == 6  # default
 
     def test_temp_out_of_range_raises(self):
         with pytest.raises(ValidationError):
