@@ -1,7 +1,8 @@
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function ConfirmDialog({ open, title, message, onConfirm, onCancel, danger = false }) {
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -34,6 +35,7 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
