@@ -120,10 +120,16 @@ def validate_clothing_photo(content: bytes) -> tuple[bool, str]:
             )
 
         # 3. Dark-mode screenshot detection — dark background + bright text/elements
-        # (e.g. code editors, quiz apps, dark UI screenshots)
-        near_black = np.all(arr < 50, axis=1).sum() / len(arr)
-        bright_spots = (arr.mean(axis=1) > 180).sum() / len(arr)
-        if near_black > 0.45 and bright_spots > 0.10:
+        # Uses 128×128 thumbnail (4× more pixels than the 64×64 above) so that
+        # small text cards survive the downsample without being averaged away.
+        # Threshold < 80 (not < 50) to handle JPEG compression artifacts on
+        # "black" backgrounds (WhatsApp, social media re-encoding push dark
+        # pixels to values like R=52, G=48, B=45 which fail the strict < 50 test).
+        thumb128 = img.resize((128, 128), Image.LANCZOS)
+        arr128 = np.array(list(thumb128.getdata()), dtype=np.float32)  # (16384, 3)
+        near_dark = np.all(arr128 < 80, axis=1).sum() / len(arr128)
+        bright_spots128 = (arr128.mean(axis=1) > 180).sum() / len(arr128)
+        if near_dark > 0.45 and bright_spots128 > 0.05:
             return False, (
                 "Image appears to be a dark-mode screenshot. "
                 "Please upload a photograph of a clothing item."

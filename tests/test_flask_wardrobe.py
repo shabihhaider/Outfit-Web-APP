@@ -298,6 +298,33 @@ class TestValidateClothingPhoto:
         # (300×400 satisfies both constraints; function is allowed to proceed past them)
         assert True  # reaching here without exception is sufficient
 
+    def test_dark_screenshot_jpeg_rejected(self):
+        """
+        JPEG-compressed dark UI screenshot (e.g. WhatsApp-forwarded phone screenshot)
+        must be rejected even after JPEG re-encoding artifacts push black pixels
+        above the old < 50 threshold.
+        """
+        from PIL import Image, ImageDraw
+        from app.utils import validate_clothing_photo
+
+        # Build a 300×400 dark-background image with two small white card elements
+        # (mimics a quiz/code editor screenshot structure)
+        img = Image.new("RGB", (300, 400), color=(15, 15, 15))
+        draw = ImageDraw.Draw(img)
+        draw.rectangle([30, 80, 270, 130], fill=(240, 240, 240))   # white card 1
+        draw.rectangle([30, 160, 270, 210], fill=(245, 245, 245))  # white card 2
+
+        # Save as JPEG at quality=85 (typical WhatsApp compression) — this pushes
+        # "black" background pixels to values like (20–65, 20–65, 20–65), which
+        # previously bypassed the strict < 50 threshold in the old heuristic.
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=85)
+        content = buf.getvalue()
+
+        ok, reason = validate_clothing_photo(content)
+        assert not ok
+        assert "screenshot" in reason.lower() or "dark" in reason.lower()
+
 
 # ─── List ─────────────────────────────────────────────────────────────────────
 
